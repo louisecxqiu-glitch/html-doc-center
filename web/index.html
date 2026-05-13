@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTML Document Center · 本地文档工作台</title>
+  <link rel="stylesheet" href="/static/style.css?v=1.7.0" />
+  <script>
+    // v1.10.10: 主题早期恢复（避免页面闪烁）。三态：auto / light / dark
+    (function() {
+      try {
+        var t = localStorage.getItem("doc_center_theme") || "auto";
+        if (t !== "auto" && t !== "light" && t !== "dark") t = "auto";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (_) {
+        document.documentElement.setAttribute("data-theme", "auto");
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- 顶部：单栏 44px 承载所有功能 -->
+  <header class="topbar">
+    <button id="btn-toggle-sidebar" class="btn-sidebar-toggle" title="显示/隐藏目录（⌘B）">
+      <span class="burger">≡</span>
+      <span class="label">目录</span>
+      <kbd>⌘B</kbd>
+    </button>
+    <div class="brand-mini">
+      <span class="brand-dot"></span>
+      <span class="brand-name">DocCenter</span>
+    </div>
+    <div class="topbar-sep"></div>
+    <div class="breadcrumb" id="breadcrumb">
+      <span class="breadcrumb-empty">从左侧目录选一个 HTML / Markdown 开始</span>
+    </div>
+    <div class="editor-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">未打开</span>
+    </div>
+    <div class="zoom-group" title="文档缩放">
+      <button class="zoom-btn" data-zoom="25" title="鸟瞰 25%">25%</button>
+      <button class="zoom-btn" data-zoom="50" title="50%">50%</button>
+      <button class="zoom-btn active" data-zoom="75" title="舒适阅读 75%">75%</button>
+      <button class="zoom-btn" data-zoom="100" title="实际尺寸 100%">100%</button>
+      <button class="zoom-btn" data-zoom="125" title="125%">125%</button>
+      <button class="zoom-btn" data-zoom="150" title="150%">150%</button>
+    </div>
+    <button id="btn-close-file" class="btn-close" disabled title="关闭当前文档">✕</button>
+    <div class="topbar-actions">
+      <button id="btn-history" title="历史版本（H）" disabled>🕐</button>
+      <button id="btn-refresh" title="刷新（R）">🔄</button>
+      <button id="btn-theme" title="切换主题（自动/浅色/深色）">🌓</button>
+      <button id="btn-help" title="键盘快捷键（?）">⌨️</button>
+      <button id="btn-settings" title="设置">⚙️</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- 左边缘热区：鼠标悬停 200ms 自动呼出目录 -->
+    <div class="sidebar-hover-zone" id="sidebar-hover-zone"></div>
+
+    <!-- 左侧：推挤式目录（默认宽度 0） -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <input type="search" id="search-box" placeholder="搜索文件名/路径…（Esc 收起）" />
+        <!-- v1.11.2: 排序按钮（弹出菜单）+ '+' 已搬到设置面板 -->
+        <div class="sort-btn-wrap">
+          <button id="btn-sort" class="btn-sort" title="排序方式">⇅</button>
+          <div id="sort-menu" class="sort-menu" style="display:none;">
+            <button data-sort="mtime_desc" class="sort-menu-item">🕒 最近修改</button>
+            <button data-sort="name_asc" class="sort-menu-item">🔤 名称</button>
+          </div>
+        </div>
+      </div>
+      <div id="search-stat" class="search-stat"></div>
+      <!-- v1.11.2: 三 Tab 切换（收藏 / 最近 / 目录） -->
+      <div class="sidebar-tabs" id="sidebar-tabs">
+        <button class="sidebar-tab" data-tab="tree">📁 目录</button>
+        <button class="sidebar-tab" data-tab="favorites">⭐ 收藏 <span class="tab-count" id="tab-count-fav"></span></button>
+        <button class="sidebar-tab" data-tab="recent">🕐 最近 <span class="tab-count" id="tab-count-recent"></span></button>
+      </div>
+      <!-- 三个 Tab 内容容器（同一时间只显示一个，由 .sidebar-pane.active 控制） -->
+      <div id="favorites-section" class="favorites-section sidebar-pane" data-pane="favorites"></div>
+      <div id="recent-section" class="recent-section sidebar-pane" data-pane="recent"></div>
+      <nav class="tree sidebar-pane" id="tree" data-pane="tree"></nav>
+      <div class="sidebar-footer">
+        <span id="tree-stats">加载中…</span>
+        <button id="btn-collapse-all" class="btn-collapse-folders" title="折叠目录树中所有文件夹（不会隐藏侧边栏）">
+          <span class="icon">🗂</span>
+          <span>折叠所有文件夹</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 侧边栏拖拽手柄 -->
+    <div class="sidebar-resizer" id="sidebar-resizer"></div>
+
+    <!-- 中间：编辑区（无第二工具栏） -->
+    <section class="editor">
+      <div class="editor-body">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">📄</div>
+          <h2>本地 HTML 文档工作台</h2>
+          <p>从左侧目录选择一个 HTML 文件，自动启用编辑/批注能力。</p>
+          <ul>
+            <li>编辑/批注后 <b>2 秒自动保存</b>到 <code>_auto-save/</code></li>
+            <li>关闭或切换时可选 <b>覆盖源文件</b> 或 <b>另存新版本</b></li>
+            <li>另存后路径自动复制到剪贴板</li>
+          </ul>
+        </div>
+        <iframe id="doc-frame" style="display:none;"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <!-- 关闭/切换对话框 -->
+  <div class="modal-backdrop" id="save-dialog" style="display:none;">
+    <div class="modal">
+      <h3>这份文档有未保存的修改</h3>
+      <p id="dialog-file-name" class="modal-sub"></p>
+      <div class="modal-actions">
+        <button class="btn-primary" id="dlg-overwrite">
+          <b>覆盖源文件</b>
+          <small>合入修改，清理草稿</small>
+        </button>
+        <button class="btn-secondary" id="dlg-new">
+          <b>另存新版本</b>
+          <small>生成 -审阅版-时间戳（扩展名跟随源文件），路径复制到剪贴板</small>
+        </button>
+        <button class="btn-danger" id="dlg-discard">
+          <b>丢弃</b>
+          <small>仅清理草稿，源文件不动</small>
+        </button>
+      </div>
+      <button class="modal-close" id="dlg-cancel">取消</button>
+    </div>
+  </div>
+
+  <!-- 设置面板 -->
+  <div class="modal-backdrop" id="settings-dialog" style="display:none;">
+    <div class="modal modal-wide modal-scrollable">
+      <div class="modal-head">
+        <h3>⚙️ 设置</h3>
+        <button class="modal-close" id="settings-close">关闭</button>
+      </div>
+      <div class="modal-scroll">
+        <div class="settings-section">
+          <h4>扫描目录</h4>
+          <div id="scan-roots-list"></div>
+          <div class="scan-add">
+            <input type="text" id="new-root-input" placeholder="绝对路径，例如 /Users/.../reports" />
+            <button id="btn-browse-root" class="btn-browse" title="浏览文件夹">📂</button>
+            <button id="btn-add-root" class="btn-primary">添加</button>
+          </div>
+          <p class="hint">默认扫描 <code>outputs/</code>。可添加任意目录，实时扫描 HTML / Markdown 文件。</p>
+        </div>
+        <div class="settings-section">
+          <h4>📡 目录树自动刷新</h4>
+          <div class="settings-row">
+            <label for="setting-auto-refresh">刷新周期</label>
+            <select id="setting-auto-refresh">
+              <option value="0">关闭</option>
+              <option value="5">5 秒</option>
+              <option value="10">10 秒</option>
+              <option value="30">30 秒</option>
+              <option value="60">60 秒</option>
+            </select>
+            <span class="settings-hint">页面隐藏时自动暂停，不打扰当前编辑</span>
+          </div>
+          <p class="hint">新增/删除文件后，侧边栏会在周期内自动出现/消失，无需手动按 🔄。</p>
+        </div>
+        <div class="settings-section">
+          <h4>🗂 自动快照管理</h4>
+          <div class="settings-row">
+            <label for="setting-retention">保留天数</label>
+            <select id="setting-retention">
+              <option value="3">3 天</option>
+              <option value="7">7 天</option>
+              <option value="14">14 天</option>
+              <option value="30">30 天</option>
+              <option value="90">90 天</option>
+            </select>
+            <span class="settings-hint">每次启动 / 手动清理时移除 N 天前的快照</span>
+          </div>
+          <div class="settings-row">
+            <button id="btn-cleanup-snapshots" class="btn-primary">🧹 立即清理过期快照</button>
+            <span class="settings-hint" id="cleanup-result"></span>
+          </div>
+          <!-- v1.11.6: 梯度稀释快照（避免时间线爆炸） -->
+          <div class="settings-row">
+            <button id="btn-sparsify-snapshots" class="btn-secondary">🪶 稀释密集快照</button>
+            <span class="settings-hint" id="sparsify-result"></span>
+          </div>
+          <p class="hint">自动快照默认存于 <code>{原目录}/_auto-save/</code>，pre-overwrite/pre-restore 备份保留至到期。<br>
+          <strong>稀释规则</strong>：最近 10 分钟全保 / 10-60 分钟每分钟 / 1-24 小时每小时 / >24 小时每天。</p>
+        </div>
+        <div class="settings-section">
+          <h4>关于</h4>
+          <button id="btn-view-changelog" class="btn-link">📖 查看完整更新日志</button>
+          <p class="hint">时间轴形式展示每个版本的功能、优化和修复</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 目录浏览弹窗 -->
+  <div class="modal-backdrop" id="browse-dialog" style="display:none;">
+    <div class="modal modal-wide browse-modal">
+      <h3>📂 选择文件夹</h3>
+      <div class="browse-breadcrumb" id="browse-breadcrumb"></div>
+      <div class="browse-list" id="browse-list"></div>
+      <div class="browse-actions">
+        <div class="browse-selected" id="browse-selected"></div>
+        <div class="browse-btns">
+          <button class="btn-browse-cancel" id="browse-cancel">取消</button>
+          <button class="btn-primary" id="browse-confirm" disabled>选择此目录</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- v1.10.2: 历史版本抽屉 -->
+  <div class="history-drawer" id="history-drawer" style="display:none;">
+    <div class="history-drawer-mask" id="history-drawer-mask"></div>
+    <div class="history-drawer-panel">
+      <div class="history-drawer-head">
+        <h3>🕐 历史版本</h3>
+        <button class="history-drawer-close" id="history-drawer-close" title="关闭 (Esc)">✕</button>
+      </div>
+      <div class="history-drawer-info" id="history-drawer-info">
+        当前文件：<span id="history-current-name">—</span>
+      </div>
+      <div class="history-drawer-list" id="history-list">
+        <div class="history-empty">加载中…</div>
+      </div>
+      <div class="history-drawer-foot">
+        <small class="history-hint">⓪ 自动快照 = 编辑过程中每次停手 2 秒生成<br>① 覆盖前备份 = 点"覆盖源文件"前自动生成<br>② 恢复时也会先备份当前内容（pre-restore）</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- v1.10.2: 历史版本预览 modal -->
+  <div class="modal-backdrop" id="history-preview-dialog" style="display:none;">
+    <div class="modal modal-wide modal-scrollable" style="max-width:1100px;">
+      <div class="modal-head">
+        <h3>👁 历史版本预览 — <span id="history-preview-name">—</span></h3>
+        <div style="display:flex;gap:8px;">
+          <button id="history-preview-restore" class="btn-primary" title="恢复此版本到源文件">↩ 恢复此版本</button>
+          <button class="modal-close" id="history-preview-close">关闭</button>
+        </div>
+      </div>
+      <iframe id="history-preview-iframe" style="width:100%;height:70vh;border:1px solid #cbd5e1;border-radius:6px;background:#fff;" sandbox="allow-same-origin"></iframe>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast-container"></div>
+
+  <script src="/static/app.js?v=1.8.1"></script>
+</body>
+</html>

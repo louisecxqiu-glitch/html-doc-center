@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{FILE_NAME}} · Markdown</title>
+  <style>
+    :root {
+      --ink: #1A1D23;
+      --ink-2: #2D3139;
+      --gold: #C9A961;
+      --bg: #FAFAF7;
+      --bg-muted: #F1F1ED;
+      --text-1: #1A1D23;
+      --text-2: #4B5563;
+      --text-3: #6B7280;
+      --border: #E5E7EB;
+      --green: #10B981;
+      --amber: #F59E0B;
+      --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+      --mono: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: var(--font); color: var(--text-1); background: var(--bg); }
+
+    /* 顶部条 */
+    .md-header {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      background: linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+      color: #E5E7EB;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(201,169,97,0.25);
+    }
+    .md-header .md-title {
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 0.3px;
+    }
+    .md-header .md-sep {
+      width: 1px;
+      height: 16px;
+      background: rgba(255,255,255,0.2);
+    }
+    .md-header .md-hint {
+      color: #9CA3AF;
+      font-size: 12px;
+    }
+    .md-header .md-status {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #9CA3AF;
+    }
+    .md-header .md-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      transition: background .2s;
+    }
+    .md-header .md-dot.dirty { background: var(--amber); animation: md-pulse 1.2s infinite; }
+    @keyframes md-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* 主体：左右分栏 */
+    .md-container {
+      display: flex;
+      height: calc(100vh - 40px);
+      background: #fff;
+    }
+    .md-pane {
+      flex: 1;
+      min-width: 0;
+      overflow: auto;
+    }
+    .md-pane + .md-pane {
+      border-left: 1px solid var(--border);
+    }
+
+    /* 左：textarea */
+    #md-input {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      resize: none;
+      padding: 20px 24px;
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-1);
+      background: #FAFAF7;
+      tab-size: 2;
+    }
+
+    /* 右：预览 */
+    .md-preview {
+      padding: 28px 36px 80px;
+      line-height: 1.75;
+      color: var(--text-1);
+      font-size: 15px;
+    }
+    .md-preview h1, .md-preview h2, .md-preview h3, .md-preview h4 {
+      margin: 1.4em 0 0.6em;
+      line-height: 1.3;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .md-preview h1 { font-size: 1.9em; border-bottom: 2px solid var(--border); padding-bottom: 0.3em; }
+    .md-preview h2 { font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 0.2em; }
+    .md-preview h3 { font-size: 1.25em; }
+    .md-preview h4 { font-size: 1.05em; color: var(--text-2); }
+    .md-preview p { margin: 0.8em 0; }
+    .md-preview ul, .md-preview ol { padding-left: 1.6em; margin: 0.8em 0; }
+    .md-preview li { margin: 0.3em 0; }
+    .md-preview code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: var(--bg-muted);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #BE185D;
+    }
+    .md-preview pre {
+      background: var(--ink);
+      color: #E5E7EB;
+      padding: 14px 18px;
+      border-radius: 6px;
+      overflow: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 1em 0;
+    }
+    .md-preview pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      font-size: inherit;
+    }
+    .md-preview blockquote {
+      margin: 1em 0;
+      padding: 0.5em 1.2em;
+      border-left: 3px solid var(--gold);
+      background: var(--bg-muted);
+      color: var(--text-2);
+    }
+    .md-preview a { color: var(--gold); }
+    .md-preview a:hover { text-decoration: underline; }
+    .md-preview table {
+      border-collapse: collapse;
+      margin: 1em 0;
+      font-size: 14px;
+    }
+    .md-preview th, .md-preview td {
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+    }
+    .md-preview th { background: var(--bg-muted); font-weight: 600; }
+    .md-preview img { max-width: 100%; border-radius: 4px; }
+    .md-preview hr { border: 0; border-top: 1px solid var(--border); margin: 1.5em 0; }
+  </style>
+</head>
+<body>
+  <div class="md-header">
+    <span class="md-title">📝 {{FILE_NAME}}</span>
+    <span class="md-sep"></span>
+    <span class="md-hint">左侧编辑 · 右侧实时预览 · 2 秒自动快照</span>
+    <span class="md-status">
+      <span class="md-dot" id="md-dot"></span>
+      <span id="md-status-text">已就绪</span>
+    </span>
+  </div>
+  <div class="md-container">
+    <div class="md-pane"><textarea id="md-input" spellcheck="false">{{MD_CONTENT}}</textarea></div>
+    <div class="md-pane"><div class="md-preview" id="md-preview"></div></div>
+  </div>
+
+  <script>
+    // DocCenter 上下文：saver-runtime.js 靠 mode="md" 走 md 分支
+    window.__DOC_CENTER__ = {
+      filePath: "{{FILE_PATH}}",
+      serverOrigin: "{{SERVER_ORIGIN}}",
+      inIframe: window.self !== window.top,
+      mode: "md"
+    };
+  </script>
+  <script src="/static/vendor/marked.min.js"></script>
+  <script>
+    // 实时预览（150ms debounce）
+    (function () {
+      var input = document.getElementById("md-input");
+      var preview = document.getElementById("md-preview");
+      var timer = null;
+
+      function render() {
+        try {
+          preview.innerHTML = window.marked
+            ? window.marked.parse(input.value || "")
+            : "<pre>" + (input.value || "") + "</pre>";
+        } catch (e) {
+          preview.innerHTML = "<pre style='color:#DC2626'>预览渲染失败：" + (e.message || e) + "</pre>";
+        }
+      }
+
+      render();
+      input.addEventListener("input", function () {
+        clearTimeout(timer);
+        timer = setTimeout(render, 150);
+      });
+
+      // 暴露给 saver-runtime.js：请求当前内容
+      window.__MD_GET_CONTENT__ = function () { return input.value; };
+      window.__MD_SET_CONTENT__ = function (v) { input.value = v; render(); };
+    })();
+  </script>
+  <script src="/saver-runtime.js" defer></script>
+</body>
+</html>

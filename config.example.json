@@ -1,0 +1,19 @@
+{
+  "scan_roots": [
+    "~/Documents/reports",
+    "~/Desktop/html-files"
+  ],
+  "exclude_patterns": [
+    "_auto-save",
+    "node_modules",
+    ".git",
+    ".venv",
+    "venv",
+    "dist",
+    "build",
+    "__pycache__"
+  ],
+  "snapshot_debounce_ms": 2000,
+  "snapshot_retention_days": 7,
+  "port": 9901
+}

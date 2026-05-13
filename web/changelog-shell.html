@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocCenter · 更新日志</title>
+  <link rel="stylesheet" href="/static/changelog.css" />
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand-dot"></span>
+    <span class="brand">DocCenter</span>
+    <span class="sep"></span>
+    <h1>更新日志 · Changelog</h1>
+    <a href="/" class="back" title="返回工作台">← 返回</a>
+  </header>
+
+  <main class="page">
+    <div class="page-header">
+      <h1 class="page-title">DocCenter 更新日志</h1>
+      <p class="page-sub">本地 HTML 文档工作台 · <strong>语义化版本</strong> 管理 · 每次迭代都有据可查</p>
+      <p class="page-sub" style="margin-top: 6px; font-size: 12px; opacity: 0.7;">
+        v1.7.3 起：本页面由 <code>CHANGELOG.md</code> 自动渲染，改 MD 即改日志。
+      </p>
+    </div>
+
+    <div id="changelog-body">
+      <div class="loading-state">正在加载更新日志…</div>
+    </div>
+
+    <div class="page-foot">
+      <p>数据源：<code>CHANGELOG.md</code> · 单一真相原则</p>
+    </div>
+  </main>
+
+  <script src="/static/vendor/marked.min.js"></script>
+  <script src="/static/changelog-renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+# HTML Document Center · Git 忽略规则
+
+# ─── Python ───
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+.venv/
+venv/
+
+# ─── 运行时产物 ───
+*.log
+/tmp/
+logs/
+
+# ─── 用户配置（复制 config.example.json 为 config.json 使用） ───
+config.json
+
+# ─── 自动快照（不应提交） ───
+**/_auto-save/
+
+# ─── macOS / 编辑器 ───
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# ─── 截图临时文件（docs/screenshots 要保留，这里忽略中间产物） ───
+/tmp-screenshots/
+
+# ─── 打包产物（由 build-app.sh 生成，不入库） ───
+DocCenter.app/
+*.dmg
+*.zip
+
+# ─── 内部 AI 工作文件（不推公开仓库） ───
+.agents/
+.claude/
+.codebuddy/
+CODEBUDDY.md
+
+# ─── 内部开发文档 / 快照 ───
+docs/superpowers/plans/*.internal.md

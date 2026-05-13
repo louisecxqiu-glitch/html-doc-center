@@ -1,0 +1,514 @@
+/* ==========================================================================
+   DocCenter · /changelog 页面样式
+   v1.7.3 引入：CHANGELOG 改为 MD 单一数据源，样式从原 CHANGELOG.html 抽离
+   ========================================================================== */
+
+:root {
+  --ink: #1A1D23;
+  --ink-2: #2D3139;
+  --gold: #C9A961;
+  --gold-soft: #E6D4A8;
+  --bg: #FAFAF7;
+  --bg-card: #FFFFFF;
+  --bg-muted: #F1F1ED;
+  --text-1: #1A1D23;
+  --text-2: #4B5563;
+  --text-3: #9CA3AF;
+  --border: #E8E8E4;
+  --green: #10B981;
+  --blue: #3B82F6;
+  --red: #EF4444;
+  --purple: #8B5CF6;
+  --amber: #F59E0B;
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  --mono: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.03);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: var(--font);
+  color: var(--text-1);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+a { color: var(--gold); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  background: #F4F3EF;
+  padding: 2px 7px;
+  border-radius: 5px;
+  color: var(--ink-2);
+  border: 1px solid rgba(0,0,0,0.04);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+/* ── 顶栏 ── */
+.topbar {
+  height: 52px;
+  background: linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 14px;
+  border-bottom: 2px solid rgba(201,169,97,0.3);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.brand-dot { width: 7px; height: 7px; background: var(--gold); border-radius: 2px; }
+.brand { font-size: 13px; font-weight: 600; letter-spacing: 0.5px; color: var(--gold); }
+.topbar .sep { width: 1px; height: 22px; background: rgba(255,255,255,0.15); }
+.topbar h1 { margin: 0; font-size: 15px; font-weight: 500; color: #E5E7EB; letter-spacing: 0.3px; }
+.topbar .back {
+  margin-left: auto;
+  font-size: 12px;
+  color: #9CA3AF;
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 5px;
+  transition: all 0.15s;
+}
+.topbar .back:hover {
+  background: rgba(201,169,97,0.15);
+  color: var(--gold);
+  border-color: var(--gold);
+  text-decoration: none;
+}
+
+/* ── 主体 ── */
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 28px 100px;
+}
+.page-header { margin-bottom: 56px; }
+.page-title {
+  margin: 0 0 10px;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  color: var(--ink);
+}
+.page-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+.page-sub strong { color: var(--gold); font-weight: 600; }
+
+/* 加载态/错误态 */
+.loading-state, .error-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-3);
+}
+.error-state { color: var(--red); }
+.error-state pre {
+  background: #FEE2E2;
+  color: var(--red);
+  padding: 10px 14px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 12px;
+  margin-top: 12px;
+  text-align: left;
+  max-width: 560px;
+  overflow-x: auto;
+}
+
+/* ── 时间轴主轴线 ── */
+.timeline {
+  position: relative;
+  padding-left: 32px;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-soft) 40%, var(--border) 100%);
+  border-radius: 1px;
+}
+
+/* ── 每个版本节点 ── */
+.release {
+  position: relative;
+  margin-bottom: 48px;
+}
+.release:last-child { margin-bottom: 0; }
+.release::before {
+  content: "";
+  position: absolute;
+  left: -32px;
+  top: 28px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2.5px solid var(--border);
+  z-index: 1;
+  transition: all 0.3s;
+}
+.release:hover::before {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,169,97,0.12);
+}
+.release.latest::before {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(201,169,97,0.2);
+  animation: pulse-dot 3s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(201,169,97,0.2); }
+  50% { box-shadow: 0 0 0 7px rgba(201,169,97,0.08); }
+}
+
+/* ── 卡片 ── */
+.release-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 32px 24px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.release-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #D8D8D2;
+}
+.release.latest .release-card {
+  border-color: rgba(201,169,97,0.35);
+  background: linear-gradient(175deg, #FFFEF9 0%, #FFFFFF 60%);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(201,169,97,0.08);
+}
+.release.latest .release-card:hover {
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(201,169,97,0.12);
+}
+
+/* ── 卡片头部 ── */
+.release-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.version-tag {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  font-family: var(--mono);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+.release.latest .version-tag {
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(201,169,97,0.15);
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  line-height: 1.4;
+  white-space: nowrap;
+  background: var(--bg-muted);
+  color: var(--text-2);
+}
+.badge-latest {
+  background: linear-gradient(135deg, var(--gold) 0%, #D4B46A 100%);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(201,169,97,0.3);
+}
+.release-date {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--mono);
+  margin-left: auto;
+  letter-spacing: -0.2px;
+}
+
+/* ── 卡片正文 ── */
+.release-body {
+  margin-top: 12px;
+}
+.release-body > p:first-child,
+.release-body > blockquote {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+.release-body > p:first-child strong,
+.release-body > p:first-child b { color: var(--ink); font-weight: 600; }
+.release-body blockquote {
+  border-left: 3px solid var(--gold);
+  padding-left: 14px;
+  margin: 12px 0 0;
+  color: var(--text-2);
+  font-style: normal;
+}
+.release-body blockquote > p:first-child { margin-top: 0; }
+
+/* ── 分组（h3 成为分组标题） ── */
+.release-body h3 {
+  margin: 24px 0 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-2);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.release-body h3:first-child {
+  margin-top: 16px;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* 列表 */
+.release-body ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.release-body li {
+  position: relative;
+  padding: 8px 0 8px 22px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-1);
+}
+.release-body li + li {
+  border-top: 1px solid rgba(0,0,0,0.03);
+}
+.release-body li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 17px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+}
+.release-body li b, .release-body li strong { color: var(--ink); font-weight: 600; }
+.release-body li ul {
+  margin-top: 4px;
+  padding-left: 8px;
+}
+.release-body li li {
+  font-size: 12.5px;
+  color: var(--text-2);
+  padding: 4px 0 4px 18px;
+}
+.release-body li li + li { border-top: none; }
+.release-body li li::before {
+  background: var(--text-3);
+  width: 4px;
+  height: 4px;
+  top: 14px;
+}
+
+/* 段落 */
+.release-body p {
+  margin: 10px 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text-1);
+}
+.release-body p strong, .release-body p b { color: var(--ink); font-weight: 600; }
+
+/* 表格（File Structure） */
+.release-body table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin: 12px 0;
+}
+.release-body table tr:not(:last-child) td,
+.release-body table tr:not(:last-child) th { border-bottom: 1px solid var(--border); }
+.release-body table th, .release-body table td {
+  padding: 9px 14px;
+  vertical-align: top;
+  line-height: 1.55;
+  text-align: left;
+}
+.release-body table th {
+  background: var(--bg-muted);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-2);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.release-body table td:first-child {
+  width: 180px;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  background: #FAFAF7;
+  color: var(--ink-2);
+}
+.release-body table td code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+.release-body table tr:hover td { background: rgba(201,169,97,0.04); }
+.release-body table tr:hover td:first-child { background: rgba(201,169,97,0.06); }
+
+/* hr 作为版本分隔线 —— 在渲染时会被消化成 card 边界；这里兜底：
+   如果出现残留 hr，隐藏它（避免重复视觉分隔） */
+.release-body > hr,
+.timeline > hr,
+#changelog-body > hr {
+  display: none;
+}
+
+/* ── footer ── */
+.page-foot {
+  margin-top: 72px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ── 响应式 ── */
+@media (max-width: 640px) {
+  .page { padding: 28px 18px 60px; }
+  .page-title { font-size: 24px; }
+  .release-card { padding: 20px; }
+  .release-head { gap: 8px; }
+  .release-date { margin-left: 0; width: 100%; }
+  .version-tag { font-size: 18px; }
+  .release-body table td:first-child { width: auto; }
+}
+
+/* ==========================================================================
+   v1.11.0: 默认折叠（最新展开）+ 顶部工具栏
+   ========================================================================== */
+
+.changelog-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 20px;
+  padding: 10px 16px;
+  background: var(--bg-muted, #f5f5f2);
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.05);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.cl-tip {
+  font-size: 12.5px;
+  color: var(--text-3, #6B7280);
+}
+.cl-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+.cl-btn {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text-2, #4B5563);
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: inherit;
+}
+.cl-btn:hover {
+  background: var(--bg-card, #fff);
+  border-color: var(--gold, #C9A961);
+  color: var(--ink, #1A1D23);
+}
+
+/* 版本卡片头：可点击切换 */
+.release-head {
+  position: relative;
+}
+.release-head:hover {
+  /* 轻微提示这是可交互的 */
+  opacity: 0.92;
+}
+
+/* 展开/折叠箭头 */
+.release-caret {
+  font-size: 10px;
+  color: var(--text-3, #6B7280);
+  margin-left: 6px;
+  transition: transform 0.2s ease;
+  user-select: none;
+  display: inline-block;
+  transform: rotate(0deg);
+}
+.release.collapsed .release-caret {
+  transform: rotate(-90deg);
+}
+
+/* preview 段（始终可见，承载第一段 blockquote） */
+.release-preview {
+  margin-top: 12px;
+}
+.release-preview > blockquote {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-2, #4B5563);
+  line-height: 1.7;
+  border-left: 3px solid var(--gold, #C9A961);
+  padding: 8px 14px;
+  background: rgba(201, 169, 97, 0.04);
+  border-radius: 0 4px 4px 0;
+}
+.release-preview:empty { display: none; }
+
+/* body 折叠状态 */
+.release-body {
+  transition: max-height 0.3s ease, opacity 0.2s ease, margin-top 0.2s ease;
+}
+.release.collapsed .release-body {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 折叠状态下卡片整体更紧凑 */
+.release.collapsed .release-card {
+  padding-bottom: 16px;
+}
