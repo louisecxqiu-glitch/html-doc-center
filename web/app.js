@@ -144,7 +144,7 @@
       clearBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         recentClear();
-        toast("已清空最近列表", "info");
+        toast(window.i18n.t("toast.recent.cleared"), "info");
       });
     }
   }
@@ -153,6 +153,32 @@
     renderRecentSection();
     sidebarTabsCtl.refreshCounts && sidebarTabsCtl.refreshCounts();
   }
+
+  // ───────────── v1.12.0 语言切换器（侧栏底部 EN / 中文）─────────────
+  const langSwitcherCtl = {
+    init() {
+      const wrap = document.getElementById("lang-switcher");
+      if (!wrap || !window.i18n) return;
+      this.refreshActive();
+      wrap.addEventListener("click", (e) => {
+        const btn = e.target.closest(".lang-btn");
+        if (!btn) return;
+        const lang = btn.dataset.lang;
+        if (!lang) return;
+        window.i18n.setLang(lang);
+        // setLang 内部已经触发 applyDOM + dispatch 'langchange'
+        this.refreshActive();
+      });
+      // 监听其它途径的语言变更（如 console 调用），保持 UI 一致
+      window.addEventListener("langchange", () => this.refreshActive());
+    },
+    refreshActive() {
+      const cur = window.i18n ? window.i18n.getLang() : "en";
+      document.querySelectorAll("#lang-switcher .lang-btn").forEach(b => {
+        b.classList.toggle("active", b.dataset.lang === cur);
+      });
+    }
+  };
 
   // ───────────── v1.11.2 侧栏三 Tab 切换（收藏 / 最近 / 目录）─────────────
   const SIDEBAR_TAB_KEY = "doc_center_sidebar_tab_v1";
@@ -216,7 +242,7 @@
     }
     if (!silent) {
       const txt = theme === "auto" ? "自动跟随系统" : theme === "light" ? "浅色模式" : "深色模式";
-      toast(`主题：${txt}`, "info", null, 1500);
+      toast(window.i18n.t("toast.theme", { name: txt }), "info", null, 1500);
     }
   }
 
@@ -261,15 +287,15 @@
   async function copyText(text, label) {
     try {
       await navigator.clipboard.writeText(text);
-      toast(`${label} 已复制`, "success", text);
+      toast(window.i18n.t("toast.copy.done", { label: label }), "success", text);
     } catch (e) {
       // 剪贴板不可用 → 兜底用 textarea + execCommand
       const ta = document.createElement("textarea");
       ta.value = text;
       ta.style.position = "fixed"; ta.style.opacity = "0";
       document.body.appendChild(ta); ta.select();
-      try { document.execCommand("copy"); toast(`${label} 已复制`, "success", text); }
-      catch (_) { toast("复制失败", "error", e.message); }
+      try { document.execCommand("copy"); toast(window.i18n.t("toast.copy.done", { label: label }), "success", text); }
+      catch (_) { toast(window.i18n.t("toast.copy.failed"), "error", e.message); }
       ta.remove();
     }
   }
@@ -310,9 +336,9 @@
       });
       const d = await r.json();
       if (!d.ok) throw new Error(d.error || "reveal 失败");
-      toast("📂 已在 Finder 打开", "success");
+      toast(window.i18n.t("toast.finder.opened"), "success");
     } catch (e) {
-      toast("Finder 打开失败", "error", e.message);
+      toast(window.i18n.t("toast.finder.failed"), "error", e.message);
     }
   }
 
@@ -412,7 +438,7 @@
     try {
       const r = await fetch(API.tree({ sort: state.sortBy, force }));
       const d = await r.json();
-      if (!d.ok) throw new Error(d.error || "加载失败");
+      if (!d.ok) throw new Error(d.error || window.i18n.t("status.load_failed"));
       const newRoots = d.roots || [];
       if (silent && state.tree && state.tree.length > 0) {
         // v1.10.0: 静默刷新走 diff 路径，保持展开/选中/编辑态
@@ -427,8 +453,8 @@
         console.warn("[auto-refresh] tree fetch failed:", e.message);
         return;
       }
-      $("#tree").innerHTML = `<div class="tree-empty">加载失败：${e.message}</div>`;
-      toast("目录树加载失败", "error", e.message);
+      $("#tree").innerHTML = window.i18n.t("tree.load_failed_html", { msg: e.message });
+      toast(window.i18n.t("toast.tree.load_failed"), "error", e.message);
     }
   }
 
@@ -471,7 +497,7 @@
         displayName || absPath
       );
     } catch (e) {
-      toast("收藏失败", "error", e.message);
+      toast(window.i18n.t("toast.fav.failed"), "error", e.message);
     }
   }
 
@@ -591,7 +617,7 @@
           <div>还没有扫描目录</div>
           <button id="btn-empty-add" class="btn-empty-add">＋ 添加目录</button>
         </div>`;
-      $("#tree-stats").textContent = "0 个文件";
+      $("#tree-stats").textContent = window.i18n.t("tree.stats.empty");
       // 绑定空态按钮事件
       const emptyBtn = document.getElementById("btn-empty-add");
       if (emptyBtn) emptyBtn.addEventListener("click", openBrowseDialog);
@@ -602,7 +628,7 @@
       totalFiles += countFiles(root.children || []);
       container.appendChild(renderNode(root, /*depth*/ 0));
     }
-    $("#tree-stats").textContent = `${roots.length} 个根目录 · ${totalFiles} 个文档`;
+    $("#tree-stats").textContent = window.i18n.t("tree.stats.summary", { roots: roots.length, files: totalFiles });
     applySearchFilter();
   }
 
@@ -690,7 +716,7 @@
     // 更新统计
     let totalFiles = 0;
     for (const root of newRoots) totalFiles += countFiles(root.children || []);
-    $("#tree-stats").textContent = `${newRoots.length} 个根目录 · ${totalFiles} 个文档`;
+    $("#tree-stats").textContent = window.i18n.t("tree.stats.summary", { roots: newRoots.length, files: totalFiles });
 
     // 轻量提示（仅 console，不打扰用户）
     console.info(`[auto-refresh] +${added.length} -${removed.length}`);
@@ -960,7 +986,7 @@
         // dirty 文件不允许拖走（提前拦截，一行 class 都不碰，避免残留视觉）
         if (state.currentFile && state.currentFile.absPath === absPath && state.isDirty) {
           e.preventDefault();
-          toast("⚠️ 请先保存当前修改再移动此文件", "warning", absPath.split("/").pop());
+          toast(window.i18n.t("toast.move.save_first"), "warning", absPath.split("/").pop());
           return;
         }
         e.stopPropagation();
@@ -1022,17 +1048,17 @@
   async function handleDrop(srcPayload, dstDirAbs, dstDirName) {
     // 前端硬拦截：拖到自己 / 自己的子目录 / 同父目录（无效）
     if (srcPayload.path === dstDirAbs) {
-      toast("不能拖到自己", "warning");
+      toast(window.i18n.t("toast.move.self"), "warning");
       return;
     }
     if (srcPayload.type === "dir" && dstDirAbs.startsWith(srcPayload.path + "/")) {
-      toast("不能拖到自己的子目录", "warning");
+      toast(window.i18n.t("toast.move.into_self"), "warning");
       return;
     }
     // 同父目录检测
     const srcParent = srcPayload.path.split("/").slice(0, -1).join("/");
     if (srcParent === dstDirAbs) {
-      toast("已经在该目录下，无需移动", "info");
+      toast(window.i18n.t("toast.move.same_dir"), "info");
       return;
     }
 
@@ -1050,9 +1076,9 @@
       });
       if (!d.ok) {
         if (d.error === "conflict") {
-          toast("目标已存在同名，移动取消", "warning", d.message || d.conflict_path);
+          toast(window.i18n.t("toast.move.conflict"), "warning", d.message || d.conflict_path);
         } else {
-          toast("移动失败", "error", d.error || d.message);
+          toast(window.i18n.t("toast.move.failed"), "error", d.error || d.message);
         }
         return;
       }
@@ -1084,7 +1110,7 @@
         }
       });
     } catch (e) {
-      toast("移动失败", "error", e.message);
+      toast(window.i18n.t("toast.move.failed"), "error", e.message);
     }
   }
 
@@ -1269,7 +1295,7 @@
         n.classList.add("collapsed");
       }
     });
-    toast("已折叠所有文件夹", "info");
+    toast(window.i18n.t("toast.tree.collapsed_all"), "info");
   }
 
   // v1.10.6: iframe 加载失败兜底 UI（12s 超时未 ready 触发）
@@ -1308,7 +1334,7 @@
     const msg = $("#iframe-fallback-msg");
     if (msg && node) msg.textContent = node.name || node.path || "";
     fb.style.display = "flex";
-    setStatus("加载失败", "error");
+    setStatus(window.i18n.t("status.load_failed"), "error");
   }
 
   // ───────────── 打开文件 ─────────────
@@ -1338,7 +1364,7 @@
     const bc = $("#breadcrumb");
     const short = node.abs_path.replace(/^.*\/outputs\//, "outputs/");
     // v1.11.9: 路径变可点击，单击复制相对路径，长按 600ms 复制绝对路径
-    bc.innerHTML = `<b>${escapeHtml(node.name)}</b> <span class="bc-path" data-abs="${escapeHtml(node.abs_path)}" data-short="${escapeHtml(short)}" title="单击复制相对路径，按住复制绝对路径">${escapeHtml(short)}</span> <span id="bc-meta" class="bc-meta"></span>`;
+    bc.innerHTML = `<b>${escapeHtml(node.name)}</b> <span class="bc-path" data-abs="${escapeHtml(node.abs_path)}" data-short="${escapeHtml(short)}" title="${escapeHtml(window.i18n.t("breadcrumb.path_tooltip"))}">${escapeHtml(short)}</span> <span id="bc-meta" class="bc-meta"></span>`;
 
     // 绑定复制路径
     const pathEl = bc.querySelector(".bc-path");
@@ -1390,7 +1416,7 @@
     $("#btn-close-file").disabled = false;
     // v1.10.2: 启用历史按钮
     const bh = $("#btn-history"); if (bh) bh.disabled = false;
-    setStatus("加载中…", "");
+    setStatus(window.i18n.t("status.loading"), "");
 
     // v1.10.6: iframe 加载兜底 — 12 秒超时未拿到 ready 消息就显示重试 UI
     if (state._iframeLoadTimer) clearTimeout(state._iframeLoadTimer);
@@ -1469,16 +1495,16 @@
         // v1.10.6: 清掉加载超时计时器和 fallback UI
         if (state._iframeLoadTimer) { clearTimeout(state._iframeLoadTimer); state._iframeLoadTimer = null; }
         const fb = $("#iframe-fallback"); if (fb) fb.style.display = "none";
-        setStatus(msg.payload.hasExistingEditor ? "已就绪（原生编辑器）" : "已就绪（注入编辑器）", "clean");
-        if (state.currentFile) toast(`已打开：${state.currentFile.name}`, "success");
+        setStatus(msg.payload.hasExistingEditor ? window.i18n.t("status.ready_native") : window.i18n.t("status.ready_injected"), "clean");
+        if (state.currentFile) toast(window.i18n.t("toast.opened", { name: state.currentFile.name }), "success");
         break;
       case "dirty_changed":
         state.isDirty = !!msg.payload.dirty;
-        setStatus(state.isDirty ? "编辑中（2 秒后自动快照）" : "已保存", state.isDirty ? "dirty" : "clean");
+        setStatus(state.isDirty ? window.i18n.t("status.editing_will_snapshot") : window.i18n.t("status.saved"), state.isDirty ? "dirty" : "clean");
         break;
       case "snapshot_ok":
         state.lastSnapshotPath = msg.payload.snapshotPath;
-        setStatus("草稿已缓存 " + new Date().toLocaleTimeString(), "dirty");
+        setStatus(window.i18n.t("status.draft_cached", { time: new Date().toLocaleTimeString() }), "dirty");
         break;
       case "html_content":
         if (state._htmlResolve) {
@@ -1520,8 +1546,8 @@
     if (!frame || frame.style.display === "none") return;
     // 带 _t 时间戳破坏缓存
     frame.src = API.file(state.currentFile.absPath, { bust: true });
-    setStatus("刷新中…", "");
-    toast("🔄 正在重新加载文档", "info");
+    setStatus(window.i18n.t("status.refreshing"), "");
+    toast(window.i18n.t("toast.refresh.in_progress"), "info");
   }
 
   // ───────────── 保存对话框 ─────────────
@@ -1561,7 +1587,7 @@
     let content = null;
     if (mode !== "discard") {
       content = await requestHTMLFromIframe();
-      if (!content) { toast("读取 iframe 内容失败", "error"); return; }
+      if (!content) { toast(window.i18n.t("toast.iframe.read_failed"), "error"); return; }
     }
 
     try {
@@ -1571,20 +1597,20 @@
         body: JSON.stringify({ path: file.absPath, mode, content }),
       });
       const d = await r.json();
-      if (!d.ok) throw new Error(d.error || "保存失败");
+      if (!d.ok) throw new Error(d.error || window.i18n.t("toast.save.failed"));
 
       if (mode === "overwrite") {
-        toast("✅ 已覆盖源文件", "success", d.saved_to);
+        toast(window.i18n.t("toast.save.overwrite_done"), "success", d.saved_to);
       } else if (mode === "new") {
         try { await navigator.clipboard.writeText(d.saved_to); } catch (_) {}
-        toast("🆕 新版本已生成 · 路径已复制到剪贴板", "success", d.saved_to);
+        toast(window.i18n.t("toast.save.new_done"), "success", d.saved_to);
         await loadTree(true);
       } else {
-        toast("🗑 已丢弃本次修改", "warning");
+        toast(window.i18n.t("toast.save.discard_done"), "warning");
       }
       markIframeClean();
     } catch (e) {
-      toast("保存失败", "error", e.message);
+      toast(window.i18n.t("toast.save.failed"), "error", e.message);
     }
   }
 
@@ -1601,8 +1627,8 @@
     $("#empty-state").style.display = "flex";
     $("#doc-frame").style.display = "none";
     $("#doc-frame").src = "about:blank";
-    $("#breadcrumb").innerHTML = '<span class="breadcrumb-empty">👈 左侧选择一个 HTML 文档开始</span>';
-    setStatus("未打开", "");
+    $("#breadcrumb").innerHTML = window.i18n.t("breadcrumb.empty_html");
+    setStatus(window.i18n.t("header.status.unopened"), "");
     $("#btn-close-file").disabled = true;
     // v1.10.2: 禁用历史按钮
     const bh = $("#btn-history"); if (bh) bh.disabled = true;
@@ -1616,7 +1642,7 @@
   async function openSettings() {
     const r = await fetch(API.config);
     const d = await r.json();
-    if (!d.ok) { toast("读取配置失败", "error"); return; }
+    if (!d.ok) { toast(window.i18n.t("toast.config.read_failed"), "error"); return; }
     renderScanRoots(d.config.scan_roots || []);
     // v1.10.0: 自动刷新周期 select 初值
     const sel = $("#setting-auto-refresh");
@@ -1639,7 +1665,7 @@
     const list = $("#scan-roots-list");
     list.innerHTML = "";
     if (!roots.length) {
-      list.innerHTML = `<div style="font-size:12px;color:var(--text-3);padding:10px 0">还没有扫描目录</div>`;
+      list.innerHTML = window.i18n.t("scan.empty_html");
       return;
     }
 
@@ -1674,7 +1700,7 @@
     if (enabledList.length && disabledList.length) {
       const divider = document.createElement("div");
       divider.className = "root-group-divider";
-      divider.textContent = `⏸ 已关闭（${disabledList.length}，不扫描）`;
+      divider.textContent = window.i18n.t("scan.disabled_divider", { count: disabledList.length });
       list.appendChild(divider);
     }
 
@@ -1709,7 +1735,7 @@
       });
       await updateRoots(updated);
     } catch (e) {
-      toast("开关切换失败", "error", e.message);
+      toast(window.i18n.t("toast.scan.toggle_failed"), "error", e.message);
     }
   }
 
@@ -1719,10 +1745,10 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ scan_roots: newRoots }),
     });
-    if (!d.ok) { toast("配置更新失败", "error", d.error); throw new Error(d.error || "update failed"); }
+    if (!d.ok) { toast(window.i18n.t("toast.scan.update_failed"), "error", d.error); throw new Error(d.error || "update failed"); }
     renderScanRoots(d.config.scan_roots || []);
     await loadTree(true);
-    toast("扫描目录已更新", "success", "目录树已刷新");
+    toast(window.i18n.t("toast.scan.updated"), "success", window.i18n.t("toast.scan.tree_refreshed"));
   }
 
   async function addRoot() {
@@ -1733,8 +1759,8 @@
 
     // 即时反馈：禁用按钮 + 加载态
     btn.disabled = true;
-    btn.textContent = "添加中…";
-    toast("正在添加目录…", "info");
+    btn.textContent = window.i18n.t("scan.btn.adding");
+    toast(window.i18n.t("toast.scan.adding"), "info");
 
     try {
       const cur = await safeFetchJson(API.config);
@@ -1747,7 +1773,7 @@
         const ep = typeof item === "string" ? item : item.path;
         return normalize(ep) === np;
       });
-      if (existing) { toast("该目录已存在", "warning"); return; }
+      if (existing) { toast(window.i18n.t("toast.scan.exists"), "warning"); return; }
 
       roots.push({ path: p, enabled: true });
       await updateRoots(roots);
@@ -1755,15 +1781,15 @@
       // 添加成功后确保侧边栏可见，让用户看到刷新后的目录树
       sidebarCtl.show(true);
     } catch (e) {
-      toast("添加失败", "error", e.message);
+      toast(window.i18n.t("toast.scan.add_failed"), "error", e.message);
     } finally {
       btn.disabled = false;
-      btn.textContent = "添加";
+      btn.textContent = window.i18n.t("scan.btn.add");
     }
   }
 
   async function removeRoot(p) {
-    if (!confirm("从扫描列表移除：\n" + p + "\n\n（只是移除不显示，不会删除文件）")) return;
+    if (!confirm(window.i18n.t("confirm.scan.remove", { path: p }))) return;
     try {
       const cur = await safeFetchJson(API.config);
       const roots = (cur.config.scan_roots || []).filter(item =>
@@ -1773,7 +1799,7 @@
       // 成功后确保侧边栏可见，让用户看到最新目录树
       sidebarCtl.show(true);
     } catch (e) {
-      toast("移除失败", "error", e.message);
+      toast(window.i18n.t("toast.scan.remove_failed"), "error", e.message);
     }
   }
 
@@ -1794,7 +1820,7 @@
 
   async function browseTo(path) {
     const list = $("#browse-list");
-    list.innerHTML = '<div class="browse-loading">加载中…</div>';
+    list.innerHTML = window.i18n.t("browse.loading_html");
     try {
       const r = await fetch(API.browse(path));
       const d = await r.json();
@@ -1802,14 +1828,14 @@
       renderBrowseBreadcrumb(d.current, d.is_root);
       renderBrowseList(d.dirs, d.current, d.parent, d.is_root);
     } catch (e) {
-      list.innerHTML = `<div class="browse-empty">❌ 请求失败: ${e.message}</div>`;
+      list.innerHTML = window.i18n.t("browse.request_failed_html", { msg: e.message });
     }
   }
 
   function renderBrowseBreadcrumb(current, isRoot) {
     const bc = $("#browse-breadcrumb");
     if (isRoot || !current) {
-      bc.innerHTML = '<span class="bc-item bc-active">📍 快捷入口</span>';
+      bc.innerHTML = window.i18n.t("browse.shortcut_label_html");
       return;
     }
     const parts = current.split("/").filter(Boolean);
@@ -1836,7 +1862,7 @@
     list.innerHTML = "";
 
     if (!dirs.length) {
-      list.innerHTML = '<div class="browse-empty">此目录下没有子文件夹</div>';
+      list.innerHTML = window.i18n.t("browse.empty_dir_html");
       return;
     }
 
@@ -1844,7 +1870,7 @@
     if (!isRoot && parent) {
       const upRow = document.createElement("div");
       upRow.className = "browse-item browse-item-up";
-      upRow.innerHTML = '<span class="browse-icon">⬆️</span><span class="browse-name">返回上级</span>';
+      upRow.innerHTML = window.i18n.t("browse.up_html");
       upRow.addEventListener("click", () => browseTo(parent));
       list.appendChild(upRow);
     }
@@ -1877,7 +1903,7 @@
   function selectBrowsePath(path) {
     _browseSelected = path;
     const sel = $("#browse-selected");
-    sel.textContent = "已选：" + path;
+    sel.textContent = window.i18n.t("browse.selected", { path: path });
     sel.title = path;
     $("#browse-confirm").disabled = false;
 
@@ -1948,19 +1974,19 @@
 
     async function open() {
       if (!state.currentFile) {
-        toast("请先打开一个文件", "error");
+        toast(window.i18n.t("toast.history.open_first"), "error");
         return;
       }
       $("#history-current-name").textContent = state.currentFile.name;
       $("#history-drawer").style.display = "block";
-      $("#history-list").innerHTML = '<div class="history-empty">加载中…</div>';
+      $("#history-list").innerHTML = window.i18n.t("history.dyn.loading_html");
       try {
         const r = await fetch("/api/history?path=" + encodeURIComponent(state.currentFile.absPath));
         const d = await r.json();
-        if (!d.ok) throw new Error(d.error || "加载失败");
+        if (!d.ok) throw new Error(d.error || window.i18n.t("status.load_failed"));
         render(d.items || []);
       } catch (e) {
-        $("#history-list").innerHTML = '<div class="history-empty">加载失败：' + e.message + '</div>';
+        $("#history-list").innerHTML = window.i18n.t("history.dyn.load_failed_html", { msg: e.message });
       }
     }
 
@@ -1971,7 +1997,7 @@
     function render(items) {
       const list = $("#history-list");
       if (items.length === 0) {
-        list.innerHTML = '<div class="history-empty">还没有历史版本<br>编辑此文件 2 秒后会自动生成快照</div>';
+        list.innerHTML = window.i18n.t("history.dyn.empty_html");
         return;
       }
       // v1.11.7: 顶部时光机快捷条（"回到 N 分钟前"）
@@ -2063,7 +2089,7 @@
         const a = d.lines_added || 0;
         const r_ = d.lines_removed || 0;
         if (a === 0 && r_ === 0) {
-          diffEl.innerHTML = ' · <span class="history-diff-eq">行内容相同</span>';
+          diffEl.innerHTML = window.i18n.t("history.dyn.diff_same_html");
         } else {
           diffEl.innerHTML = ' · '
             + (a > 0 ? `<span class="history-diff-add">+${a} 行</span>` : '')
@@ -2087,7 +2113,7 @@
         iframe.srcdoc = d.content;
         $("#history-preview-dialog").style.display = "flex";
       } catch (e) {
-        toast("预览失败", "error", e.message);
+        toast(window.i18n.t("toast.history.preview_failed"), "error", e.message);
       }
     }
 
@@ -2099,7 +2125,7 @@
 
     async function restore(snapPath, name) {
       if (!state.currentFile) return;
-      const ok = confirm(`确定将「${name}」的内容恢复为当前文件吗？\n\n· 当前文件内容会先被备份为 pre-restore 快照\n· 操作可通过再次恢复 pre-restore 撤销`);
+      const ok = confirm(window.i18n.t("confirm.history.restore", { name: name }));
       if (!ok) return;
       try {
         const r = await fetch("/api/restore", {
@@ -2111,14 +2137,14 @@
           }),
         });
         const d = await r.json();
-        if (!d.ok) throw new Error(d.error || "恢复失败");
-        toast("✓ 已恢复", "success", "原内容已备份为 pre-restore");
+        if (!d.ok) throw new Error(d.error || window.i18n.t("toast.history.restore_failed"));
+        toast(window.i18n.t("toast.history.restored"), "success", window.i18n.t("toast.history.restored.detail"));
         close();
         closePreview();
         // 重新加载 iframe（带 cache-bust）
         refreshCurrentFile();
       } catch (e) {
-        toast("恢复失败", "error", e.message);
+        toast(window.i18n.t("toast.history.restore_failed"), "error", e.message);
       }
     }
 
@@ -2185,11 +2211,11 @@
             body: JSON.stringify({ tree_auto_refresh_seconds: sec }),
           });
           const d = await r.json();
-          if (!d.ok) throw new Error(d.error || "保存失败");
+          if (!d.ok) throw new Error(d.error || window.i18n.t("toast.save.failed"));
           startAutoRefresh(sec);
-          toast(sec === 0 ? "自动刷新已关闭" : `自动刷新：每 ${sec} 秒`, "success");
+          toast(sec === 0 ? window.i18n.t("toast.refresh.off") : window.i18n.t("toast.refresh.on", { sec: sec }), "success");
         } catch (err) {
-          toast("保存配置失败", "error", err.message);
+          toast(window.i18n.t("toast.config.save_failed"), "error", err.message);
         }
       });
     }
@@ -2206,10 +2232,10 @@
             body: JSON.stringify({ snapshot_retention_days: days }),
           });
           const d = await r.json();
-          if (!d.ok) throw new Error(d.error || "保存失败");
-          toast(`快照保留：${days} 天`, "success", "下次启动 / 手动清理时按此规则");
+          if (!d.ok) throw new Error(d.error || window.i18n.t("toast.save.failed"));
+          toast(window.i18n.t("toast.snapshot.retention", { days: days }), "success", window.i18n.t("toast.snapshot.retention.detail"));
         } catch (err) {
-          toast("保存配置失败", "error", err.message);
+          toast(window.i18n.t("toast.config.save_failed"), "error", err.message);
         }
       });
     }
@@ -2217,18 +2243,18 @@
     if (cleanBtn) {
       cleanBtn.addEventListener("click", async () => {
         const result = $("#cleanup-result");
-        if (result) result.textContent = "清理中…";
+        if (result) result.textContent = window.i18n.t("toast.cleanup.in_progress");
         cleanBtn.disabled = true;
         try {
           const r = await fetch("/api/cleanup-snapshots", { method: "POST" });
           const d = await r.json();
-          if (!d.ok) throw new Error(d.error || "清理失败");
+          if (!d.ok) throw new Error(d.error || window.i18n.t("toast.cleanup.failed"));
           const msg = `扫描 ${d.scanned_dirs} 目录，移除 ${d.removed} 个 >${d.retention_days} 天快照`;
           if (result) result.textContent = "✓ " + msg;
-          toast("✓ 清理完成", "success", msg);
+          toast(window.i18n.t("toast.cleanup.done"), "success", msg);
         } catch (err) {
           if (result) result.textContent = "✗ " + err.message;
-          toast("清理失败", "error", err.message);
+          toast(window.i18n.t("toast.cleanup.failed"), "error", err.message);
         } finally {
           cleanBtn.disabled = false;
         }
@@ -2240,18 +2266,18 @@
     if (sparsifyBtn) {
       sparsifyBtn.addEventListener("click", async () => {
         const result = $("#sparsify-result");
-        if (result) result.textContent = "稀释中…";
+        if (result) result.textContent = window.i18n.t("toast.sparsify.in_progress");
         sparsifyBtn.disabled = true;
         try {
           const r = await fetch("/api/sparsify-snapshots", { method: "POST" });
           const d = await r.json();
-          if (!d.ok) throw new Error(d.error || "稀释失败");
+          if (!d.ok) throw new Error(d.error || window.i18n.t("toast.sparsify.failed"));
           const msg = `${d.scanned_dirs} 目录 · 移除 ${d.removed}/${d.before} 条 · 保留 ${d.kept} 条`;
           if (result) result.textContent = "✓ " + msg;
-          toast("🪶 稀释完成", "success", msg);
+          toast(window.i18n.t("toast.sparsify.done"), "success", msg);
         } catch (err) {
           if (result) result.textContent = "✗ " + err.message;
-          toast("稀释失败", "error", err.message);
+          toast(window.i18n.t("toast.sparsify.failed"), "error", err.message);
         } finally {
           sparsifyBtn.disabled = false;
         }
@@ -2289,7 +2315,7 @@
           localStorage.setItem("doc_center_sort", state.sortBy);
           refreshSortMenu();
           await loadTree(true);
-          toast(state.sortBy === "mtime_desc" ? "按最近修改排序" : "按名称排序", "info");
+          toast(state.sortBy === "mtime_desc" ? window.i18n.t("toast.sort.mtime") : window.i18n.t("toast.sort.name"), "info");
         }
         sortMenu.style.display = "none";
         btnSort.classList.remove("active");
@@ -2426,7 +2452,7 @@
         // v1.10.5: R = 刷新（与顶栏 🔄 等价）
         e.preventDefault();
         loadTree(true); refreshCurrentFile();
-        toast("已刷新", "info", null, 1500);
+        toast(window.i18n.t("toast.refreshed"), "info", null, 1500);
       } else if (!isTyping && !modOk && e.key === "/") {
         // v1.10.5: / = 聚焦搜索框
         const sb = $("#search-box");
@@ -2523,12 +2549,14 @@
   // ───────────── 启动 ─────────────
   async function init() {
     bindEvents();
+    // v1.12.0: 初始化语言切换器（侧栏底部 EN / 中文）
+    langSwitcherCtl.init();
     // v1.6: 先加载收藏（侧边栏顶部分组要用）
     await loadFavorites();
     // v1.10.7: 加载最近打开列表（localStorage）
     loadRecent();
     await loadTree();
-    setStatus("未打开", "");
+    setStatus(window.i18n.t("header.status.unopened"), "");
 
     // F3 尝试恢复上次会话（如有则自动打开文件）
     await tryRestoreLastSession();

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HTML Document Center · 本地文档工作台</title>
-  <link rel="stylesheet" href="/static/style.css?v=1.7.0" />
+  <title data-i18n="meta.title">HTML Document Center · Local Workbench</title>
+  <link rel="stylesheet" href="/static/style.css?v=1.12.0" />
   <script>
     // v1.10.10: 主题早期恢复（避免页面闪烁）。三态：auto / light / dark
     (function() {
@@ -17,13 +17,17 @@
       }
     })();
   </script>
+  <!-- v1.12.0: i18n engine + locale dictionaries (must be loaded BEFORE app.js) -->
+  <script src="/static/locales/en.js?v=1.12.0"></script>
+  <script src="/static/locales/zh.js?v=1.12.0"></script>
+  <script src="/static/i18n.js?v=1.12.0"></script>
 </head>
 <body>
   <!-- 顶部：单栏 44px 承载所有功能 -->
   <header class="topbar">
-    <button id="btn-toggle-sidebar" class="btn-sidebar-toggle" title="显示/隐藏目录（⌘B）">
+    <button id="btn-toggle-sidebar" class="btn-sidebar-toggle" data-i18n-title="header.toggle_sidebar" title="Show / hide sidebar (⌘B)">
       <span class="burger">≡</span>
-      <span class="label">目录</span>
+      <span class="label" data-i18n="header.label.files">Files</span>
       <kbd>⌘B</kbd>
     </button>
     <div class="brand-mini">
@@ -32,27 +36,27 @@
     </div>
     <div class="topbar-sep"></div>
     <div class="breadcrumb" id="breadcrumb">
-      <span class="breadcrumb-empty">从左侧目录选一个 HTML / Markdown 开始</span>
+      <span class="breadcrumb-empty" data-i18n="header.breadcrumb.empty">Pick an HTML / Markdown file from the sidebar to begin</span>
     </div>
     <div class="editor-status">
       <span class="status-dot" id="status-dot"></span>
-      <span id="status-text">未打开</span>
+      <span id="status-text" data-i18n="header.status.unopened">Not opened</span>
     </div>
-    <div class="zoom-group" title="文档缩放">
-      <button class="zoom-btn" data-zoom="25" title="鸟瞰 25%">25%</button>
-      <button class="zoom-btn" data-zoom="50" title="50%">50%</button>
-      <button class="zoom-btn active" data-zoom="75" title="舒适阅读 75%">75%</button>
-      <button class="zoom-btn" data-zoom="100" title="实际尺寸 100%">100%</button>
-      <button class="zoom-btn" data-zoom="125" title="125%">125%</button>
-      <button class="zoom-btn" data-zoom="150" title="150%">150%</button>
+    <div class="zoom-group" data-i18n-title="header.zoom.tooltip" title="Document zoom">
+      <button class="zoom-btn" data-zoom="25" data-i18n-title="header.zoom.25" title="Bird-eye 25%">25%</button>
+      <button class="zoom-btn" data-zoom="50" data-i18n-title="header.zoom.50" title="50%">50%</button>
+      <button class="zoom-btn active" data-zoom="75" data-i18n-title="header.zoom.75" title="Comfortable 75%">75%</button>
+      <button class="zoom-btn" data-zoom="100" data-i18n-title="header.zoom.100" title="Actual size 100%">100%</button>
+      <button class="zoom-btn" data-zoom="125" data-i18n-title="header.zoom.125" title="125%">125%</button>
+      <button class="zoom-btn" data-zoom="150" data-i18n-title="header.zoom.150" title="150%">150%</button>
     </div>
-    <button id="btn-close-file" class="btn-close" disabled title="关闭当前文档">✕</button>
+    <button id="btn-close-file" class="btn-close" disabled data-i18n-title="header.close_file" title="Close current document">✕</button>
     <div class="topbar-actions">
-      <button id="btn-history" title="历史版本（H）" disabled>🕐</button>
-      <button id="btn-refresh" title="刷新（R）">🔄</button>
-      <button id="btn-theme" title="切换主题（自动/浅色/深色）">🌓</button>
-      <button id="btn-help" title="键盘快捷键（?）">⌨️</button>
-      <button id="btn-settings" title="设置">⚙️</button>
+      <button id="btn-history" data-i18n-title="btn.history" title="History (H)" disabled>🕐</button>
+      <button id="btn-refresh" data-i18n-title="btn.refresh" title="Refresh (R)">🔄</button>
+      <button id="btn-theme" data-i18n-title="btn.theme" title="Toggle theme">🌓</button>
+      <button id="btn-help" data-i18n-title="btn.help" title="Keyboard shortcuts (?)">⌨️</button>
+      <button id="btn-settings" data-i18n-title="btn.settings" title="Settings">⚙️</button>
     </div>
   </header>
 
@@ -63,33 +67,39 @@
     <!-- 左侧：推挤式目录（默认宽度 0） -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <input type="search" id="search-box" placeholder="搜索文件名/路径…（Esc 收起）" />
+        <input type="search" id="search-box" data-i18n-placeholder="sidebar.search.placeholder" placeholder="Search file name / path… (Esc to close)" />
         <!-- v1.11.2: 排序按钮（弹出菜单）+ '+' 已搬到设置面板 -->
         <div class="sort-btn-wrap">
-          <button id="btn-sort" class="btn-sort" title="排序方式">⇅</button>
+          <button id="btn-sort" class="btn-sort" data-i18n-title="sidebar.sort.tooltip" title="Sort order">⇅</button>
           <div id="sort-menu" class="sort-menu" style="display:none;">
-            <button data-sort="mtime_desc" class="sort-menu-item">🕒 最近修改</button>
-            <button data-sort="name_asc" class="sort-menu-item">🔤 名称</button>
+            <button data-sort="mtime_desc" class="sort-menu-item" data-i18n="sidebar.sort.mtime_desc">🕒 Recently modified</button>
+            <button data-sort="name_asc" class="sort-menu-item" data-i18n="sidebar.sort.name_asc">🔤 Name</button>
           </div>
         </div>
       </div>
       <div id="search-stat" class="search-stat"></div>
       <!-- v1.11.2: 三 Tab 切换（收藏 / 最近 / 目录） -->
       <div class="sidebar-tabs" id="sidebar-tabs">
-        <button class="sidebar-tab" data-tab="tree">📁 目录</button>
-        <button class="sidebar-tab" data-tab="favorites">⭐ 收藏 <span class="tab-count" id="tab-count-fav"></span></button>
-        <button class="sidebar-tab" data-tab="recent">🕐 最近 <span class="tab-count" id="tab-count-recent"></span></button>
+        <button class="sidebar-tab" data-tab="tree" data-i18n="sidebar.tab.tree">📁 Files</button>
+        <button class="sidebar-tab" data-tab="favorites"><span data-i18n="sidebar.tab.favorites">⭐ Favorites</span> <span class="tab-count" id="tab-count-fav"></span></button>
+        <button class="sidebar-tab" data-tab="recent"><span data-i18n="sidebar.tab.recent">🕐 Recent</span> <span class="tab-count" id="tab-count-recent"></span></button>
       </div>
       <!-- 三个 Tab 内容容器（同一时间只显示一个，由 .sidebar-pane.active 控制） -->
       <div id="favorites-section" class="favorites-section sidebar-pane" data-pane="favorites"></div>
       <div id="recent-section" class="recent-section sidebar-pane" data-pane="recent"></div>
       <nav class="tree sidebar-pane" id="tree" data-pane="tree"></nav>
       <div class="sidebar-footer">
-        <span id="tree-stats">加载中…</span>
-        <button id="btn-collapse-all" class="btn-collapse-folders" title="折叠目录树中所有文件夹（不会隐藏侧边栏）">
+        <span id="tree-stats" data-i18n="sidebar.stats.loading">Loading…</span>
+        <button id="btn-collapse-all" class="btn-collapse-folders" data-i18n-title="sidebar.collapse_all.tooltip" title="Collapse every folder (sidebar stays open)">
           <span class="icon">🗂</span>
-          <span>折叠所有文件夹</span>
+          <span data-i18n="sidebar.collapse_all">Collapse all folders</span>
         </button>
+      </div>
+      <!-- v1.12.0: language switcher (sidebar bottom) -->
+      <div class="lang-switcher" id="lang-switcher" role="group" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <span class="lang-divider">|</span>
+        <button type="button" class="lang-btn" data-lang="zh">中文</button>
       </div>
     </aside>
 
@@ -101,12 +111,12 @@
       <div class="editor-body">
         <div class="empty-state" id="empty-state">
           <div class="empty-icon">📄</div>
-          <h2>本地 HTML 文档工作台</h2>
-          <p>从左侧目录选择一个 HTML 文件，自动启用编辑/批注能力。</p>
+          <h2 data-i18n="welcome.title">Local HTML Document Workbench</h2>
+          <p data-i18n="welcome.subtitle">Pick an HTML file from the sidebar — editing / annotation is enabled automatically.</p>
           <ul>
-            <li>编辑/批注后 <b>2 秒自动保存</b>到 <code>_auto-save/</code></li>
-            <li>关闭或切换时可选 <b>覆盖源文件</b> 或 <b>另存新版本</b></li>
-            <li>另存后路径自动复制到剪贴板</li>
+            <li data-i18n-html="welcome.bullet.autosave">Edits and annotations <b>auto-save in 2 seconds</b> to <code>_auto-save/</code></li>
+            <li data-i18n-html="welcome.bullet.choice">On close or switch you can <b>overwrite source</b> or <b>save as new version</b></li>
+            <li data-i18n-html="welcome.bullet.clipboard">After "save as new", the path is copied to your clipboard</li>
           </ul>
         </div>
         <iframe id="doc-frame" style="display:none;"></iframe>
@@ -117,23 +127,23 @@
   <!-- 关闭/切换对话框 -->
   <div class="modal-backdrop" id="save-dialog" style="display:none;">
     <div class="modal">
-      <h3>这份文档有未保存的修改</h3>
+      <h3 data-i18n="dlg.save.title">This document has unsaved changes</h3>
       <p id="dialog-file-name" class="modal-sub"></p>
       <div class="modal-actions">
         <button class="btn-primary" id="dlg-overwrite">
-          <b>覆盖源文件</b>
-          <small>合入修改，清理草稿</small>
+          <b data-i18n="dlg.save.overwrite">Overwrite source</b>
+          <small data-i18n="dlg.save.overwrite.desc">Apply changes to the original file, clean up drafts</small>
         </button>
         <button class="btn-secondary" id="dlg-new">
-          <b>另存新版本</b>
-          <small>生成 -审阅版-时间戳（扩展名跟随源文件），路径复制到剪贴板</small>
+          <b data-i18n="dlg.save.new">Save as new version</b>
+          <small data-i18n="dlg.save.new.desc">Create a -review-{timestamp} copy (same extension), path copied to clipboard</small>
         </button>
         <button class="btn-danger" id="dlg-discard">
-          <b>丢弃</b>
-          <small>仅清理草稿，源文件不动</small>
+          <b data-i18n="dlg.save.discard">Discard</b>
+          <small data-i18n="dlg.save.discard.desc">Drop drafts only, source file untouched</small>
         </button>
       </div>
-      <button class="modal-close" id="dlg-cancel">取消</button>
+      <button class="modal-close" id="dlg-cancel" data-i18n="btn.cancel">Cancel</button>
     </div>
   </div>
 
@@ -141,64 +151,63 @@
   <div class="modal-backdrop" id="settings-dialog" style="display:none;">
     <div class="modal modal-wide modal-scrollable">
       <div class="modal-head">
-        <h3>⚙️ 设置</h3>
-        <button class="modal-close" id="settings-close">关闭</button>
+        <h3 data-i18n="settings.title">⚙️ Settings</h3>
+        <button class="modal-close" id="settings-close" data-i18n="btn.close">Close</button>
       </div>
       <div class="modal-scroll">
         <div class="settings-section">
-          <h4>扫描目录</h4>
+          <h4 data-i18n="settings.scan.title">Scan directories</h4>
           <div id="scan-roots-list"></div>
           <div class="scan-add">
-            <input type="text" id="new-root-input" placeholder="绝对路径，例如 /Users/.../reports" />
-            <button id="btn-browse-root" class="btn-browse" title="浏览文件夹">📂</button>
-            <button id="btn-add-root" class="btn-primary">添加</button>
+            <input type="text" id="new-root-input" data-i18n-placeholder="settings.scan.placeholder" placeholder="Absolute path, e.g. /Users/.../reports" />
+            <button id="btn-browse-root" class="btn-browse" data-i18n-title="settings.scan.browse" title="Browse folders">📂</button>
+            <button id="btn-add-root" class="btn-primary" data-i18n="btn.add">Add</button>
           </div>
-          <p class="hint">默认扫描 <code>outputs/</code>。可添加任意目录，实时扫描 HTML / Markdown 文件。</p>
+          <p class="hint" data-i18n-html="settings.scan.hint">Defaults to <code>outputs/</code>. Add any directory to scan HTML / Markdown in real time.</p>
         </div>
         <div class="settings-section">
-          <h4>📡 目录树自动刷新</h4>
+          <h4 data-i18n="settings.refresh.title">📡 Tree auto-refresh</h4>
           <div class="settings-row">
-            <label for="setting-auto-refresh">刷新周期</label>
+            <label for="setting-auto-refresh" data-i18n="settings.refresh.label">Refresh interval</label>
             <select id="setting-auto-refresh">
-              <option value="0">关闭</option>
-              <option value="5">5 秒</option>
-              <option value="10">10 秒</option>
-              <option value="30">30 秒</option>
-              <option value="60">60 秒</option>
+              <option value="0" data-i18n="settings.refresh.off">Off</option>
+              <option value="5" data-i18n="settings.refresh.5s">5 seconds</option>
+              <option value="10" data-i18n="settings.refresh.10s">10 seconds</option>
+              <option value="30" data-i18n="settings.refresh.30s">30 seconds</option>
+              <option value="60" data-i18n="settings.refresh.60s">60 seconds</option>
             </select>
-            <span class="settings-hint">页面隐藏时自动暂停，不打扰当前编辑</span>
+            <span class="settings-hint" data-i18n="settings.refresh.hint_pause">Pauses while the page is hidden — never disturbs your edits</span>
           </div>
-          <p class="hint">新增/删除文件后，侧边栏会在周期内自动出现/消失，无需手动按 🔄。</p>
+          <p class="hint" data-i18n="settings.refresh.hint_full">After adding / removing files, the sidebar updates within the interval. No manual 🔄 needed.</p>
         </div>
         <div class="settings-section">
-          <h4>🗂 自动快照管理</h4>
+          <h4 data-i18n="settings.snapshot.title">🗂 Auto-snapshot management</h4>
           <div class="settings-row">
-            <label for="setting-retention">保留天数</label>
+            <label for="setting-retention" data-i18n="settings.snapshot.label_retention">Retention days</label>
             <select id="setting-retention">
-              <option value="3">3 天</option>
-              <option value="7">7 天</option>
-              <option value="14">14 天</option>
-              <option value="30">30 天</option>
-              <option value="90">90 天</option>
+              <option value="3" data-i18n="settings.snapshot.3d">3 days</option>
+              <option value="7" data-i18n="settings.snapshot.7d">7 days</option>
+              <option value="14" data-i18n="settings.snapshot.14d">14 days</option>
+              <option value="30" data-i18n="settings.snapshot.30d">30 days</option>
+              <option value="90" data-i18n="settings.snapshot.90d">90 days</option>
             </select>
-            <span class="settings-hint">每次启动 / 手动清理时移除 N 天前的快照</span>
+            <span class="settings-hint" data-i18n="settings.snapshot.hint_retention">Snapshots older than N days are removed on startup / manual cleanup</span>
           </div>
           <div class="settings-row">
-            <button id="btn-cleanup-snapshots" class="btn-primary">🧹 立即清理过期快照</button>
+            <button id="btn-cleanup-snapshots" class="btn-primary" data-i18n="settings.snapshot.cleanup">🧹 Clean expired snapshots now</button>
             <span class="settings-hint" id="cleanup-result"></span>
           </div>
           <!-- v1.11.6: 梯度稀释快照（避免时间线爆炸） -->
           <div class="settings-row">
-            <button id="btn-sparsify-snapshots" class="btn-secondary">🪶 稀释密集快照</button>
+            <button id="btn-sparsify-snapshots" class="btn-secondary" data-i18n="settings.snapshot.sparsify">🪶 Sparsify dense snapshots</button>
             <span class="settings-hint" id="sparsify-result"></span>
           </div>
-          <p class="hint">自动快照默认存于 <code>{原目录}/_auto-save/</code>，pre-overwrite/pre-restore 备份保留至到期。<br>
-          <strong>稀释规则</strong>：最近 10 分钟全保 / 10-60 分钟每分钟 / 1-24 小时每小时 / >24 小时每天。</p>
+          <p class="hint" data-i18n-html="settings.snapshot.hint_storage">Snapshots live at <code>{originalDir}/_auto-save/</code>. Pre-overwrite / pre-restore backups are retained until expiration.<br><strong>Sparsify rule</strong>: keep all from the last 10 minutes / 1 per minute for 10–60 minutes / 1 per hour for 1–24 hours / 1 per day older than 24 hours.</p>
         </div>
         <div class="settings-section">
-          <h4>关于</h4>
-          <button id="btn-view-changelog" class="btn-link">📖 查看完整更新日志</button>
-          <p class="hint">时间轴形式展示每个版本的功能、优化和修复</p>
+          <h4 data-i18n="settings.about.title">About</h4>
+          <button id="btn-view-changelog" class="btn-link" data-i18n="settings.about.changelog">📖 View full changelog</button>
+          <p class="hint" data-i18n="settings.about.changelog_hint">A timeline view of every version with features, polish, and fixes</p>
         </div>
       </div>
     </div>
@@ -207,14 +216,14 @@
   <!-- 目录浏览弹窗 -->
   <div class="modal-backdrop" id="browse-dialog" style="display:none;">
     <div class="modal modal-wide browse-modal">
-      <h3>📂 选择文件夹</h3>
+      <h3 data-i18n="modal.folder.title">📂 Select a folder</h3>
       <div class="browse-breadcrumb" id="browse-breadcrumb"></div>
       <div class="browse-list" id="browse-list"></div>
       <div class="browse-actions">
         <div class="browse-selected" id="browse-selected"></div>
         <div class="browse-btns">
-          <button class="btn-browse-cancel" id="browse-cancel">取消</button>
-          <button class="btn-primary" id="browse-confirm" disabled>选择此目录</button>
+          <button class="btn-browse-cancel" id="browse-cancel" data-i18n="modal.folder.cancel">Cancel</button>
+          <button class="btn-primary" id="browse-confirm" disabled data-i18n="modal.folder.confirm">Choose this folder</button>
         </div>
       </div>
     </div>
@@ -225,17 +234,17 @@
     <div class="history-drawer-mask" id="history-drawer-mask"></div>
     <div class="history-drawer-panel">
       <div class="history-drawer-head">
-        <h3>🕐 历史版本</h3>
-        <button class="history-drawer-close" id="history-drawer-close" title="关闭 (Esc)">✕</button>
+        <h3 data-i18n="history.title">🕐 History versions</h3>
+        <button class="history-drawer-close" id="history-drawer-close" data-i18n-title="history.drawer.close" title="Close (Esc)">✕</button>
       </div>
       <div class="history-drawer-info" id="history-drawer-info">
-        当前文件：<span id="history-current-name">—</span>
+        <span data-i18n="history.drawer.current_label">Current file</span>: <span id="history-current-name">—</span>
       </div>
       <div class="history-drawer-list" id="history-list">
-        <div class="history-empty">加载中…</div>
+        <div class="history-empty" data-i18n="history.drawer.loading">Loading…</div>
       </div>
       <div class="history-drawer-foot">
-        <small class="history-hint">⓪ 自动快照 = 编辑过程中每次停手 2 秒生成<br>① 覆盖前备份 = 点"覆盖源文件"前自动生成<br>② 恢复时也会先备份当前内容（pre-restore）</small>
+        <small class="history-hint" data-i18n-html="history.drawer.foot_hint">⓪ Auto-snapshot = generated 2s after every edit<br>① Pre-overwrite = generated automatically before "Overwrite source"<br>② Pre-restore = generated before restoring an older version</small>
       </div>
     </div>
   </div>
@@ -244,10 +253,10 @@
   <div class="modal-backdrop" id="history-preview-dialog" style="display:none;">
     <div class="modal modal-wide modal-scrollable" style="max-width:1100px;">
       <div class="modal-head">
-        <h3>👁 历史版本预览 — <span id="history-preview-name">—</span></h3>
+        <h3><span data-i18n="history.preview.title_prefix">👁 Version preview — </span><span id="history-preview-name">—</span></h3>
         <div style="display:flex;gap:8px;">
-          <button id="history-preview-restore" class="btn-primary" title="恢复此版本到源文件">↩ 恢复此版本</button>
-          <button class="modal-close" id="history-preview-close">关闭</button>
+          <button id="history-preview-restore" class="btn-primary" data-i18n="history.preview.restore_btn" data-i18n-title="history.preview.restore_tooltip" title="Restore this version to the source file">↩ Restore this version</button>
+          <button class="modal-close" id="history-preview-close" data-i18n="btn.close">Close</button>
         </div>
       </div>
       <iframe id="history-preview-iframe" style="width:100%;height:70vh;border:1px solid #cbd5e1;border-radius:6px;background:#fff;" sandbox="allow-same-origin"></iframe>
@@ -257,6 +266,6 @@
   <!-- Toast -->
   <div id="toast-container"></div>
 
-  <script src="/static/app.js?v=1.8.1"></script>
+  <script src="/static/app.js?v=1.12.0"></script>
 </body>
 </html>

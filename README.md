@@ -18,8 +18,10 @@
 
 </div>
 
-> 💡 **这是我日常工作流的真实工具沉淀**。如果你也被 Claude artifacts / ChatGPT canvas 生成的一堆 HTML 淹没，这工具可能帮得到你。
-> 配套深度文章请关注 [微信公众号「一深思AI」](#-connect--follow)、[CSDN 博客](https://blog.csdn.net/qcx23) 或 [X @louisqiu285052](https://x.com/louisqiu285052)。
+> 💡 **A real workflow tool I built for myself**. If you're also drowning in Claude artifacts / ChatGPT canvas HTML files, this might help you too.
+> Companion deep-dives on [WeChat 一深思AI](#-connect--follow), [CSDN](https://blog.csdn.net/qcx23) or [X @louisqiu285052](https://x.com/louisqiu285052).
+>
+> 🌐 **Bilingual UI** (since v1.12.0): English by default, with one-click switch to 中文 in the sidebar footer. Your choice is remembered locally.
 
 ---
 

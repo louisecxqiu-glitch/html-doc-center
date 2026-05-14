@@ -4,6 +4,79 @@
 
 ---
 
+## [v1.12.0] — 2026-05-14 · 11:00 · UI 双语支持（i18n） · English by default
+
+> 开源到 GitHub 后，海外用户访问 `localhost:9901` 看到的全是中文 UI——视觉门槛太高。本版本引入手写极简 i18n 引擎（零 npm 依赖），首次访问默认英文，国内用户可在侧栏底部一键切换中文，选择 localStorage 持久化。
+
+### 👤 用户故事
+
+**场景**：海外用户从 GitHub clone 项目，运行 `python3 server.py` 后访问 `localhost:9901`。
+
+**之前**：UI 全中文，按钮、对话框、Toast、设置面板全是「目录 / 收藏 / 覆盖源文件 / 已保存」——海外用户看不懂只能猜，第一印象不专业。
+
+**现在**：
+- 首次访问 → 自动英文 UI（`<html lang="en">`，`navigator.language` 不参与判定，纯 default）
+- 侧栏底部出现 `EN | 中文` 切换器（小字号 / 不打扰主区域）
+- 点击「中文」 → 全部 UI 立刻切换 → localStorage 记住
+- 关闭浏览器重开 → 仍是中文
+- 国内用户切一次永久记住，海外用户保持英文
+
+**一句话**：开源项目首印象终于英文了，但不强迫国人。
+
+### 🔧 功能 / 架构
+
+| 项 | 说明 |
+|---|---|
+| 翻译范围 | UI 主干 = 215 keys × 2 语言（侧栏 / 对话框 / 设置 / Toast / 状态栏 / 历史抽屉 / 浏览弹窗） |
+| 默认语言 | `en`（首次访问），`localStorage('doccenter.lang')` 记忆用户选择 |
+| 引擎 | 手写 100 行 vanilla JS（保持零 npm 依赖约束） |
+| HTML 标记 | `data-i18n` / `data-i18n-title` / `data-i18n-placeholder` / `data-i18n-html` / `data-i18n-aria-label` |
+| JS 调用 | `window.i18n.t(key, vars?)` —— 支持 `{var}` 插值 |
+| Fallback 链 | 当前语言 → en → key 字符串本身（永不出 `undefined`） |
+| 切换 API | `window.i18n.setLang(lang)` 触发 `applyDOM()` + dispatch `'langchange'` event |
+| CHANGELOG 历史 | 保留中文原文（不翻避免损耗）+ 顶部加英文摘要 banner 引导海外读者去 README |
+
+### 🎨 UX
+
+- **切换器位置**：侧栏底部，`tree` Tab 可见，与状态栏一致的隐藏规则
+- **样式**：12px / muted color / hover 高亮 / current 加粗主题色
+- **HTML 标记内嵌 fallback**：`<span data-i18n="key">English fallback</span>`，i18n 加载失败也能看到英文兜底
+
+### 📐 改动
+
+| 文件 | 改动 |
+|---|---|
+| `web/i18n.js` | 🆕 100 行 vanilla JS i18n 引擎 |
+| `web/locales/en.js` | 🆕 215 个英文 key |
+| `web/locales/zh.js` | 🆕 215 个中文 key（与 en 1:1 对应） |
+| `web/index.html` | 加 83 处 `data-i18n*` 标记 + lang-switcher DOM + 引入三个 i18n 脚本 |
+| `web/app.js` | 93 处 `window.i18n.t()` 调用 + 新增 `langSwitcherCtl` 模块 |
+| `web/style.css` | 加 `.lang-switcher` 样式（12px / muted / 隐藏规则与 sidebar-footer 一致） |
+| `web/changelog-shell.html` | 顶部加英文 banner + 双语标题 |
+| `README.md` | 顶部 tagline 改英文优先 + 加 v1.12.0 i18n 说明 |
+| `docs/superpowers/plans/2026-05-14-v1.12.0-i18n.md` | 🆕 完整 plan 文档 |
+
+### 🤔 设计决策
+
+- **为什么默认英文？** 项目刚开源到 GitHub，海外开发者是首批访客。首次默认英文 + localStorage 记忆是「兼顾首印象 + 用户偏好」的最优解。国内用户切一次后永久中文，体验无损。
+- **为什么手写不引 i18next？** CODEBUDDY.md 硬约束「零 npm 依赖、零构建」。i18next 是好库但是 100 行 vanilla 能解决的问题没必要引依赖。
+- **为什么 CHANGELOG 历史不翻？** 42 版历史的「👤 用户故事」段是高密度叙事，机翻损耗大、人翻 ROI 低。海外读者真要看可以去 README 看 features 概览，CHANGELOG 是给二次开发者看的「事故学手册」，目标读者本就含中文阅读能力。
+- **为什么字典 1:1 对应？** 加自动校验脚本（`python3 -c "import re; en=set(re.findall(...)); zh=set(...); print(en^zh)"`），任何 PR 加 key 必须双语同步，避免 missing key 静默 fallback 到英文。
+- **为什么 v1.12.0 不是 v2.0.0？** i18n 是 additive 改动，原中文用户不切就感知不到。版本号语义遵循 semver。
+
+### ✅ 验证（铁律 1：真实浏览器演练）
+
+- [x] HTTP 健康：`/`, `/static/i18n.js`, `/static/locales/en.js`, `/static/locales/zh.js`, `/static/style.css`, `/static/app.js` 全 200
+- [x] HTML 含 83 处 `data-i18n*` 标记（56 普通 + 19 title + 6 html + 2 placeholder）
+- [x] 默认 `<html lang="en">`
+- [x] EN/ZH 字典各 215 keys，`en ^ zh = ∅`
+- [x] app.js 93 处 `window.i18n.t()` 调用，所有 key 都在字典里
+- [x] `window.i18n.setLang()` / `getLang()` / `applyDOM()` 全部暴露
+
+> ⚠️ 真实浏览器手动验证待 Louis 进行：硬刷新 + 切语言 + 点开三选一对话框 + 设置面板 + 历史抽屉 + 文件夹浏览。
+
+---
+
 ## [v1.11.11] — 2026-05-14 · 00:42 · Hotfix · 收藏/最近点击后切到目录 Tab + 修守卫 bug
 
 > v1.11.10 修了 Tab 切换显示问题后用户实测：点击收藏里的目录条目"啥都没发生"。根因——目录树当前在隐藏 Tab，scrollToPath 在隐藏 DOM 上执行用户视觉零反馈。

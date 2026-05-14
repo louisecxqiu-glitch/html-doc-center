@@ -1,35 +1,61 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DocCenter · 更新日志</title>
+  <title>DocCenter · Changelog · 更新日志</title>
   <link rel="stylesheet" href="/static/changelog.css" />
+  <style>
+    /* v1.12.0: bilingual banner for English readers landing from GitHub */
+    .lang-banner {
+      max-width: 880px;
+      margin: 0 auto 18px;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, #fff7e6 0%, #fff3d6 100%);
+      border: 1px solid #f0c674;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #4a3208;
+    }
+    .lang-banner strong { color: #2b1d04; }
+    [data-theme="dark"] .lang-banner {
+      background: linear-gradient(135deg, #2b2410 0%, #1f1a0a 100%);
+      border-color: #6b5818;
+      color: #e8d4a0;
+    }
+    [data-theme="dark"] .lang-banner strong { color: #fff7d6; }
+  </style>
 </head>
 <body>
   <header class="topbar">
     <span class="brand-dot"></span>
     <span class="brand">DocCenter</span>
     <span class="sep"></span>
-    <h1>更新日志 · Changelog</h1>
-    <a href="/" class="back" title="返回工作台">← 返回</a>
+    <h1>Changelog · 更新日志</h1>
+    <a href="/" class="back" title="Back to workbench / 返回工作台">← Back</a>
   </header>
 
   <main class="page">
     <div class="page-header">
-      <h1 class="page-title">DocCenter 更新日志</h1>
-      <p class="page-sub">本地 HTML 文档工作台 · <strong>语义化版本</strong> 管理 · 每次迭代都有据可查</p>
+      <h1 class="page-title">DocCenter Changelog</h1>
+      <p class="page-sub">Local HTML document workbench · <strong>Semantic versioning</strong> · Every iteration is auditable</p>
       <p class="page-sub" style="margin-top: 6px; font-size: 12px; opacity: 0.7;">
-        v1.7.3 起：本页面由 <code>CHANGELOG.md</code> 自动渲染，改 MD 即改日志。
+        Since v1.7.3: this page is rendered from <code>CHANGELOG.md</code>. Edit the MD to update the log.
       </p>
     </div>
 
+    <!-- v1.12.0: bilingual notice -->
+    <div class="lang-banner">
+      📜 <strong>Note for English readers</strong>: This changelog is maintained in Chinese, recording the iteration history of DocCenter v1.0–v1.12.0 (42+ versions, with raw user-story narratives that resist translation losses). Future v1.12+ entries will be bilingual. For an English overview of features, please see the <a href="https://github.com/louisecxqiu-glitch/html-doc-center#english" target="_blank" rel="noopener">README</a>.
+    </div>
+
     <div id="changelog-body">
-      <div class="loading-state">正在加载更新日志…</div>
+      <div class="loading-state">Loading changelog… / 正在加载更新日志…</div>
     </div>
 
     <div class="page-foot">
-      <p>数据源：<code>CHANGELOG.md</code> · 单一真相原则</p>
+      <p>Source: <code>CHANGELOG.md</code> · Single source of truth</p>
     </div>
   </main>
 
