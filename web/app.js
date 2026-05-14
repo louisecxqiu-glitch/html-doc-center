@@ -92,10 +92,10 @@
   }
   function formatRecentTime(ts) {
     const diff = Date.now() - ts;
-    if (diff < 60_000) return "刚刚";
-    if (diff < 3600_000) return `${Math.floor(diff / 60_000)} 分钟前`;
-    if (diff < 86400_000) return `${Math.floor(diff / 3600_000)} 小时前`;
-    if (diff < 7 * 86400_000) return `${Math.floor(diff / 86400_000)} 天前`;
+    if (diff < 60_000) return window.i18n.t("time.just_now");
+    if (diff < 3600_000) return window.i18n.t("time.minutes_ago", { n: Math.floor(diff / 60_000) });
+    if (diff < 86400_000) return window.i18n.t("time.hours_ago", { n: Math.floor(diff / 3600_000) });
+    if (diff < 7 * 86400_000) return window.i18n.t("time.days_ago", { n: Math.floor(diff / 86400_000) });
     const d = new Date(ts);
     return `${d.getMonth() + 1}/${d.getDate()}`;
   }
@@ -115,13 +115,13 @@
         <span class="recent-icon">${icon}</span>
         <span class="recent-name">${escapeHtml(name)}</span>
         <span class="recent-time">${timeLabel}</span>
-        <button class="recent-remove" data-path="${item.path}" title="从最近列表移除">×</button>
+        <button class="recent-remove" data-path="${item.path}" title="${escapeHtml(window.i18n.t("recent.remove_tooltip"))}">×</button>
       </div>`;
     }).join("");
     container.innerHTML =
       `<div class="recent-header">
-        <span class="recent-title">🕐 最近打开 <span class="recent-count">(${items.length})</span></span>
-        <button class="recent-clear" title="清空最近列表">清空</button>
+        <span class="recent-title">${escapeHtml(window.i18n.t("recent.title"))} <span class="recent-count">(${items.length})</span></span>
+        <button class="recent-clear" title="${escapeHtml(window.i18n.t("recent.clear_tooltip"))}">${escapeHtml(window.i18n.t("recent.clear"))}</button>
        </div>` + rows;
 
     container.querySelectorAll(".recent-item").forEach(row => {
@@ -169,8 +169,21 @@
         // setLang 内部已经触发 applyDOM + dispatch 'langchange'
         this.refreshActive();
       });
-      // 监听其它途径的语言变更（如 console 调用），保持 UI 一致
-      window.addEventListener("langchange", () => this.refreshActive());
+      // v1.12.1: 监听全局 langchange，重渲染所有动态生成（不依赖 data-i18n）的 DOM
+      window.addEventListener("langchange", () => {
+        this.refreshActive();
+        try {
+          // 重渲染收藏/最近列表（标题、按钮、空态文案是 JS 字符串拼出来的）
+          if (typeof renderFavoritesSection === "function") renderFavoritesSection();
+          if (typeof renderRecentSection === "function") renderRecentSection();
+          // 重渲染目录树（含 stats、空态、icon title）—— 数据已在内存
+          if (typeof renderTree === "function" && state && state.tree) renderTree(state.tree);
+          // 面包屑 meta 信息（快照数 / 时间）
+          if (state && state.currentFile && typeof refreshBreadcrumbMeta === "function") {
+            try { refreshBreadcrumbMeta(); } catch (_) {}
+          }
+        } catch (_) { /* 重渲染失败不阻断切换 */ }
+      });
     },
     refreshActive() {
       const cur = window.i18n ? window.i18n.getLang() : "en";
@@ -233,15 +246,15 @@
     if (btn) {
       const labelMap = { auto: "🌓", light: "☀️", dark: "🌙" };
       const titleMap = {
-        auto:  "主题：自动跟随系统（点击切换为浅色）",
-        light: "主题：浅色（点击切换为深色）",
-        dark:  "主题：深色（点击切换为自动）",
+        auto:  window.i18n.t("theme.tooltip.auto"),
+        light: window.i18n.t("theme.tooltip.light"),
+        dark:  window.i18n.t("theme.tooltip.dark"),
       };
       btn.textContent = labelMap[theme];
       btn.title = titleMap[theme];
     }
     if (!silent) {
-      const txt = theme === "auto" ? "自动跟随系统" : theme === "light" ? "浅色模式" : "深色模式";
+      const txt = theme === "auto" ? window.i18n.t("theme.name.auto") : theme === "light" ? window.i18n.t("theme.name.light") : window.i18n.t("theme.name.dark");
       toast(window.i18n.t("toast.theme", { name: txt }), "info", null, 1500);
     }
   }
@@ -313,17 +326,17 @@
     if (!r.ok) {
       let body = "";
       try { body = (await r.text()).trim().slice(0, 200); } catch (_) {}
-      const hint = r.status === 500 ? "（可能需要重启 server.py 让新代码生效）" : "";
+      const hint = r.status === 500 ? window.i18n.t("err.server_500_hint") : "";
       throw new Error(`HTTP ${r.status}: ${body || r.statusText}${hint}`);
     }
     if (!ctype.includes("application/json")) {
       const body = (await r.text()).trim().slice(0, 200);
-      throw new Error(`响应不是 JSON（${ctype}）：${body}`);
+      throw new Error(window.i18n.t("err.response_not_json", { ctype: ctype, body: body }));
     }
     try {
       return await r.json();
     } catch (e) {
-      throw new Error(`JSON 解析失败：${e.message}`);
+      throw new Error(window.i18n.t("err.json_parse", { msg: e.message }));
     }
   }
 
@@ -335,7 +348,7 @@
         body: JSON.stringify({ path: absPath }),
       });
       const d = await r.json();
-      if (!d.ok) throw new Error(d.error || "reveal 失败");
+      if (!d.ok) throw new Error(d.error || window.i18n.t("err.reveal_failed"));
       toast(window.i18n.t("toast.finder.opened"), "success");
     } catch (e) {
       toast(window.i18n.t("toast.finder.failed"), "error", e.message);
@@ -485,14 +498,14 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, path: absPath, type: type || "file" }),
       });
-      if (!d.ok) throw new Error(d.error || "收藏操作失败");
+      if (!d.ok) throw new Error(d.error || window.i18n.t("fav.op_failed"));
       state.favorites = d.items || [];
       renderFavoritesSection();
       sidebarTabsCtl.refreshCounts && sidebarTabsCtl.refreshCounts();
       // 刷新树中对应节点的星标态
       refreshFavStars();
       toast(
-        currentlyFav ? "已取消收藏" : "⭐ 已收藏",
+        currentlyFav ? window.i18n.t("fav.removed") : window.i18n.t("fav.added"),
         "success",
         displayName || absPath
       );
@@ -509,7 +522,7 @@
       const fav = isFavorited(p);
       btn.classList.toggle("is-fav", fav);
       btn.textContent = fav ? "★" : "☆";
-      btn.title = fav ? "取消收藏" : "添加到收藏";
+      btn.title = fav ? window.i18n.t("fav.unfav_tooltip") : window.i18n.t("fav.fav_tooltip");
     });
   }
 
@@ -519,8 +532,8 @@
     const items = state.favorites;
     if (!items.length) {
       container.innerHTML =
-        `<div class="fav-header"><span class="fav-title">⭐ 收藏 <span class="fav-count">(0)</span></span></div>` +
-        `<div class="fav-empty">点文件/目录旁的 ☆ 添加收藏</div>`;
+        `<div class="fav-header"><span class="fav-title">${escapeHtml(window.i18n.t("fav.title"))} <span class="fav-count">(0)</span></span></div>` +
+        `<div class="fav-empty">${escapeHtml(window.i18n.t("fav.empty"))}</div>`;
       return;
     }
     const rows = items.map(item => {
@@ -530,11 +543,11 @@
       return `<div class="fav-item" data-path="${item.path}" data-type="${item.type}" title="${item.path}">
         <span class="fav-icon">${icon}</span>
         <span class="fav-name">${escapeHtml(name)}</span>
-        <button class="fav-unfav" data-path="${item.path}" title="取消收藏">★</button>
+        <button class="fav-unfav" data-path="${item.path}" title="${escapeHtml(window.i18n.t("fav.unfav_tooltip"))}">★</button>
       </div>`;
     }).join("");
     container.innerHTML =
-      `<div class="fav-header"><span class="fav-title">⭐ 收藏 <span class="fav-count">(${items.length})</span></span></div>` +
+      `<div class="fav-header"><span class="fav-title">${escapeHtml(window.i18n.t("fav.title"))} <span class="fav-count">(${items.length})</span></span></div>` +
       rows;
 
     // 绑定事件
@@ -614,8 +627,8 @@
       container.innerHTML =
         `<div class="tree-empty tree-empty-cta">
           <div class="empty-cta-icon">📂</div>
-          <div>还没有扫描目录</div>
-          <button id="btn-empty-add" class="btn-empty-add">＋ 添加目录</button>
+          <div>${escapeHtml(window.i18n.t("tree.empty.no_scan_dirs"))}</div>
+          <button id="btn-empty-add" class="btn-empty-add">${escapeHtml(window.i18n.t("tree.empty.add_dir_btn"))}</button>
         </div>`;
       $("#tree-stats").textContent = window.i18n.t("tree.stats.empty");
       // 绑定空态按钮事件
@@ -867,7 +880,7 @@
     icon.className = "tree-icon tree-icon-btn";
     // v1.6.1: active 根用打开图标，其他用 📁
     icon.textContent = isRoot ? "📂" : "📁";
-    icon.title = "点击打开操作菜单";
+    icon.title = window.i18n.t("menu.tooltip.icon");
     icon.addEventListener("click", (e) => {
       e.stopPropagation();
       state.userInteractedSidebar = true;
@@ -924,7 +937,7 @@
     const icon = document.createElement("span");
     icon.className = "tree-icon tree-icon-btn";
     icon.textContent = node.type === "md" ? "📝" : "📄";
-    icon.title = "点击打开操作菜单";
+    icon.title = window.i18n.t("menu.tooltip.icon");
     icon.addEventListener("click", (e) => {
       e.stopPropagation();
       state.userInteractedSidebar = true;
@@ -954,7 +967,7 @@
     btn.dataset.path = absPath;
     btn.dataset.favType = type;
     btn.textContent = fav ? "★" : "☆";
-    btn.title = fav ? "取消收藏" : "添加到收藏";
+    btn.title = fav ? window.i18n.t("fav.unfav_tooltip") : window.i18n.t("fav.fav_tooltip");
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       e.preventDefault();
@@ -1063,9 +1076,9 @@
     }
 
     // Confirm
-    const label = srcPayload.type === "dir" ? "目录" : "文件";
+    const label = srcPayload.type === "dir" ? window.i18n.t("move.label.dir") : window.i18n.t("move.label.file");
     if (!confirm(
-      `将${label}「${srcPayload.name}」移动到：\n${dstDirAbs}\n\n确认？`
+      window.i18n.t("move.confirm", { label: label, name: srcPayload.name, dst: dstDirAbs })
     )) return;
 
     try {
@@ -1083,9 +1096,11 @@
         return;
       }
       toast(
-        "✅ 已移动",
+        window.i18n.t("move.success"),
         "success",
-        `${srcPayload.name} → ${dstDirName}${d.moved_snapshots ? `（快照 ${d.moved_snapshots} 个同步）` : ""}`
+        d.moved_snapshots
+          ? window.i18n.t("move.success_detail_with_snaps", { name: srcPayload.name, dir: dstDirName, n: d.moved_snapshots })
+          : window.i18n.t("move.success_detail", { name: srcPayload.name, dir: dstDirName })
       );
 
       // 如果移动的是当前打开文件，更新 currentFile 引用
@@ -1176,14 +1191,14 @@
     menu.className = "tree-icon-menu";
 
     const items = [
-      { icon: "📂", text: isDir ? "在 Finder 打开此目录" : "在 Finder 打开",
+      { icon: "📂", text: isDir ? window.i18n.t("menu.reveal_dir") : window.i18n.t("menu.reveal_file"),
         onClick: () => revealInFinder(absPath) },
-      { icon: "📋", text: isDir ? "复制目录路径" : "复制完整路径",
-        onClick: () => copyText(absPath, "路径") },
+      { icon: "📋", text: isDir ? window.i18n.t("menu.copy_dir_path") : window.i18n.t("menu.copy_full_path"),
+        onClick: () => copyText(absPath, window.i18n.t("menu.label.path")) },
     ];
     if (!isDir) {
-      items.push({ icon: "📄", text: "复制文件名",
-        onClick: () => copyText(name, "文件名") });
+      items.push({ icon: "📄", text: window.i18n.t("menu.copy_filename"),
+        onClick: () => copyText(name, window.i18n.t("menu.label.filename")) });
     }
 
     for (const it of items) {
@@ -1280,8 +1295,8 @@
 
     if (stat) {
       stat.textContent = matchCount > 0
-        ? `${matchCount} 个匹配`
-        : "无匹配";
+        ? window.i18n.t("search.matches", { n: matchCount })
+        : window.i18n.t("search.no_match");
       stat.className = "search-stat" + (matchCount === 0 ? " no-match" : "");
     }
   }
@@ -1307,22 +1322,24 @@
       fb.innerHTML = `
         <div class="iframe-fallback-card">
           <div class="iframe-fallback-icon">⚠️</div>
-          <div class="iframe-fallback-title">文件加载失败或超时</div>
+          <div class="iframe-fallback-title" data-i18n="iframe.fallback.title">File failed to load or timed out</div>
           <div class="iframe-fallback-msg" id="iframe-fallback-msg"></div>
           <div class="iframe-fallback-actions">
-            <button id="iframe-fallback-retry" class="btn-primary">↻ 重试</button>
-            <button id="iframe-fallback-close">关闭</button>
+            <button id="iframe-fallback-retry" class="btn-primary" data-i18n="iframe.fallback.retry">↻ Retry</button>
+            <button id="iframe-fallback-close" data-i18n="iframe.fallback.close">Close</button>
           </div>
-          <div class="iframe-fallback-hint">
-            可能原因：<br>
-            · 文件被删除或移动（试试 R 刷新目录）<br>
-            · 文件 &gt; 100MB（超出 server 限制）<br>
-            · scan_roots 配置变更（去 ⚙️ 设置检查）<br>
-            · 服务进程异常（终端重启 python3 server.py）
+          <div class="iframe-fallback-hint" data-i18n-html="iframe.fallback.reasons_html">
+            Possible reasons:<br>
+            · File deleted or moved (try R to refresh)<br>
+            · File &gt; 100MB (server limit)<br>
+            · scan_roots config changed (check ⚙️ Settings)<br>
+            · Server process error (restart python3 server.py)
           </div>
         </div>
       `;
       document.querySelector("main") ? document.querySelector("main").appendChild(fb) : document.body.appendChild(fb);
+      // v1.12.1: 动态注入 DOM 必须 applyDOM 才能完成翻译
+      if (window.i18n) window.i18n.applyDOM(fb);
       $("#iframe-fallback-retry").addEventListener("click", () => {
         if (state.currentFile) {
           fb.style.display = "none";
@@ -1375,7 +1392,7 @@
         longPressed = false;
         pressTimer = setTimeout(() => {
           longPressed = true;
-          copyText(pathEl.dataset.abs, "绝对路径");
+          copyText(pathEl.dataset.abs, window.i18n.t("menu.label.abs_path"));
         }, 600);
       });
       pathEl.addEventListener("mouseup", () => {
@@ -1386,7 +1403,7 @@
       });
       pathEl.addEventListener("click", (e) => {
         if (longPressed) { e.preventDefault(); return; }
-        copyText(pathEl.dataset.short, "相对路径");
+        copyText(pathEl.dataset.short, window.i18n.t("menu.label.rel_path"));
       });
     }
 
@@ -1400,7 +1417,7 @@
       const mtimeStr = meta.current_mtime ? formatRecentTime(meta.current_mtime * 1000) : "-";
       const snapCount = (meta.items || []).length;
       const snapBadge = snapCount > 0
-        ? `· <a href="javascript:;" id="bc-snap-link" class="bc-snap" title="打开历史版本抽屉">🗂 ${snapCount} 个快照</a>`
+        ? `· <a href="javascript:;" id="bc-snap-link" class="bc-snap" title="${escapeHtml(window.i18n.t("bc.snap_link_tooltip"))}">${escapeHtml(window.i18n.t("bc.snap_count", { n: snapCount }))}</a>`
         : "";
       el.innerHTML = `· 📦 ${sizeStr} · 🕐 ${mtimeStr} ${snapBadge}`;
       const link = document.getElementById("bc-snap-link");
@@ -1683,12 +1700,12 @@
       const row = document.createElement("div");
       row.className = "root-item" + (enabled ? "" : " root-disabled");
       row.innerHTML =
-        `<label class="toggle-switch" title="${enabled ? "点击关闭扫描" : "点击开启扫描"}">` +
+        `<label class="toggle-switch" title="${escapeHtml(enabled ? window.i18n.t("scan.toggle.disable_tooltip") : window.i18n.t("scan.toggle.enable_tooltip"))}">` +
           `<input type="checkbox" ${enabled ? "checked" : ""}>` +
           `<span class="toggle-slider"></span>` +
         `</label>` +
         `<span class="root-path" title="${p}">${display}</span>` +
-        `<button class="root-remove" data-path="${p}" title="从列表中移除此目录">移除</button>`;
+        `<button class="root-remove" data-path="${p}" title="${escapeHtml(window.i18n.t("scan.row.remove_tooltip"))}">${escapeHtml(window.i18n.t("scan.row.remove"))}</button>`;
       row.querySelector("input").addEventListener("change", (e) => toggleRoot(p, e.target.checked));
       row.querySelector(".root-remove").addEventListener("click", () => removeRoot(p));
       list.appendChild(row);
@@ -1882,7 +1899,7 @@
       row.innerHTML =
         `<span class="browse-icon">${icon}</span>` +
         `<span class="browse-name">${isRoot ? d.name : d.name}</span>` +
-        `<button class="browse-select-btn" title="选择此目录">✓ 选择</button>`;
+        `<button class="browse-select-btn" title="${window.i18n.t("browse.select_tooltip")}">${window.i18n.t("browse.select_btn")}</button>`;
 
       // 点击行进入子目录
       row.addEventListener("click", (e) => {
@@ -1935,10 +1952,10 @@
 
     function relTime(mtime) {
       const d = Math.floor(Date.now() / 1000) - mtime;
-      if (d < 60) return d + "秒前";
-      if (d < 3600) return Math.floor(d / 60) + "分钟前";
-      if (d < 86400) return Math.floor(d / 3600) + "小时前";
-      if (d < 86400 * 7) return Math.floor(d / 86400) + "天前";
+      if (d < 60) return window.i18n.t("time.seconds_ago_short", { n: d });
+      if (d < 3600) return window.i18n.t("time.minutes_ago_short", { n: Math.floor(d / 60) });
+      if (d < 86400) return window.i18n.t("time.hours_ago_short", { n: Math.floor(d / 3600) });
+      if (d < 86400 * 7) return window.i18n.t("time.days_ago_short", { n: Math.floor(d / 86400) });
       return new Date(mtime * 1000).toLocaleDateString("zh-CN");
     }
 
@@ -1959,9 +1976,9 @@
     }
 
     function kindLabel(kind) {
-      if (kind === "auto") return "自动快照";
-      if (kind === "pre-overwrite") return "覆盖前备份";
-      if (kind === "pre-restore") return "恢复前备份";
+      if (kind === "auto") return window.i18n.t("history.kind.auto");
+      if (kind === "pre-overwrite") return window.i18n.t("history.kind.pre_overwrite");
+      if (kind === "pre-restore") return window.i18n.t("history.kind.pre_restore");
       return kind;
     }
 
@@ -2003,11 +2020,11 @@
       // v1.11.7: 顶部时光机快捷条（"回到 N 分钟前"）
       const now = Math.floor(Date.now() / 1000);
       const QUICK_OFFSETS = [
-        { label: "5 分钟前", sec: 300 },
-        { label: "10 分钟前", sec: 600 },
-        { label: "30 分钟前", sec: 1800 },
-        { label: "1 小时前", sec: 3600 },
-        { label: "1 天前", sec: 86400 },
+        { label: window.i18n.t("tm.5min"), sec: 300 },
+        { label: window.i18n.t("tm.10min"), sec: 600 },
+        { label: window.i18n.t("tm.30min"), sec: 1800 },
+        { label: window.i18n.t("tm.1hour"), sec: 3600 },
+        { label: window.i18n.t("tm.1day"), sec: 86400 },
       ];
       // 找到每个 offset 最接近的快照（time 距离最小）
       const quickButtons = QUICK_OFFSETS.map(off => {
@@ -2023,10 +2040,10 @@
       let quickBarHtml = "";
       if (quickButtons.length > 0) {
         quickBarHtml = `<div class="history-quickbar">
-          <div class="history-quickbar-title">↩ 时光机：</div>
+          <div class="history-quickbar-title">${escapeHtml(window.i18n.t("tm.title"))}</div>
           <div class="history-quickbar-buttons">
             ${quickButtons.map((q, i) =>
-              `<button class="history-quick" data-snap="${q.snap.snapshot_path.replace(/"/g, '&quot;')}" data-name="${q.snap.name.replace(/"/g, '&quot;')}" title="跳转到约 ${q.diffMin} 分钟前的版本">${q.off.label}</button>`
+              `<button class="history-quick" data-snap="${q.snap.snapshot_path.replace(/"/g, '&quot;')}" data-name="${q.snap.name.replace(/"/g, '&quot;')}" title="${escapeHtml(window.i18n.t("tm.tooltip", { label: q.off.label, when: window.i18n.t("time.minutes_ago", { n: q.diffMin }) }))}">${q.off.label}</button>`
             ).join("")}
           </div>
         </div>`;
@@ -2036,7 +2053,7 @@
         const kind = it.kind || detectKind(it.name);
         const delta = it.size_delta || 0;
         const deltaCls = delta > 0 ? "delta-pos" : (delta < 0 ? "delta-neg" : "");
-        const deltaTxt = delta === 0 ? "无变化"
+        const deltaTxt = delta === 0 ? window.i18n.t("history.item.no_change")
           : (delta > 0 ? "+" : "") + delta + " B";
         return `<div class="history-item" data-snap="${it.snapshot_path.replace(/"/g, '&quot;')}" data-name="${it.name.replace(/"/g, '&quot;')}">
           <div class="history-item-row1">
@@ -2047,12 +2064,12 @@
             <span class="history-item-kind kind-${kind}">${kindLabel(kind)}</span>
           </div>
           <div class="history-item-row2">
-            ${fmtSize(it.size)} · 与当前 <span class="history-item-delta ${deltaCls}">${deltaTxt}</span>
-            <span class="history-item-diff" data-diff-loading="1"> · diff 加载中…</span>
+            ${fmtSize(it.size)} · ${escapeHtml(window.i18n.t("history.item.delta_label"))} <span class="history-item-delta ${deltaCls}">${deltaTxt}</span>
+            <span class="history-item-diff" data-diff-loading="1">${escapeHtml(window.i18n.t("history.item.diff_loading"))}</span>
           </div>
           <div class="history-item-actions">
-            <button data-action="preview">👁 预览</button>
-            <button data-action="restore" class="btn-restore">↩ 恢复</button>
+            <button data-action="preview">${escapeHtml(window.i18n.t("history.item.preview"))}</button>
+            <button data-action="restore" class="btn-restore">${escapeHtml(window.i18n.t("history.item.restore"))}</button>
           </div>
         </div>`;
       }).join("");
@@ -2092,9 +2109,9 @@
           diffEl.innerHTML = window.i18n.t("history.dyn.diff_same_html");
         } else {
           diffEl.innerHTML = ' · '
-            + (a > 0 ? `<span class="history-diff-add">+${a} 行</span>` : '')
+            + (a > 0 ? `<span class="history-diff-add">${escapeHtml(window.i18n.t("history.item.diff_added", { n: a }))}</span>` : '')
             + (a > 0 && r_ > 0 ? ' ' : '')
-            + (r_ > 0 ? `<span class="history-diff-del">-${r_} 行</span>` : '');
+            + (r_ > 0 ? `<span class="history-diff-del">${escapeHtml(window.i18n.t("history.item.diff_removed", { n: r_ }))}</span>` : '');
         }
       } catch (e) {
         diffEl.textContent = "";
@@ -2107,7 +2124,7 @@
       try {
         const r = await fetch("/api/history/content?path=" + encodeURIComponent(snapPath));
         const d = await r.json();
-        if (!d.ok) throw new Error(d.error || "读取失败");
+        if (!d.ok) throw new Error(d.error || window.i18n.t("err.read_failed"));
         const iframe = $("#history-preview-iframe");
         // 用 srcdoc 渲染（隔离 + 安全）
         iframe.srcdoc = d.content;
@@ -2249,7 +2266,7 @@
           const r = await fetch("/api/cleanup-snapshots", { method: "POST" });
           const d = await r.json();
           if (!d.ok) throw new Error(d.error || window.i18n.t("toast.cleanup.failed"));
-          const msg = `扫描 ${d.scanned_dirs} 目录，移除 ${d.removed} 个 >${d.retention_days} 天快照`;
+          const msg = window.i18n.t("cleanup.msg", { dirs: d.scanned_dirs, removed: d.removed, days: d.retention_days });
           if (result) result.textContent = "✓ " + msg;
           toast(window.i18n.t("toast.cleanup.done"), "success", msg);
         } catch (err) {
@@ -2272,7 +2289,7 @@
           const r = await fetch("/api/sparsify-snapshots", { method: "POST" });
           const d = await r.json();
           if (!d.ok) throw new Error(d.error || window.i18n.t("toast.sparsify.failed"));
-          const msg = `${d.scanned_dirs} 目录 · 移除 ${d.removed}/${d.before} 条 · 保留 ${d.kept} 条`;
+          const msg = window.i18n.t("sparsify.msg", { dirs: d.scanned_dirs, removed: d.removed, before: d.before, kept: d.kept });
           if (result) result.textContent = "✓ " + msg;
           toast(window.i18n.t("toast.sparsify.done"), "success", msg);
         } catch (err) {
@@ -2495,33 +2512,35 @@
           <div class="shortcut-help-mask"></div>
           <div class="shortcut-help-card">
             <div class="shortcut-help-head">
-              <h3>⌨️ 键盘快捷键</h3>
+              <h3 data-i18n="help.title">⌨️ Keyboard shortcuts</h3>
               <button id="shortcut-help-close">✕</button>
             </div>
             <div class="shortcut-help-body">
               <div class="shk-section">
-                <h4>侧边栏 / 视图</h4>
-                <div class="shk-row"><kbd>⌘ B</kbd><span>显示/隐藏侧边栏</span></div>
-                <div class="shk-row"><kbd>⌘ +</kbd> / <kbd>⌘ -</kbd><span>放大 / 缩小 iframe</span></div>
-                <div class="shk-row"><kbd>⌘ 0</kbd><span>恢复 75% 默认缩放</span></div>
+                <h4 data-i18n="help.section.sidebar_view">Sidebar / View</h4>
+                <div class="shk-row"><kbd>⌘ B</kbd><span data-i18n="help.shortcut.toggle_sidebar">Show / hide sidebar</span></div>
+                <div class="shk-row"><kbd>⌘ +</kbd> / <kbd>⌘ -</kbd><span data-i18n="help.shortcut.zoom">Zoom in / out (iframe)</span></div>
+                <div class="shk-row"><kbd>⌘ 0</kbd><span data-i18n="help.shortcut.zoom_reset">Reset to 75%</span></div>
               </div>
               <div class="shk-section">
-                <h4>导航 / 操作</h4>
-                <div class="shk-row"><kbd>/</kbd><span>聚焦搜索框</span></div>
-                <div class="shk-row"><kbd>R</kbd><span>刷新目录树和当前文件</span></div>
-                <div class="shk-row"><kbd>H</kbd><span>打开历史版本抽屉（需先打开文件）</span></div>
-                <div class="shk-row"><kbd>T</kbd><span>切换主题（自动 / 浅色 / 深色）</span></div>
-                <div class="shk-row"><kbd>Esc</kbd><span>关闭弹窗 / 清搜索 / 收侧栏</span></div>
+                <h4 data-i18n="help.section.navigation">Navigation</h4>
+                <div class="shk-row"><kbd>/</kbd><span data-i18n="help.shortcut.search">Focus search box</span></div>
+                <div class="shk-row"><kbd>R</kbd><span data-i18n="help.shortcut.refresh">Refresh tree and current file</span></div>
+                <div class="shk-row"><kbd>H</kbd><span data-i18n="help.shortcut.history">Open history drawer (file must be open)</span></div>
+                <div class="shk-row"><kbd>T</kbd><span data-i18n="help.shortcut.theme">Toggle theme (auto / light / dark)</span></div>
+                <div class="shk-row"><kbd>Esc</kbd><span data-i18n="help.shortcut.escape">Close modal / clear search / collapse sidebar</span></div>
               </div>
               <div class="shk-section">
-                <h4>帮助</h4>
-                <div class="shk-row"><kbd>?</kbd><span>显示此快捷键帮助</span></div>
+                <h4 data-i18n="help.section.help">Help</h4>
+                <div class="shk-row"><kbd>?</kbd><span data-i18n="help.shortcut.help">Show this shortcut panel</span></div>
               </div>
-              <div class="shk-tip">💡 在输入框里输入时，裸字母键（H R / ?）不会触发，正常打字</div>
+              <div class="shk-tip" data-i18n="help.tip">💡 When typing in inputs, bare letter keys (H R / ?) are ignored — type normally.</div>
             </div>
           </div>
         `;
         document.body.appendChild(el);
+        // v1.12.1: 应用 i18n（动态注入的 DOM 不会被首次 applyDOM 覆盖到，需要手动触发）
+        if (window.i18n) window.i18n.applyDOM(el);
         el.querySelector(".shortcut-help-mask").addEventListener("click", () => el.style.display = "none");
         el.querySelector("#shortcut-help-close").addEventListener("click", () => el.style.display = "none");
       }

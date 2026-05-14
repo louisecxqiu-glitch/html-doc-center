@@ -151,15 +151,22 @@ window.LOCALE_ZH = {
   'help.title': '⌨️ 键盘快捷键',
   'help.section.global': '全局',
   'help.section.editing': '编辑',
-  'help.section.navigation': '导航',
-  'help.shortcut.toggle_sidebar': '显示 / 隐藏目录',
+  'help.section.navigation': '导航 / 操作',
+  'help.section.sidebar_view': '侧边栏 / 视图',
+  'help.section.help': '帮助',
+  'help.shortcut.toggle_sidebar': '显示 / 隐藏侧边栏',
+  'help.shortcut.zoom': '放大 / 缩小 iframe',
+  'help.shortcut.zoom_reset': '恢复 75% 默认缩放',
   'help.shortcut.search': '聚焦搜索框',
-  'help.shortcut.refresh': '刷新目录树',
-  'help.shortcut.history': '打开历史版本',
-  'help.shortcut.help': '显示本面板',
+  'help.shortcut.refresh': '刷新目录树和当前文件',
+  'help.shortcut.history': '打开历史版本抽屉（需先打开文件）',
+  'help.shortcut.theme': '切换主题（自动 / 浅色 / 深色）',
+  'help.shortcut.escape': '关闭弹窗 / 清搜索 / 收侧栏',
+  'help.shortcut.help': '显示此快捷键帮助',
   'help.shortcut.bold': '加粗',
   'help.shortcut.italic': '斜体',
   'help.shortcut.underline': '下划线',
+  'help.tip': '💡 在输入框里输入时，裸字母键（H R / ?）不会触发，正常打字',
 
   // ====== misc ======
   'misc.unknown': '未知',
@@ -261,4 +268,120 @@ window.LOCALE_ZH = {
   'history.dyn.load_failed_html': '<div class="history-empty">加载失败：{msg}</div>',
   'history.dyn.empty_html': '<div class="history-empty">还没有历史版本<br>编辑此文件 2 秒后会自动生成快照</div>',
   'history.dyn.diff_same_html': ' · <span class="history-diff-eq">行内容相同</span>',
+
+  // ====== relative time ======
+  'time.just_now': '刚刚',
+  'time.minutes_ago': '{n} 分钟前',
+  'time.hours_ago': '{n} 小时前',
+  'time.days_ago': '{n} 天前',
+  'time.seconds_ago_short': '{n} 秒前',
+  'time.minutes_ago_short': '{n} 分钟前',
+  'time.hours_ago_short': '{n} 小时前',
+  'time.days_ago_short': '{n} 天前',
+
+  // ====== recent list ======
+  'recent.title': '🕐 最近打开',
+  'recent.clear': '清空',
+  'recent.clear_tooltip': '清空最近列表',
+  'recent.remove_tooltip': '从最近列表移除',
+
+  // ====== favorites list ======
+  'fav.title': '⭐ 收藏',
+  'fav.empty': '点文件 / 目录旁的 ☆ 添加收藏',
+  'fav.unfav_tooltip': '取消收藏',
+  'fav.fav_tooltip': '添加到收藏',
+  'fav.added': '⭐ 已收藏',
+  'fav.removed': '已取消收藏',
+  'fav.op_failed': '收藏操作失败',
+
+  // ====== theme toast variants ======
+  'theme.tooltip.auto': '主题：自动跟随系统（点击切换为浅色）',
+  'theme.tooltip.light': '主题：浅色（点击切换为深色）',
+  'theme.tooltip.dark': '主题：深色（点击切换为自动）',
+  'theme.name.auto': '自动跟随系统',
+  'theme.name.light': '浅色模式',
+  'theme.name.dark': '深色模式',
+
+  // ====== tree empty / scan empty ======
+  'tree.empty.no_scan_dirs': '还没有扫描目录',
+  'tree.empty.add_dir_btn': '＋ 添加目录',
+
+  // ====== drag & drop / move ======
+  'move.confirm': '将{label}「{name}」移动到：\n{dst}\n\n确认？',
+  'move.label.dir': '目录',
+  'move.label.file': '文件',
+  'move.success': '✅ 已移动',
+  'move.success_detail': '{name} → {dir}',
+  'move.success_detail_with_snaps': '{name} → {dir}（快照 {n} 个同步）',
+
+  // ====== context menu ======
+  'menu.reveal_dir': '在 Finder 打开此目录',
+  'menu.reveal_file': '在 Finder 打开',
+  'menu.copy_dir_path': '复制目录路径',
+  'menu.copy_full_path': '复制完整路径',
+  'menu.copy_filename': '复制文件名',
+  'menu.label.path': '路径',
+  'menu.label.abs_path': '绝对路径',
+  'menu.label.rel_path': '相对路径',
+  'menu.label.filename': '文件名',
+  'menu.tooltip.icon': '点击打开操作菜单',
+
+  // ====== search stats ======
+  'search.matches': '{n} 个匹配',
+  'search.no_match': '无匹配',
+
+  // ====== iframe fallback ======
+  'iframe.fallback.title': '文件加载失败或超时',
+  'iframe.fallback.retry': '↻ 重试',
+  'iframe.fallback.close': '关闭',
+  'iframe.fallback.reasons_html': '可能原因：<br>· 文件被删除或移动（试试 R 刷新目录）<br>· 文件 &gt; 100MB（超出 server 限制）<br>· scan_roots 配置变更（去 ⚙️ 设置检查）<br>· 服务进程异常（终端重启 python3 server.py）',
+
+  // ====== scan root row ======
+  'scan.toggle.disable_tooltip': '点击关闭扫描',
+  'scan.toggle.enable_tooltip': '点击开启扫描',
+  'scan.row.remove': '移除',
+  'scan.row.remove_tooltip': '从列表中移除此目录',
+
+  // ====== folder browser (more) ======
+  'browse.select_btn': '✓ 选择',
+  'browse.select_tooltip': '选择此目录',
+
+  // ====== history kind labels ======
+  'history.kind.auto': '自动快照',
+  'history.kind.pre_overwrite': '覆盖前备份',
+  'history.kind.pre_restore': '恢复前备份',
+
+  // ====== time machine quickbar ======
+  'tm.title': '↩ 时光机：',
+  'tm.5min': '5 分钟前',
+  'tm.10min': '10 分钟前',
+  'tm.30min': '30 分钟前',
+  'tm.1hour': '1 小时前',
+  'tm.1day': '1 天前',
+  'tm.tooltip': '恢复到{label}（{when}）',
+
+  // ====== history item ======
+  'history.item.no_change': '无变化',
+  'history.item.delta_label': '与当前',
+  'history.item.diff_loading': ' · diff 加载中…',
+  'history.item.diff_added': '+{n} 行',
+  'history.item.diff_removed': '-{n} 行',
+  'history.item.preview': '👁 预览',
+  'history.item.restore': '↩ 恢复',
+  'history.item.read_failed': '读取失败',
+
+  // ====== cleanup / sparsify msgs ======
+  'cleanup.msg': '扫描 {dirs} 目录，移除 {removed} 个 >{days} 天快照',
+  'sparsify.msg': '{dirs} 目录 · 移除 {removed}/{before} 条 · 保留 {kept} 条',
+
+  // ====== response/JSON errors ======
+  'err.response_not_json': '响应不是 JSON（{ctype}）：{body}',
+  'err.json_parse': 'JSON 解析失败：{msg}',
+  'err.server_500_hint': '（可能需要重启 server.py 让新代码生效）',
+  'err.reveal_failed': 'reveal 失败',
+  'err.read_failed': '读取失败',
+
+  // ====== breadcrumb snapshot link ======
+  'bc.snap_link_tooltip': '打开历史版本抽屉',
+  'bc.snap_count': '🗂 {n} 个快照',
 };

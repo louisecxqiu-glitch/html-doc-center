@@ -169,14 +169,21 @@ window.LOCALE_EN = {
   'help.section.global': 'Global',
   'help.section.editing': 'Editing',
   'help.section.navigation': 'Navigation',
+  'help.section.sidebar_view': 'Sidebar / View',
+  'help.section.help': 'Help',
   'help.shortcut.toggle_sidebar': 'Show / hide sidebar',
-  'help.shortcut.search': 'Focus search',
-  'help.shortcut.refresh': 'Refresh tree',
-  'help.shortcut.history': 'Open history',
-  'help.shortcut.help': 'Show this panel',
+  'help.shortcut.zoom': 'Zoom in / out (iframe)',
+  'help.shortcut.zoom_reset': 'Reset to 75%',
+  'help.shortcut.search': 'Focus search box',
+  'help.shortcut.refresh': 'Refresh tree and current file',
+  'help.shortcut.history': 'Open history drawer (file must be open)',
+  'help.shortcut.theme': 'Toggle theme (auto / light / dark)',
+  'help.shortcut.escape': 'Close modal / clear search / collapse sidebar',
+  'help.shortcut.help': 'Show this shortcut panel',
   'help.shortcut.bold': 'Bold',
   'help.shortcut.italic': 'Italic',
   'help.shortcut.underline': 'Underline',
+  'help.tip': '💡 When typing in inputs, bare letter keys (H R / ?) are ignored — type normally.',
 
   // ====== misc ======
   'misc.unknown': 'Unknown',
@@ -278,4 +285,120 @@ window.LOCALE_EN = {
   'history.dyn.load_failed_html': '<div class="history-empty">Load failed: {msg}</div>',
   'history.dyn.empty_html': '<div class="history-empty">No history versions yet<br>Edits auto-snapshot 2s after stop</div>',
   'history.dyn.diff_same_html': ' · <span class="history-diff-eq">Lines identical</span>',
+
+  // ====== relative time ======
+  'time.just_now': 'just now',
+  'time.minutes_ago': '{n} min ago',
+  'time.hours_ago': '{n}h ago',
+  'time.days_ago': '{n}d ago',
+  'time.seconds_ago_short': '{n}s ago',
+  'time.minutes_ago_short': '{n}m ago',
+  'time.hours_ago_short': '{n}h ago',
+  'time.days_ago_short': '{n}d ago',
+
+  // ====== recent list ======
+  'recent.title': '🕐 Recently opened',
+  'recent.clear': 'Clear',
+  'recent.clear_tooltip': 'Clear recent list',
+  'recent.remove_tooltip': 'Remove from recent',
+
+  // ====== favorites list ======
+  'fav.title': '⭐ Favorites',
+  'fav.empty': 'Tap ☆ next to a file/folder to add a favorite',
+  'fav.unfav_tooltip': 'Remove from favorites',
+  'fav.fav_tooltip': 'Add to favorites',
+  'fav.added': '⭐ Added to favorites',
+  'fav.removed': 'Removed from favorites',
+  'fav.op_failed': 'Favorite operation failed',
+
+  // ====== theme toast variants ======
+  'theme.tooltip.auto': 'Theme: auto (system) — click for light',
+  'theme.tooltip.light': 'Theme: light — click for dark',
+  'theme.tooltip.dark': 'Theme: dark — click for auto',
+  'theme.name.auto': 'auto (system)',
+  'theme.name.light': 'light',
+  'theme.name.dark': 'dark',
+
+  // ====== tree empty / scan empty ======
+  'tree.empty.no_scan_dirs': 'No scan directories yet',
+  'tree.empty.add_dir_btn': '＋ Add directory',
+
+  // ====== drag & drop / move ======
+  'move.confirm': 'Move {label} "{name}" to:\n{dst}\n\nProceed?',
+  'move.label.dir': 'directory',
+  'move.label.file': 'file',
+  'move.success': '✅ Moved',
+  'move.success_detail': '{name} → {dir}',
+  'move.success_detail_with_snaps': '{name} → {dir} ({n} snapshots synced)',
+
+  // ====== context menu ======
+  'menu.reveal_dir': 'Reveal directory in Finder',
+  'menu.reveal_file': 'Reveal in Finder',
+  'menu.copy_dir_path': 'Copy directory path',
+  'menu.copy_full_path': 'Copy full path',
+  'menu.copy_filename': 'Copy file name',
+  'menu.label.path': 'Path',
+  'menu.label.abs_path': 'Absolute path',
+  'menu.label.rel_path': 'Relative path',
+  'menu.label.filename': 'File name',
+  'menu.tooltip.icon': 'Click to open action menu',
+
+  // ====== search stats ======
+  'search.matches': '{n} match(es)',
+  'search.no_match': 'No match',
+
+  // ====== iframe fallback ======
+  'iframe.fallback.title': 'File failed to load or timed out',
+  'iframe.fallback.retry': '↻ Retry',
+  'iframe.fallback.close': 'Close',
+  'iframe.fallback.reasons_html': 'Possible reasons:<br>· File deleted or moved (try R to refresh)<br>· File &gt; 100MB (server limit)<br>· scan_roots config changed (check ⚙️ Settings)<br>· Server process error (restart python3 server.py)',
+
+  // ====== scan root row ======
+  'scan.toggle.disable_tooltip': 'Click to disable scanning',
+  'scan.toggle.enable_tooltip': 'Click to enable scanning',
+  'scan.row.remove': 'Remove',
+  'scan.row.remove_tooltip': 'Remove this directory from list',
+
+  // ====== folder browser (more) ======
+  'browse.select_btn': '✓ Select',
+  'browse.select_tooltip': 'Choose this directory',
+
+  // ====== history kind labels ======
+  'history.kind.auto': 'Auto-snapshot',
+  'history.kind.pre_overwrite': 'Pre-overwrite backup',
+  'history.kind.pre_restore': 'Pre-restore backup',
+
+  // ====== time machine quickbar ======
+  'tm.title': '↩ Time machine:',
+  'tm.5min': '5 min ago',
+  'tm.10min': '10 min ago',
+  'tm.30min': '30 min ago',
+  'tm.1hour': '1 hour ago',
+  'tm.1day': '1 day ago',
+  'tm.tooltip': 'Restore to {label} ({when})',
+
+  // ====== history item ======
+  'history.item.no_change': 'no change',
+  'history.item.delta_label': 'vs current',
+  'history.item.diff_loading': ' · diff loading…',
+  'history.item.diff_added': '+{n} lines',
+  'history.item.diff_removed': '-{n} lines',
+  'history.item.preview': '👁 Preview',
+  'history.item.restore': '↩ Restore',
+  'history.item.read_failed': 'Read failed',
+
+  // ====== cleanup / sparsify msgs ======
+  'cleanup.msg': 'Scanned {dirs} dirs, removed {removed} snapshots older than {days} days',
+  'sparsify.msg': '{dirs} dirs · removed {removed}/{before} · kept {kept}',
+
+  // ====== response/JSON errors ======
+  'err.response_not_json': 'Response is not JSON ({ctype}): {body}',
+  'err.json_parse': 'JSON parse failed: {msg}',
+  'err.server_500_hint': '(server.py may need restart for new code)',
+  'err.reveal_failed': 'reveal failed',
+  'err.read_failed': 'Read failed',
+
+  // ====== breadcrumb snapshot link ======
+  'bc.snap_link_tooltip': 'Open history drawer',
+  'bc.snap_count': '🗂 {n} snapshot(s)',
 };
