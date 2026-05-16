@@ -17,8 +17,12 @@
       --border: #E5E7EB;
       --green: #10B981;
       --amber: #F59E0B;
+      --accent: #C9A961;
       --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
       --mono: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+      /* v1.13: 分栏比例，可由 JS 写入 */
+      --md-split-left: 50%;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: var(--font); color: var(--text-1); background: var(--bg); }
@@ -67,6 +71,36 @@
     .md-header .md-dot.dirty { background: var(--amber); animation: md-pulse 1.2s infinite; }
     @keyframes md-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
+    /* v1.13: 视图切换工具栏 */
+    .md-view-toolbar {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 6px;
+      padding: 2px;
+    }
+    .md-view-btn {
+      background: transparent;
+      border: 0;
+      color: #9CA3AF;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .15s, color .15s;
+    }
+    .md-view-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: #E5E7EB;
+    }
+    .md-view-btn.active {
+      background: rgba(201,169,97,0.18);
+      color: var(--gold);
+      font-weight: 600;
+    }
+
     /* 主体：左右分栏 */
     .md-container {
       display: flex;
@@ -74,12 +108,52 @@
       background: #fff;
     }
     .md-pane {
-      flex: 1;
       min-width: 0;
       overflow: auto;
     }
-    .md-pane + .md-pane {
+    .md-pane-source {
+      flex: 0 0 var(--md-split-left);
+    }
+    .md-pane-preview {
+      flex: 1 1 auto;
       border-left: 1px solid var(--border);
+    }
+
+    /* v1.13: 中间拖拽分栏条 */
+    .md-splitter {
+      flex: 0 0 6px;
+      background: var(--border);
+      cursor: col-resize;
+      transition: background .15s;
+      user-select: none;
+      position: relative;
+    }
+    .md-splitter::before {
+      content: '';
+      position: absolute;
+      left: -3px; right: -3px; top: 0; bottom: 0;
+      /* 加宽点击/拖拽热区，但不影响视觉宽度 */
+    }
+    .md-splitter:hover,
+    .md-splitter.dragging {
+      background: var(--gold);
+    }
+
+    /* v1.13: 三视图模式 */
+    [data-view-mode="source"] .md-pane-preview,
+    [data-view-mode="source"] .md-splitter {
+      display: none;
+    }
+    [data-view-mode="source"] .md-pane-source {
+      flex: 1 1 100%;
+    }
+    [data-view-mode="preview"] .md-pane-source,
+    [data-view-mode="preview"] .md-splitter {
+      display: none;
+    }
+    [data-view-mode="preview"] .md-pane-preview {
+      flex: 1 1 100%;
+      border-left: 0;
     }
 
     /* 左：textarea */
@@ -170,15 +244,22 @@
   <div class="md-header">
     <span class="md-title">📝 {{FILE_NAME}}</span>
     <span class="md-sep"></span>
-    <span class="md-hint">左侧编辑 · 右侧实时预览 · 2 秒自动快照</span>
+    <span class="md-hint" id="md-hint">左侧编辑 · 右侧实时预览 · 2 秒自动快照</span>
+    <span class="md-sep"></span>
+    <span class="md-view-toolbar" id="md-view-toolbar">
+      <button class="md-view-btn" data-view="source" id="btn-source" title="">📝 原文</button>
+      <button class="md-view-btn active" data-view="split" id="btn-split" title="">⇔ 分栏</button>
+      <button class="md-view-btn" data-view="preview" id="btn-preview" title="">👁 预览</button>
+    </span>
     <span class="md-status">
       <span class="md-dot" id="md-dot"></span>
       <span id="md-status-text">已就绪</span>
     </span>
   </div>
-  <div class="md-container">
-    <div class="md-pane"><textarea id="md-input" spellcheck="false">{{MD_CONTENT}}</textarea></div>
-    <div class="md-pane"><div class="md-preview" id="md-preview"></div></div>
+  <div class="md-container" id="md-container" data-view-mode="split">
+    <div class="md-pane md-pane-source"><textarea id="md-input" spellcheck="false">{{MD_CONTENT}}</textarea></div>
+    <div class="md-splitter" id="md-splitter" role="separator" aria-label="Drag to resize panes" tabindex="0"></div>
+    <div class="md-pane md-pane-preview"><div class="md-preview" id="md-preview"></div></div>
   </div>
 
   <script>
@@ -219,6 +300,146 @@
       window.__MD_SET_CONTENT__ = function (v) { input.value = v; render(); };
     })();
   </script>
+
+  <!-- v1.13: 三视图控制器（视图切换 + 拖拽分栏 + 双语 + localStorage 持久化） -->
+  <script>
+    (function () {
+      var LS_VIEW = "doccenter.md.viewMode";       // 'source' | 'split' | 'preview'
+      var LS_RATIO = "doccenter.md.splitRatio";    // 0.1 ~ 0.9, default 0.5
+      var LS_LANG = "doccenter.lang";              // 'en' | 'zh'，与主 app 共享
+      var MIN_RATIO = 0.1, MAX_RATIO = 0.9, DEFAULT_RATIO = 0.5;
+      var ALLOWED_VIEWS = { source: 1, split: 1, preview: 1 };
+
+      // 微型双语字典（壳子页面独立，与主 app 的 i18n.js 不耦合）
+      var I18N = {
+        en: {
+          'view.source': '📝 Source',
+          'view.split': '⇔ Split',
+          'view.preview': '👁 Preview',
+          'view.source.tip': 'Show source only (hide preview)',
+          'view.split.tip': 'Show source and preview side by side',
+          'view.preview.tip': 'Show preview only (hide source)',
+          'hint': 'Edit on the left · Live preview on the right · Auto snapshot every 2s',
+          'status.ready': 'Ready'
+        },
+        zh: {
+          'view.source': '📝 原文',
+          'view.split': '⇔ 分栏',
+          'view.preview': '👁 预览',
+          'view.source.tip': '仅展示原文（隐藏预览）',
+          'view.split.tip': '左侧编辑 · 右侧预览',
+          'view.preview.tip': '仅展示预览（隐藏原文）',
+          'hint': '左侧编辑 · 右侧实时预览 · 2 秒自动快照',
+          'status.ready': '已就绪'
+        }
+      };
+
+      function getLang() {
+        var saved = localStorage.getItem(LS_LANG);
+        return (saved === 'zh' || saved === 'en') ? saved : 'en';
+      }
+
+      function applyI18n() {
+        var lang = getLang();
+        var d = I18N[lang];
+        document.getElementById('btn-source').textContent = d['view.source'];
+        document.getElementById('btn-split').textContent = d['view.split'];
+        document.getElementById('btn-preview').textContent = d['view.preview'];
+        document.getElementById('btn-source').title = d['view.source.tip'];
+        document.getElementById('btn-split').title = d['view.split.tip'];
+        document.getElementById('btn-preview').title = d['view.preview.tip'];
+        document.getElementById('md-hint').textContent = d['hint'];
+        document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+        // 状态文案（如果还没被 saver-runtime 改写）
+        var stEl = document.getElementById('md-status-text');
+        if (stEl && (stEl.textContent === '已就绪' || stEl.textContent === 'Ready' || !stEl.textContent.trim())) {
+          stEl.textContent = d['status.ready'];
+        }
+      }
+
+      function setViewMode(mode) {
+        if (!ALLOWED_VIEWS[mode]) mode = 'split';
+        var container = document.getElementById('md-container');
+        container.dataset.viewMode = mode;
+        var btns = document.querySelectorAll('.md-view-btn');
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].classList.toggle('active', btns[i].dataset.view === mode);
+        }
+        try { localStorage.setItem(LS_VIEW, mode); } catch (e) {}
+      }
+
+      function setSplitRatio(ratio) {
+        if (typeof ratio !== 'number' || !isFinite(ratio)) ratio = DEFAULT_RATIO;
+        if (ratio < MIN_RATIO) ratio = MIN_RATIO;
+        if (ratio > MAX_RATIO) ratio = MAX_RATIO;
+        document.documentElement.style.setProperty('--md-split-left', (ratio * 100).toFixed(2) + '%');
+        try { localStorage.setItem(LS_RATIO, ratio.toFixed(3)); } catch (e) {}
+      }
+
+      function getInitialRatio() {
+        var raw = localStorage.getItem(LS_RATIO);
+        var n = parseFloat(raw);
+        return (raw !== null && isFinite(n)) ? n : DEFAULT_RATIO;
+      }
+
+      function getInitialMode() {
+        var raw = localStorage.getItem(LS_VIEW);
+        return ALLOWED_VIEWS[raw] ? raw : 'split';
+      }
+
+      function startDrag(e) {
+        e.preventDefault();
+        var splitter = document.getElementById('md-splitter');
+        var container = document.getElementById('md-container');
+        splitter.classList.add('dragging');
+
+        function onMove(ev) {
+          var rect = container.getBoundingClientRect();
+          var ratio = (ev.clientX - rect.left) / rect.width;
+          setSplitRatio(ratio);
+        }
+        function onUp() {
+          splitter.classList.remove('dragging');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      }
+
+      // ===== 初始化 =====
+      // 1. 应用初始 view mode 和 split ratio
+      setViewMode(getInitialMode());
+      setSplitRatio(getInitialRatio());
+
+      // 2. 应用初始语言
+      applyI18n();
+
+      // 3. 按钮点击绑定
+      var btns = document.querySelectorAll('.md-view-btn');
+      for (var i = 0; i < btns.length; i++) {
+        (function(btn) {
+          btn.addEventListener('click', function() { setViewMode(btn.dataset.view); });
+        })(btns[i]);
+      }
+
+      // 4. splitter 拖拽
+      document.getElementById('md-splitter').addEventListener('mousedown', startDrag);
+
+      // 5. 监听 localStorage.doccenter.lang 变化（主 app 切语言时同步）
+      window.addEventListener('storage', function(e) {
+        if (e.key === LS_LANG) applyI18n();
+      });
+
+      // 6. 暴露给 saver-runtime / debug
+      window.__MD_VIEW_CTL__ = {
+        setViewMode: setViewMode,
+        setSplitRatio: setSplitRatio,
+        applyI18n: applyI18n
+      };
+    })();
+  </script>
+
   <script src="/saver-runtime.js" defer></script>
 </body>
 </html>

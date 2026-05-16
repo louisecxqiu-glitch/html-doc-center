@@ -7,6 +7,105 @@
 
 ---
 
+## [v1.13.0] — 2026-05-17 · 00:26 · Markdown 三视图（拖拽分栏 + 视图切换 + 双语）
+
+> Louis 截图反馈：md 文件打开后左右编辑器和预览固定 50:50 分栏，没法拖动也没法切单视图——浏览长 md 时要么挤、要么看不到全貌。本版本给 md 壳子页面加三档视图切换 + 拖拽分栏条 + localStorage 持久化 + 双语工具栏。
+
+### 👤 用户故事
+
+**场景**：周末凌晨复盘一份 6000 字的研报草稿（.md），想专注看渲染后的预览，但预览只占半屏；想专心写正文，又被预览分走一半视野。
+
+**之前**：固定 50:50 分栏，无法调整。要么挤着两边都看不全，要么必须复制内容到外部编辑器单独看渲染。
+
+**现在**：
+- 顶部出现「📝 原文 \| ⇔ 分栏 \| 👁 预览」三档按钮
+- 默认进分栏（保持原行为）
+- 一键切「仅预览」专心阅读、一键切「仅原文」专心写作
+- 中间分栏条可拖动（光标变 `col-resize`，hover 金色高亮）
+- 拖到极限 10%/90% 自动 clamp，splitter 不会消失
+- viewMode 和 splitRatio 记到 `localStorage`，下次打开自动恢复
+- 工具栏跟主侧栏语言切换（EN/中文）
+
+**一句话**：md 阅读和编辑终于不用妥协，按场景一键切换。
+
+### 🎨 UX
+
+- 三档视图按钮组放在 md-header 中间，配深色背景 + 金色高亮（与 DocCenter 整体黑金风格统一）
+- 分栏条 hover/dragging 状态用金色（`var(--gold)`）反馈，光标变 `col-resize`
+- 视图切换瞬间响应（CSS `data-view-mode` 状态机驱动，无 reflow 闪烁）
+- 工具栏文案跟随 `localStorage.doccenter.lang` 双语切换
+
+### 🔧 功能
+
+- `window.__MD_VIEW_CTL__.setViewMode(mode)` — 程序化切换 'source' / 'split' / 'preview'
+- `window.__MD_VIEW_CTL__.setSplitRatio(0~1)` — 程序化设置分栏比例
+- `window.__MD_VIEW_CTL__.applyI18n()` — 强制重新应用语言（外部脚本切语言后可主动调用）
+- `storage` 事件监听：跨 tab 切换语言时，已打开的 md 页面自动同步文案
+
+### 📐 架构
+
+- **直接改 md 壳子模板 `web/md-editor.html`**——不新建 `md-view-controller.js`
+  - 原因：md 壳子是 server 端独立渲染的页面，自包含 CSS+JS，不引用主 app 的 `i18n.js`。新建外部文件反而增加加载顺序复杂度。
+- **微型双语字典内联到壳子**（en/zh 各 8 条本地 key）
+  - 优点：壳子页面零依赖、零网络请求
+  - 缺点：和主 app 的 `locales/en.js` 重复——但量很小（7×2=14 行），可接受
+- **CSS 状态机**：`[data-view-mode="source|split|preview"]` 三态控制 pane 显隐和 splitter 显隐
+- **`--md-split-left` CSS 变量**控制比例，JS 调 `setProperty` 写入根元素，避免动态 inline style
+
+### 🤔 设计决策
+
+| 问题 | 决策 | 理由 |
+|---|---|---|
+| viewMode 按文件记忆还是全局？ | 全局共享 | 按文件记忆会让 localStorage 膨胀；用户在不同 md 间预期一致行为 |
+| 是否引入 split.js 或 Allotment？ | 不引入 | DocCenter 零 npm 铁律。原生 mousedown/move/up + CSS 变量 60 行 JS 搞定 |
+| 双语字典是用主 app 的 i18n 引擎吗？ | 内联独立字典 | 壳子页面没引主 app，引入 i18n.js 要改 server.py 加多个 script tag。trade-off 后选独立 |
+| 三档切换还是滑块？ | 三档 | 离散选择对应明确意图（看 / 写 / 平衡），滑块虽连续但每次都要思考 |
+| splitRatio 最小最大值？ | [0.1, 0.9] | 完全 0/1 用户体感就是"切到了仅原文/仅预览"，与三档按钮语义冲突 |
+| 计划原 6 个 Task（80-100 LoC controller + 改 app.js + 引入新 JS + 重启）走到一半被砍掉？ | 是 | Task 2 启动前 grep 发现 md 渲染在 server 端壳子里，不是 app.js。**Plan 修订记录写在 plan 文件顶部"⚠️ Plan 修订说明"**——保留偏差痕迹，下次写 plan 前先 grep 现状 |
+
+### ✅ 验证（铁律 4.1 真实演练）
+
+机器可验证（已通过）：
+- [x] `node --check` 通过（locales/en.js、locales/zh.js）
+- [x] `web/md-editor.html` HTML 标签闭合校验 OK
+- [x] 关键 DOM 元素 grep 命中 7/7：`md-container` / `md-splitter` / `md-view-toolbar` / `btn-source/split/preview` / `__MD_VIEW_CTL__` / `data-view-mode="split"`
+- [x] 守卫表达式无 `if (window.X)` 错用（铁律 4.2）
+- [x] 无 `style="display:none"` inline 残留（铁律 4.3）
+- [x] curl `/api/file?path=...md` 返回内容含新工具栏 + splitter + 控制器
+
+用户演练（Louis 验收 ✅ 通过）：
+- [x] 顶部三档按钮可见 + 默认"分栏"高亮
+- [x] 三档切换响应正确（仅原文 / 分栏 / 仅预览）
+- [x] 分栏条可拖拽 + hover/dragging 金色高亮 + 光标 col-resize
+- [x] 拖到极限 10%/90% clamp 生效
+- [x] 关闭重开恢复 viewMode + splitRatio
+- [x] 切回 HTML 文件不出现新工具栏（不影响非 md）
+
+### 📁 改动文件
+
+| 文件 | 改动 |
+|---|---|
+| `web/md-editor.html` | 主体改造：md-header 加视图工具栏 + 主体加 splitter + 加 60 行内联控制器 IIFE + 微型双语字典 |
+| `web/locales/en.js` | +7 keys（`md.view.*`）|
+| `web/locales/zh.js` | +7 keys 对应中文 |
+| `CHANGELOG.md` | 新增 v1.13 卡片 |
+| `docs/CHANGELOG-detailed.md` | 本卡片 |
+| `docs/superpowers/plans/2026-05-16-v1.13-md-three-views.md` | 完整 plan + 中途 plan 修订记录 |
+
+### 🎯 改动统计
+
+| 维度 | 数值 |
+|---|---|
+| 修改文件 | 5 个 |
+| 新增 plan | 1 个 |
+| 新增 CSS 行数 | ~50 行 |
+| 新增 JS 行数 | ~95 行（控制器 60 + 双语字典 35）|
+| 新增 i18n keys | 7 × 2 = 14 条（主 app 字典） |
+| 内联双语字典 keys | 8 × 2 = 16 条（壳子独立） |
+| 实际执行时间 | 约 35 分钟（plan 预估 50 分钟，提前 15 分钟） |
+
+---
+
 ## [v1.12.1] — 2026-05-14 · 13:30 · Hotfix · i18n 全面覆盖（动态注入 DOM + 重渲染机制）
 
 > Louis 截图反馈：v1.12.0 的快捷键面板（⌨️）切到英文后仍显示中文。复盘发现这不是单点 bug，而是 v1.12.0 的**系统性盲区**——所有"懒创建 / 动态拼接 HTML 字符串注入"的 DOM 都没被首次 `applyDOM()` 扫到，且语言切换后已渲染的动态面板不会自动重译。本版本系统化补完。

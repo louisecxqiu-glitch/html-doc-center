@@ -8,6 +8,25 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## v1.13 — Markdown Three-View · Markdown 三视图
+*2026-05-17 · v1.13.0*
+
+**EN**
+- 📝 Three view modes for `.md` files: **Source / Split / Preview**, one-click switch in header
+- ⇔ **Drag-resize splitter** between editor and preview (10%–90%, with `col-resize` cursor & gold hover)
+- 💾 View mode and split ratio persist in `localStorage` per browser
+- 🌍 Toolbar fully bilingual (syncs with main app language)
+- 🛡 Zero npm dependency, all logic inlined in the md shell
+
+**中文**
+- 📝 Markdown 文件三种视图：**仅原文 / 分栏 / 仅预览**，顶部一键切换
+- ⇔ 编辑器和预览之间可**拖拽分栏条**调整宽度（10%–90%，金色高亮反馈）
+- 💾 视图模式和分栏比例记到浏览器 `localStorage`
+- 🌍 工具栏支持双语，跟随主侧栏语言切换
+- 🛡 零 npm 依赖，所有逻辑内联到 md 壳子页面
+
+---
+
 ## v1.12 — Bilingual UI · 双语界面
 *2026-05-14 · v1.12.0 → v1.12.1*
 

@@ -384,4 +384,13 @@ window.LOCALE_ZH = {
   // ====== breadcrumb snapshot link ======
   'bc.snap_link_tooltip': '打开历史版本抽屉',
   'bc.snap_count': '🗂 {n} 个快照',
+
+  // ====== md three-view (v1.13) ======
+  'md.view.source': '📝 原文',
+  'md.view.split': '⇔ 分栏',
+  'md.view.preview': '👁 预览',
+  'md.view.source.tip': '仅展示原文（隐藏预览）',
+  'md.view.split.tip': '左侧编辑 · 右侧预览',
+  'md.view.preview.tip': '仅展示预览（隐藏原文）',
+  'md.view.hint': '左侧编辑 · 右侧实时预览 · 2 秒自动快照',
 };

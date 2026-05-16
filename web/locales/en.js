@@ -401,4 +401,13 @@ window.LOCALE_EN = {
   // ====== breadcrumb snapshot link ======
   'bc.snap_link_tooltip': 'Open history drawer',
   'bc.snap_count': '🗂 {n} snapshot(s)',
+
+  // ====== md three-view (v1.13) ======
+  'md.view.source': '📝 Source',
+  'md.view.split': '⇔ Split',
+  'md.view.preview': '👁 Preview',
+  'md.view.source.tip': 'Show source only (hide preview)',
+  'md.view.split.tip': 'Show source and preview side by side',
+  'md.view.preview.tip': 'Show preview only (hide source)',
+  'md.view.hint': 'Edit on the left · Live preview on the right · Auto snapshot every 2s',
 };
