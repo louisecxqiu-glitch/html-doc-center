@@ -7,6 +7,79 @@
 
 ---
 
+## [v1.13.1] — 2026-05-18 · 22:50 · 右键菜单新增「在新标签页打开」
+
+> Louis 截图反馈：在 DocCenter 侧栏右键文件时，菜单只有「Finder / 复制路径 / 复制文件名」三档操作系统级动作，缺一个**在浏览器新标签页打开**的选项。v1.13.0 加 md 三视图后，"同时打开两篇 md 对比"的诉求变明显（左 tab 看 A 文件 / 右 tab 看 B 文件），这个 patch 补上。
+
+### 👤 用户故事
+
+**场景**：周末复盘多份养虾系列草稿，想"左 tab 看上一篇成稿、右 tab 看本篇 md 草稿"做风格对比。
+
+**之前**：右键菜单只能复制完整路径，然后手动 `Cmd+T` 开新 tab、`Cmd+L` 聚焦地址栏、输入 `localhost:9901/api/file?path=` + 粘贴 + 回车——5 步操作。
+
+**现在**：右键 → 点「🔗 在新标签页打开」→ 完成，**1 步**。
+
+**一句话**：多文件对比阅读从 5 步缩到 1 步。
+
+### 🔧 改动 / 三段式
+
+| 维度 | 内容 |
+|---|---|
+| 问题 | 侧栏文件右键菜单缺"在浏览器新标签页打开"选项 |
+| 根因 | v1.10.6+ 菜单设计时只覆盖了"Finder / 复制路径 / 复制文件名"三档操作系统级动作；v1.13 加 md 三视图后"新标签页对比"诉求变明显 |
+| 解法 | (1) 菜单数组**追加为第一项**（高频主操作，优先级高于 Finder）；(2) 仅文件可见，目录不显示（目录用 `/api/file` 打开无意义）；(3) `window.open(url, '_blank', 'noopener,noreferrer')`，加 popup 拦截兜底 toast；(4) i18n 增加 4 条 keys（en/zh 各 2 条：menu.open_new_tab + toast.new_tab.{opened,blocked,failed}）|
+
+### 🎨 UX
+
+- 图标 🔗，放在菜单第一项（首要位置）
+- 仅文件可见，目录不显示——`isDir ? [] : [{...}]` 条件展开数组
+- 三档 toast 反馈：
+  - 成功：「🔗 已在新标签页打开」
+  - 浏览器拦截弹窗：「🚫 浏览器拦截了新标签页（请允许此站点弹窗）」
+  - 其他异常：「新标签页打开失败」+ 错误信息
+
+### 📐 架构
+
+- 新增函数 `openInNewTab(absPath)` 紧贴 `revealInFinder()` 放置（同类"打开类"动作）
+- URL 用现有 `/api/file?path=` 路由（v1.3 起 server.py 已支持 HTML 和 .md 两种文件类型）
+- `noopener,noreferrer` 安全选项防止新 tab 反向操作 parent window
+
+### ✅ 验证（铁律 4.1 真实演练）
+
+机器可验证（已通过）：
+- [x] `node --check` 通过（app.js / locales/en.js / locales/zh.js）
+- [x] 新增 keys EN 4 条 / ZH 4 条对应（menu.open_new_tab + 3 个 toast.new_tab.*）
+- [x] `openInNewTab` 函数定义 + 调用 grep 各命中
+- [x] 守卫表达式无 `if (window.X)` 错用（铁律 4.2）
+- [x] `curl /static/app.js` serve 出新版本含 `openInNewTab`
+
+用户演练（Louis 验收 ✅ 通过）：
+- [x] 硬刷新后右键文件菜单第一项变「🔗 在新标签页打开」
+- [x] 点击后浏览器新 tab 打开，原 tab 不变，toast 反馈正确
+- [x] 右键目录菜单不出现新标签页选项（仅文件可见）
+- [x] 切英文后菜单变 `🔗 Open in new tab`
+
+### 📁 改动文件
+
+| 文件 | 改动 |
+|---|---|
+| `web/app.js` | +1 函数 (`openInNewTab`) +1 菜单项（数组首位条件展开）|
+| `web/locales/en.js` | +4 keys |
+| `web/locales/zh.js` | +4 keys |
+| `CHANGELOG.md` | v1.13 卡片合并 v1.13.1 |
+| `docs/CHANGELOG-detailed.md` | 本卡片 |
+
+### 🎯 改动统计
+
+| 维度 | 数值 |
+|---|---|
+| 修改文件 | 3 个（app.js + 2 locales）|
+| 新增代码 | ~14 行（函数 13 行 + 菜单项 2 行）|
+| 新增 i18n keys | 4 × 2 = 8 条 |
+| 实际执行时间 | 约 12 分钟 |
+
+---
+
 ## [v1.13.0] — 2026-05-17 · 00:26 · Markdown 三视图（拖拽分栏 + 视图切换 + 双语）
 
 > Louis 截图反馈：md 文件打开后左右编辑器和预览固定 50:50 分栏，没法拖动也没法切单视图——浏览长 md 时要么挤、要么看不到全貌。本版本给 md 壳子页面加三档视图切换 + 拖拽分栏条 + localStorage 持久化 + 双语工具栏。

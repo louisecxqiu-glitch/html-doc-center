@@ -355,6 +355,21 @@
     }
   }
 
+  // v1.13.1: 在浏览器新标签页打开文件（独立浏览/对比场景）
+  function openInNewTab(absPath) {
+    try {
+      const url = "/api/file?path=" + encodeURIComponent(absPath);
+      const win = window.open(url, "_blank", "noopener,noreferrer");
+      if (!win) {
+        toast(window.i18n.t("toast.new_tab.blocked"), "error");
+        return;
+      }
+      toast(window.i18n.t("toast.new_tab.opened"), "success");
+    } catch (e) {
+      toast(window.i18n.t("toast.new_tab.failed"), "error", e.message);
+    }
+  }
+
   // ───────────── 缩放控制 ─────────────
   const zoomCtl = {
     current: 75,
@@ -1191,6 +1206,8 @@
     menu.className = "tree-icon-menu";
 
     const items = [
+      ...(isDir ? [] : [{ icon: "🔗", text: window.i18n.t("menu.open_new_tab"),
+        onClick: () => openInNewTab(absPath) }]),
       { icon: "📂", text: isDir ? window.i18n.t("menu.reveal_dir") : window.i18n.t("menu.reveal_file"),
         onClick: () => revealInFinder(absPath) },
       { icon: "📋", text: isDir ? window.i18n.t("menu.copy_dir_path") : window.i18n.t("menu.copy_full_path"),

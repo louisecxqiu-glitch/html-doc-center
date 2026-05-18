@@ -207,6 +207,9 @@ window.LOCALE_EN = {
   'toast.copy.failed': 'Copy failed',
   'toast.finder.opened': '📂 Revealed in Finder',
   'toast.finder.failed': 'Failed to open Finder',
+  'toast.new_tab.opened': '🔗 Opened in new tab',
+  'toast.new_tab.blocked': '🚫 New tab blocked by browser (allow popups for this site)',
+  'toast.new_tab.failed': 'Failed to open new tab',
   'toast.tree.load_failed': 'Tree load failed',
   'toast.fav.failed': 'Favorite update failed',
   'toast.move.save_first': '⚠️ Save current changes before moving this file',
@@ -334,6 +337,7 @@ window.LOCALE_EN = {
   // ====== context menu ======
   'menu.reveal_dir': 'Reveal directory in Finder',
   'menu.reveal_file': 'Reveal in Finder',
+  'menu.open_new_tab': 'Open in new tab',
   'menu.copy_dir_path': 'Copy directory path',
   'menu.copy_full_path': 'Copy full path',
   'menu.copy_filename': 'Copy file name',

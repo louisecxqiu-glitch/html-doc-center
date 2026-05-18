@@ -190,6 +190,9 @@ window.LOCALE_ZH = {
   'toast.copy.failed': '复制失败',
   'toast.finder.opened': '📂 已在 Finder 打开',
   'toast.finder.failed': 'Finder 打开失败',
+  'toast.new_tab.opened': '🔗 已在新标签页打开',
+  'toast.new_tab.blocked': '🚫 浏览器拦截了新标签页（请允许此站点弹窗）',
+  'toast.new_tab.failed': '新标签页打开失败',
   'toast.tree.load_failed': '目录树加载失败',
   'toast.fav.failed': '收藏失败',
   'toast.move.save_first': '⚠️ 请先保存当前修改再移动此文件',
@@ -317,6 +320,7 @@ window.LOCALE_ZH = {
   // ====== context menu ======
   'menu.reveal_dir': '在 Finder 打开此目录',
   'menu.reveal_file': '在 Finder 打开',
+  'menu.open_new_tab': '在新标签页打开',
   'menu.copy_dir_path': '复制目录路径',
   'menu.copy_full_path': '复制完整路径',
   'menu.copy_filename': '复制文件名',
