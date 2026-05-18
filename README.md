@@ -25,6 +25,16 @@
 
 ---
 
+<div align="center">
+
+![DocCenter Markdown three-view: source / split / preview with drag-resize splitter](docs/landing/images/screen-01-md-three-view.png)
+
+*Markdown three-view with drag-resizable splitter (v1.13) — one of 4 highlights. [See more screenshots ↓](#screenshots)*
+
+</div>
+
+---
+
 ## English
 
 ### Why HTML Doc Center?
@@ -124,7 +134,31 @@ That's it. No build step, no npm install, no Docker, no database.
 
 ### Screenshots
 
-> TODO: Add screenshots after first public release
+#### 📝 Markdown three-view (v1.13) — split / source / preview, drag-resizable
+
+![Markdown three-view with drag-resizable splitter](docs/landing/images/screen-01-md-three-view.png)
+
+*One-click switch between **Source / Split / Preview**. Drag the gold splitter to resize panes (clamped 10%–90%). View mode and ratio persist in `localStorage`.*
+
+#### 📂 Unified browser — all your local HTML/MD in one tree
+
+![DocCenter main UI: sidebar tree + iframe content area + edit toolbar](docs/landing/images/screen-02-main.png)
+
+*Three-tab sidebar (**Tree / Favorites / Recent**), live HTML rendering with injected WYSIWYG toolbar, breadcrumb path with snapshot count, fully bilingual (EN / 中文).*
+
+#### ⏱ Auto-snapshot + time machine — never lose anything you wrote
+
+![Time machine quick bar + history drawer with line-level diff](docs/landing/images/screen-03-time-machine.png)
+
+*Stop typing for 2 seconds → automatic snapshot. Top "**Time machine**" bar lets you jump to "5 / 10 / 30 minutes / 1 hour / 1 day ago". History drawer shows line-level diff and restores any version (with auto pre-restore backup).*
+
+#### 🔗 Power user — context menu, drag-move, keyboard shortcuts
+
+![Right-click context menu with 'Open in new tab' as the first item (v1.13.1)](docs/landing/images/screen-04-context-menu.png)
+
+*v1.13.1: Right-click any file → **Open in new tab** (top item) for side-by-side comparison. Plus drag to move files across scan roots, global shortcuts (`H` history / `R` refresh / `/` search / `T` theme), and dark mode that follows your system.*
+
+---
 
 ### Philosophy
 
