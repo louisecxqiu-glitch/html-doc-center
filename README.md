@@ -142,9 +142,9 @@ That's it. No build step, no npm install, no Docker, no database.
 
 #### 📂 Unified browser — all your local HTML/MD in one tree
 
-![DocCenter main UI: sidebar tree + iframe content area + edit toolbar](docs/landing/images/screen-02-main.png)
+![DocCenter main UI: sidebar tree + rendered HTML business report (charts/stats/insights)](docs/landing/images/screen-02-main.png)
 
-*Three-tab sidebar (**Tree / Favorites / Recent**), live HTML rendering with injected WYSIWYG toolbar, breadcrumb path with snapshot count, fully bilingual (EN / 中文).*
+*Three-tab sidebar (**Tree / Favorites / Recent**), live HTML rendering with injected WYSIWYG toolbar — here showing a quarterly business review with stat cards, bar chart, donut and insight box. Bilingual UI (EN / 中文).*
 
 #### ⏱ Auto-snapshot + time machine — never lose anything you wrote
 

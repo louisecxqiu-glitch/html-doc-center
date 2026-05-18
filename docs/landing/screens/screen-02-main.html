@@ -2,7 +2,8 @@
 <html><head><meta charset="UTF-8" /><style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { width: 1280px; height: 800px; font-family: -apple-system, "PingFang SC", sans-serif; background: #FAFAF7; overflow: hidden; display: flex; }
-  /* 左侧栏 */
+
+  /* ===== 左侧栏 ===== */
   .sidebar { width: 280px; background: #FAFAF7; border-right: 1px solid #E5E7EB; height: 800px; display: flex; flex-direction: column; }
   .sidebar-tabs { display: flex; padding: 12px 12px 0; gap: 4px; }
   .tab { flex: 1; padding: 8px 6px; font-size: 11.5px; font-weight: 600; text-align: center; border-radius: 6px 6px 0 0; cursor: pointer; color: #6B7280; }
@@ -18,60 +19,204 @@
   .tree-node.depth-2 { padding-left: 32px; }
   .tree-node.depth-3 { padding-left: 46px; }
   .icon { font-size: 14px; }
-  /* 顶部条 */
+  .footer-sb { padding: 10px 12px; border-top: 1px solid #E5E7EB; display: flex; gap: 8px; align-items: center; font-size: 11.5px; color: #6B7280; }
+  .footer-sb .lang { margin-left: auto; }
+  .footer-sb .lang span { padding: 2px 6px; border-radius: 4px; cursor: pointer; }
+  .footer-sb .lang .active-lang { background: #1A1D23; color: #C9A961; font-weight: 600; }
+
+  /* ===== 主区 ===== */
   .main { flex: 1; display: flex; flex-direction: column; }
-  .breadcrumb { height: 40px; background: #fff; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; padding: 0 18px; gap: 8px; font-size: 12.5px; color: #6B7280; }
+  .breadcrumb { height: 40px; background: #fff; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; padding: 0 18px; gap: 8px; font-size: 12.5px; color: #6B7280; flex-shrink: 0; }
   .breadcrumb .crumb-cur { color: #1A1D23; font-weight: 600; }
   .breadcrumb .sep { color: #C9A961; }
   .breadcrumb .meta { margin-left: auto; display: flex; gap: 16px; font-size: 11.5px; color: #9CA3AF; }
   .breadcrumb .meta b { color: #C9A961; font-weight: 700; }
-  /* iframe 区 */
-  .content { flex: 1; background: #fff; padding: 30px 40px; overflow: auto; }
-  .content h1 { font-size: 28px; font-weight: 900; margin-bottom: 12px; color: #1A1D23; }
-  .content .meta-row { display: flex; gap: 16px; font-size: 12px; color: #9CA3AF; margin-bottom: 22px; }
-  .content h2 { font-size: 20px; margin: 26px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #E5E7EB; }
-  .content p { font-size: 14px; line-height: 1.75; color: #2D3139; margin-bottom: 12px; }
-  .content .callout { background: linear-gradient(135deg, #1A1D23 0%, #2D3139 100%); color: #E5E7EB; padding: 18px 22px; border-radius: 8px; border-left: 4px solid #C9A961; margin: 16px 0; }
-  .content .callout b { color: #C9A961; }
-  .content .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
-  .content .stat { background: #FAFAF7; padding: 14px 16px; border-radius: 8px; border: 1px solid #E5E7EB; }
-  .content .stat-num { font-size: 22px; font-weight: 900; color: #1A1D23; line-height: 1; }
-  .content .stat-label { font-size: 11px; color: #6B7280; margin-top: 4px; }
-  /* 编辑工具栏 */
-  .edit-toolbar { position: absolute; top: 50px; right: 60px; background: #1A1D23; color: #E5E7EB; padding: 6px 8px; border-radius: 8px; display: flex; gap: 4px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 10; }
+
+  /* ===== 编辑工具栏 ===== */
+  .edit-toolbar { position: absolute; top: 50px; right: 24px; background: #1A1D23; color: #E5E7EB; padding: 6px 8px; border-radius: 8px; display: flex; gap: 4px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 10; }
   .edit-toolbar .ebtn { padding: 4px 8px; cursor: pointer; border-radius: 4px; }
   .edit-toolbar .ebtn:hover { background: rgba(255,255,255,0.1); }
   .edit-toolbar .ebtn.B { font-weight: 900; }
   .edit-toolbar .ebtn.I { font-style: italic; }
   .edit-toolbar .ebtn.U { text-decoration: underline; }
-  .edit-toolbar .esep { width: 1px; background: rgba(255,255,255,0.15); }
-  /* 设置 */
-  .footer-sb { padding: 10px 12px; border-top: 1px solid #E5E7EB; display: flex; gap: 8px; align-items: center; font-size: 11.5px; color: #6B7280; }
-  .footer-sb .lang { margin-left: auto; }
-  .footer-sb .lang span { padding: 2px 6px; border-radius: 4px; cursor: pointer; }
-  .footer-sb .lang .active-lang { background: #1A1D23; color: #C9A961; font-weight: 600; }
+  .edit-toolbar .esep { width: 1px; background: rgba(255,255,255,0.15); margin: 2px 0; }
+
+  /* ===== iframe 模拟区（核心改动：渲染一份真实 HTML 报告） ===== */
+  .iframe-area { flex: 1; background: #fff; overflow: hidden; position: relative; }
+
+  /* 真实 HTML 报告内容 —— 一份"AI 一人公司 Q2 复盘"产品级 HTML */
+  .report {
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #FAFAF7 0%, #fff 80%);
+    padding: 38px 56px 60px;
+    overflow-y: auto;
+    font-family: 'PingFang SC', -apple-system, sans-serif;
+    color: #1A1D23;
+  }
+  .report .r-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 22px;
+    border-bottom: 2px solid #1A1D23;
+    padding-bottom: 14px;
+  }
+  .report .r-header .r-title-block h1 {
+    font-size: 30px; font-weight: 900; line-height: 1.15;
+    letter-spacing: -0.5px; margin-bottom: 6px;
+  }
+  .report .r-header .r-title-block .r-sub {
+    font-size: 13px; color: #6B7280; font-weight: 500;
+  }
+  .report .r-header .r-tag {
+    background: linear-gradient(135deg, #C9A961 0%, #E5C87A 100%);
+    color: #1A1D23;
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    padding: 5px 12px; border-radius: 4px;
+  }
+
+  /* 三大数字卡 */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .stat-card {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 14px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent, #C9A961);
+  }
+  .stat-card.up { --accent: #10B981; }
+  .stat-card.steady { --accent: #C9A961; }
+  .stat-card.flag { --accent: #DC2626; }
+  .stat-card .label {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 1px;
+    color: #6B7280; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .stat-card .value {
+    font-size: 22px; font-weight: 900; color: #1A1D23;
+    line-height: 1; letter-spacing: -0.3px;
+  }
+  .stat-card .delta {
+    font-size: 11px; font-weight: 600;
+    margin-top: 4px;
+  }
+  .stat-card.up .delta { color: #10B981; }
+  .stat-card.flag .delta { color: #DC2626; }
+  .stat-card.steady .delta { color: #6B7280; }
+
+  /* 章节标题 */
+  .report h2 {
+    font-size: 17px; font-weight: 800; margin: 18px 0 10px;
+    color: #1A1D23;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .report h2::before {
+    content: ''; width: 4px; height: 16px;
+    background: #1A1D23; border-radius: 2px;
+  }
+
+  /* 内容卡片+图表区 */
+  .chart-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .panel {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .panel .p-title {
+    font-size: 12.5px; font-weight: 700; color: #1A1D23;
+    margin-bottom: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .panel .p-title .pill {
+    font-size: 9.5px; padding: 2px 7px; border-radius: 3px;
+    background: #F1F1ED; color: #6B7280; font-weight: 600;
+  }
+
+  /* 简易柱状图 */
+  .bars { display: flex; align-items: flex-end; gap: 8px; height: 80px; padding: 0 4px; }
+  .bar { flex: 1; background: linear-gradient(180deg, #C9A961 0%, #1A1D23 100%); border-radius: 3px 3px 0 0; position: relative; }
+  .bar.short { background: linear-gradient(180deg, #E5C87A 0%, #C9A961 100%); }
+  .bar .bar-label { position: absolute; bottom: -18px; left: 0; right: 0; text-align: center; font-size: 9.5px; color: #9CA3AF; font-weight: 600; }
+  .bars-axis { display: flex; gap: 8px; padding: 0 4px; margin-top: 22px; font-size: 9.5px; color: #9CA3AF; font-weight: 600; }
+  .bars-axis div { flex: 1; text-align: center; }
+
+  /* 简易甜甜圈 + 图例 */
+  .donut-block { display: flex; align-items: center; gap: 14px; }
+  .donut {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: conic-gradient(#1A1D23 0% 42%, #C9A961 42% 70%, #10B981 70% 88%, #E5E7EB 88% 100%);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .donut::after {
+    content: ''; position: absolute; inset: 14px;
+    background: #fff; border-radius: 50%;
+  }
+  .donut .donut-c { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: #1A1D23; z-index: 1; }
+  .legend { font-size: 11px; color: #4B5563; line-height: 1.7; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  /* 关键洞察盒 */
+  .insight-box {
+    background: linear-gradient(135deg, #1A1D23 0%, #2D3139 100%);
+    color: #E5E7EB;
+    padding: 14px 18px;
+    border-radius: 8px;
+    border-left: 3px solid #C9A961;
+    margin: 6px 0 0;
+  }
+  .insight-box .i-label {
+    font-size: 9.5px; font-weight: 800; letter-spacing: 1.5px;
+    color: #C9A961;
+    margin-bottom: 4px;
+  }
+  .insight-box .i-text {
+    font-size: 12.5px; line-height: 1.65;
+  }
+  .insight-box .i-text b { color: #fff; }
+
 </style></head>
 <body>
+  <!-- 左侧栏 -->
   <div class="sidebar">
     <div class="sidebar-tabs">
       <div class="tab active">📂 目录</div>
       <div class="tab">⭐ 收藏</div>
       <div class="tab">🕐 最近</div>
     </div>
-    <div class="search"><input value="ARIS" placeholder="搜索路径..." /></div>
+    <div class="search"><input value="Q2" placeholder="搜索路径..." /></div>
     <div class="tree">
       <div class="tree-node folder"><span class="icon">📁</span>outputs</div>
-      <div class="tree-node folder depth-1"><span class="icon">📁</span>01-养虾系列</div>
-      <div class="tree-node folder depth-2"><span class="icon">📁</span>research</div>
-      <div class="tree-node folder depth-3"><span class="icon">📁</span>aris-deep-dive</div>
-      <div class="tree-node depth-3" style="padding-left:60px;"><span class="icon">📝</span>00-导读.md</div>
-      <div class="tree-node active depth-3" style="padding-left:60px;"><span class="icon">📝</span>01-技术拆解.md</div>
-      <div class="tree-node depth-3" style="padding-left:60px;"><span class="icon">📝</span>02-应用场景.md</div>
-      <div class="tree-node depth-2"><span class="icon">📝</span>2026-05-16-superpowers...</div>
-      <div class="tree-node depth-2"><span class="icon">📄</span>cover-wechat.html</div>
-      <div class="tree-node folder depth-1"><span class="icon">📁</span>06-投研</div>
-      <div class="tree-node depth-2"><span class="icon">📝</span>12-yimu-platform-strat...</div>
-      <div class="tree-node depth-2"><span class="icon">📄</span>定价模型V17.html</div>
+      <div class="tree-node folder depth-1"><span class="icon">📁</span>reports</div>
+      <div class="tree-node folder depth-2"><span class="icon">📁</span>2026-Q2</div>
+      <div class="tree-node depth-2" style="padding-left:46px;"><span class="icon">📄</span>00-月报-04.html</div>
+      <div class="tree-node active depth-2" style="padding-left:46px;"><span class="icon">📄</span>01-Q2-业务复盘.html</div>
+      <div class="tree-node depth-2" style="padding-left:46px;"><span class="icon">📄</span>02-Q3-OKR.html</div>
+      <div class="tree-node depth-2" style="padding-left:46px;"><span class="icon">📝</span>03-数据备注.md</div>
+      <div class="tree-node folder depth-1"><span class="icon">📁</span>covers</div>
+      <div class="tree-node depth-2"><span class="icon">📄</span>2026-05-feature-cover.html</div>
+      <div class="tree-node depth-2"><span class="icon">📄</span>2026-05-poster.html</div>
+      <div class="tree-node folder depth-1"><span class="icon">📁</span>articles</div>
+      <div class="tree-node depth-2"><span class="icon">📝</span>aris-deep-dive.md</div>
+      <div class="tree-node depth-2"><span class="icon">📝</span>superpowers-30days.md</div>
       <div class="tree-node folder"><span class="icon">📁</span>软件项目探索</div>
       <div class="tree-node folder depth-1"><span class="icon">📁</span>html-doc-center</div>
       <div class="tree-node depth-2"><span class="icon">📄</span>landing/index.html</div>
@@ -82,20 +227,22 @@
     </div>
   </div>
 
+  <!-- 主区 -->
   <div class="main">
     <div class="breadcrumb">
       <span>outputs</span><span class="sep">›</span>
-      <span>01-养虾系列</span><span class="sep">›</span>
-      <span>research</span><span class="sep">›</span>
-      <span>aris-deep-dive</span><span class="sep">›</span>
-      <span class="crumb-cur">01-技术拆解.md</span>
+      <span>reports</span><span class="sep">›</span>
+      <span>2026-Q2</span><span class="sep">›</span>
+      <span class="crumb-cur">01-Q2-业务复盘.html</span>
       <div class="meta">
-        <span>🗂 <b>12</b> 快照</span>
-        <span>📐 6.3 KB</span>
-        <span>🕐 12 分钟前</span>
+        <span>🗂 <b>23</b> 快照</span>
+        <span>📐 142 KB</span>
+        <span>🕐 8 分钟前</span>
       </div>
     </div>
-    <div class="content" style="position:relative;">
+
+    <div class="iframe-area">
+      <!-- 编辑工具栏（浮动）-->
       <div class="edit-toolbar">
         <span class="ebtn B">B</span>
         <span class="ebtn I">I</span>
@@ -111,27 +258,73 @@
         <span class="ebtn">💬 批注</span>
         <span style="width:8px;height:8px;border-radius:50%;background:#10B981;align-self:center;margin:0 6px;"></span>
       </div>
-      <h1>ARIS：对抗式 Multi-Agent 协作的技术拆解</h1>
-      <div class="meta-row">
-        <span>🦞 养虾系列 · 第 18 篇</span>
-        <span>·</span>
-        <span>2026-05-18</span>
-        <span>·</span>
-        <span>路易乔布斯</span>
+
+      <!-- 真实 HTML 报告内容（这才是 DocCenter 真正的看家本领：渲染 HTML）-->
+      <div class="report">
+        <!-- 报告头 -->
+        <div class="r-header">
+          <div class="r-title-block">
+            <h1>2026 Q2 · AI 一人公司业务复盘</h1>
+            <div class="r-sub">04-01 → 06-30 · 路易乔布斯 · 内部版</div>
+          </div>
+          <div class="r-tag">CONFIDENTIAL</div>
+        </div>
+
+        <!-- 三大数字卡 -->
+        <div class="stat-row">
+          <div class="stat-card up">
+            <div class="label">营收 GMV</div>
+            <div class="value">¥ 487K</div>
+            <div class="delta">↑ +143% vs Q1</div>
+          </div>
+          <div class="stat-card steady">
+            <div class="label">出活节奏</div>
+            <div class="value">31 篇</div>
+            <div class="delta">≈ 持平 vs Q1 (30 篇)</div>
+          </div>
+          <div class="stat-card flag">
+            <div class="label">单作品 ROI</div>
+            <div class="value">¥ 15.7K</div>
+            <div class="delta">↓ 长尾被头部稀释</div>
+          </div>
+        </div>
+
+        <!-- 主体两列 -->
+        <h2>关键趋势</h2>
+        <div class="chart-row">
+          <div class="panel">
+            <div class="p-title">月度产出 / 营收（万元）<span class="pill">CHART</span></div>
+            <div class="bars">
+              <div class="bar short" style="height:38%"><div class="bar-label">04</div></div>
+              <div class="bar" style="height:55%"><div class="bar-label">05</div></div>
+              <div class="bar" style="height:78%"><div class="bar-label">06</div></div>
+              <div class="bar short" style="height:42%"><div class="bar-label">07*</div></div>
+            </div>
+            <div class="bars-axis"><div>4.2</div><div>9.6</div><div>34.9</div><div>预测</div></div>
+          </div>
+
+          <div class="panel">
+            <div class="p-title">营收来源结构 <span class="pill">RATIO</span></div>
+            <div class="donut-block">
+              <div class="donut"><span class="donut-c">42%</span></div>
+              <div class="legend">
+                <div class="legend-item"><span class="legend-dot" style="background:#1A1D23;"></span>训练营 / 工作坊 (42%)</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#C9A961;"></span>知识付费 (28%)</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#10B981;"></span>咨询服务 (18%)</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#E5E7EB;"></span>其他 (12%)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2>下一步行动 — Q3 重点</h2>
+        <div class="insight-box">
+          <div class="i-label">CORE INSIGHT</div>
+          <div class="i-text">
+            06 月营收占 Q2 整季 <b>71.6%</b>——单一爆款拉动型增长不可持续。Q3 必须从 <b>"找下一个爆款"</b> 转为 <b>"建可复制的产品矩阵"</b>，至少跑通 3 条独立产品线。
+          </div>
+        </div>
       </div>
-      <h2>一、问题定义</h2>
-      <p>长 Agent 任务（8h+）会产生 <strong>"plausible unsupported success"</strong>——看似合理但缺乏证据支撑的成功。这是单 Agent 自审的根本缺陷：噪声 bandit 永远不会发现自己的盲点。</p>
-      <div class="callout">
-        ARIS 的核心创新：将 <b>质量保障</b> 提升为一等工作流层。<br>
-        通过跨家族对抗审查（Claude × GPT-5）打破 self-play 盲点。
-      </div>
-      <h2>二、关键数据</h2>
-      <div class="stat-grid">
-        <div class="stat"><div class="stat-num">65+</div><div class="stat-label">Markdown Skills</div></div>
-        <div class="stat"><div class="stat-num">6</div><div class="stat-label">MCP 模型桥接</div></div>
-        <div class="stat"><div class="stat-num">3</div><div class="stat-label">证据审计阶段</div></div>
-      </div>
-      <p>论文承认：<strong>当前仅有观察性证据，缺乏受控对照评估</strong>——这点很重要，避免我们陷入"学术 demo 即真理"的陷阱...</p>
     </div>
   </div>
 </body></html>
