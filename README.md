@@ -7,6 +7,7 @@
 *Built for the AI era, where we all generate too many HTML files and lose track of them.*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Latest Release](https://img.shields.io/github/v/release/louisecxqiu-glitch/html-doc-center?color=C9A961&label=latest)](https://github.com/louisecxqiu-glitch/html-doc-center/releases/latest)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![No npm](https://img.shields.io/badge/npm_deps-0-brightgreen.svg)]()
 [![Single File Server](https://img.shields.io/badge/server-single_file-orange.svg)]()
