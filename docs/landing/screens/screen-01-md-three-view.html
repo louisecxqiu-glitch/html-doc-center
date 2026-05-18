@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8" /><style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 1280px; height: 800px; font-family: -apple-system, "PingFang SC", sans-serif; background: #FAFAF7; overflow: hidden; }
+  /* 顶部条 */
+  .header { height: 40px; background: linear-gradient(180deg, #1A1D23 0%, #2D3139 100%); color: #E5E7EB;
+    display: flex; align-items: center; padding: 0 16px; gap: 12px; font-size: 13px; border-bottom: 1px solid rgba(201,169,97,.25); }
+  .header .title { font-weight: 600; color: #C9A961; letter-spacing: 0.3px; }
+  .header .sep { width: 1px; height: 16px; background: rgba(255,255,255,.2); }
+  .header .hint { color: #9CA3AF; font-size: 12px; }
+  .header .toolbar { display: inline-flex; gap: 2px; background: rgba(255,255,255,0.05); border-radius: 6px; padding: 2px; }
+  .header .vbtn { background: transparent; border: 0; color: #9CA3AF; font-size: 12px; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+  .header .vbtn.active { background: rgba(201,169,97,0.18); color: #C9A961; font-weight: 600; }
+  .header .status { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #9CA3AF; }
+  .header .dot { width: 8px; height: 8px; border-radius: 50%; background: #10B981; }
+  /* 主体 */
+  .container { display: flex; height: calc(800px - 40px); background: #fff; }
+  .pane-source { flex: 0 0 50%; overflow: auto; padding: 20px 24px; font-family: "SF Mono", Menlo, monospace; font-size: 13px; line-height: 1.7; color: #1A1D23; background: #FAFAF7; white-space: pre-wrap; }
+  .splitter { flex: 0 0 6px; background: #C9A961; cursor: col-resize; box-shadow: 0 0 8px rgba(201,169,97,0.5); }
+  .pane-preview { flex: 1; overflow: auto; padding: 28px 36px; font-size: 14px; line-height: 1.75; color: #1A1D23; }
+  .pane-preview h1 { font-size: 1.7em; border-bottom: 2px solid #E5E7EB; padding-bottom: 0.3em; margin-bottom: 0.6em; }
+  .pane-preview h2 { font-size: 1.4em; border-bottom: 1px solid #E5E7EB; padding-bottom: 0.2em; margin: 1em 0 0.4em; }
+  .pane-preview p { margin: 0.6em 0; }
+  .pane-preview ul { padding-left: 1.6em; margin: 0.6em 0; }
+  .pane-preview li { margin: 0.2em 0; }
+  .pane-preview blockquote { margin: 0.8em 0; padding: 0.5em 1.2em; border-left: 3px solid #C9A961; background: #F1F1ED; color: #4B5563; }
+  .pane-preview code { background: #F1F1ED; padding: 1px 6px; border-radius: 4px; color: #BE185D; font-size: 0.88em; }
+  .pane-preview strong { color: #1A1D23; }
+</style></head>
+<body>
+  <div class="header">
+    <span class="title">📝 ARIS-技术拆解.md</span>
+    <span class="sep"></span>
+    <span class="hint">左侧编辑 · 右侧实时预览 · 2 秒自动快照</span>
+    <span class="sep"></span>
+    <span class="toolbar">
+      <button class="vbtn">📝 原文</button>
+      <button class="vbtn active">⇔ 分栏</button>
+      <button class="vbtn">👁 预览</button>
+    </span>
+    <span class="status"><span class="dot"></span><span>已就绪</span></span>
+  </div>
+  <div class="container">
+    <div class="pane-source"># ARIS：对抗式 Multi-Agent 协作
+
+## 核心问题
+
+长 Agent 跑 8 小时后会出现**"看似合理但缺乏证据"**的失败模式——这是单 Agent 的根本缺陷。
+
+## 解法：跨家族 Reviewer
+
+> Executor 用 Claude，Reviewer 用 GPT-5。
+> Reviewer 不允许总结，必须**直接读源**。
+
+### 三层保障栈
+
+1. `/experiment-audit` — 检测 5 类失败
+2. `/result-to-claim` — 主张账本
+3. `/paper-claim-audit` — 零上下文交叉核对
+
+## 关键设计
+
+- 单 Agent 自审 ≈ 噪声 bandit
+- 双 Agent 跨家族 ≈ 对抗 bandit
+- **更快收敛到 Nash 均衡**
+</div>
+    <div class="splitter"></div>
+    <div class="pane-preview">
+      <h1>ARIS：对抗式 Multi-Agent 协作</h1>
+      <h2>核心问题</h2>
+      <p>长 Agent 跑 8 小时后会出现<strong>"看似合理但缺乏证据"</strong>的失败模式——这是单 Agent 的根本缺陷。</p>
+      <h2>解法：跨家族 Reviewer</h2>
+      <blockquote>Executor 用 Claude，Reviewer 用 GPT-5。Reviewer 不允许总结，必须<strong>直接读源</strong>。</blockquote>
+      <h2 style="font-size:1.2em;">三层保障栈</h2>
+      <ol style="padding-left: 1.6em;">
+        <li><code>/experiment-audit</code> — 检测 5 类失败</li>
+        <li><code>/result-to-claim</code> — 主张账本</li>
+        <li><code>/paper-claim-audit</code> — 零上下文交叉核对</li>
+      </ol>
+      <h2>关键设计</h2>
+      <ul>
+        <li>单 Agent 自审 ≈ 噪声 bandit</li>
+        <li>双 Agent 跨家族 ≈ 对抗 bandit</li>
+        <li><strong>更快收敛到 Nash 均衡</strong></li>
+      </ul>
+    </div>
+  </div>
+</body></html>

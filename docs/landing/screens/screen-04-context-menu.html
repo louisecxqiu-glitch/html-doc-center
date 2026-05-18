@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8" /><style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 1280px; height: 800px; font-family: -apple-system, "PingFang SC", sans-serif; background: #FAFAF7; overflow: hidden; display: flex; }
+  /* 侧栏 */
+  .sidebar { width: 320px; background: #FAFAF7; border-right: 1px solid #E5E7EB; padding: 16px 12px; }
+  .sidebar h3 { font-size: 11.5px; font-weight: 700; color: #6B7280; letter-spacing: 1.5px; padding: 8px 12px; margin-top: 12px; }
+  .file-row { padding: 7px 12px; font-size: 13px; color: #2D3139; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; position: relative; }
+  .file-row:hover { background: #F1F1ED; }
+  .file-row.active { background: rgba(201,169,97,0.1); border: 1px solid rgba(201,169,97,0.3); padding: 6px 11px; }
+  .file-row .fname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* 右键菜单 */
+  .menu { position: absolute; top: 220px; left: 230px; background: #fff; border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04); padding: 6px; min-width: 240px; z-index: 10; animation: pop .2s; }
+  @keyframes pop { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
+  .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; font-size: 13.5px; color: #1A1D23; border-radius: 8px; cursor: pointer; }
+  .menu-item:hover { background: #F1F1ED; }
+  .menu-item.first { background: rgba(201,169,97,0.08); }
+  .menu-item.first:hover { background: rgba(201,169,97,0.15); }
+  .menu-item.first .mi-icon { background: linear-gradient(135deg, #C9A961, #E5C87A); color: #1A1D23; }
+  .menu-item .mi-icon { width: 26px; height: 26px; background: #F1F1ED; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .menu-item .mi-text { flex: 1; font-weight: 500; }
+  .menu-item.first .mi-text { font-weight: 600; }
+  .menu-item .mi-shortcut { font-size: 11px; color: #9CA3AF; font-family: "SF Mono", monospace; }
+  .menu-divider { height: 1px; background: #E5E7EB; margin: 4px 8px; }
+  .menu-tag { font-size: 9px; font-weight: 800; letter-spacing: 1.2px; color: #C9A961; padding: 4px 14px; text-transform: uppercase; }
+  /* 主区 */
+  .main { flex: 1; padding: 30px 50px; }
+  .main h1 { font-size: 26px; font-weight: 900; color: #1A1D23; margin-bottom: 20px; }
+  .main p { color: #9CA3AF; font-size: 14px; }
+  .main .sub-content { opacity: 0.4; }
+  /* 顶部 */
+  .header { height: 40px; background: linear-gradient(180deg, #1A1D23, #2D3139); color: #E5E7EB; display: flex; align-items: center; padding: 0 16px; gap: 12px; font-size: 13px; position: absolute; left: 0; right: 0; top: 0; }
+  .header .title { color: #C9A961; font-weight: 600; }
+  /* 高亮指针线 */
+  .pointer { position: absolute; top: 222px; left: 220px; z-index: 5; pointer-events: none; }
+  .pointer::before { content: ''; position: absolute; left: -8px; top: 5px; width: 14px; height: 14px; border-right: 2px solid #C9A961; border-top: 2px solid #C9A961; transform: rotate(45deg); }
+</style></head>
+<body>
+  <div class="sidebar" style="margin-top:40px;padding-top:8px;">
+    <h3>📂 目录</h3>
+    <div class="file-row" style="padding-left: 14px;"><span>📁</span><span class="fname">aris-deep-dive</span></div>
+    <div class="file-row" style="padding-left: 28px;"><span>📝</span><span class="fname">00-导读.md</span></div>
+    <div class="file-row active" style="padding-left: 28px;"><span>📝</span><span class="fname">01-技术拆解.md</span></div>
+    <div class="file-row" style="padding-left: 28px;"><span>📝</span><span class="fname">02-应用场景.md</span></div>
+    <div class="file-row" style="padding-left: 28px;"><span>📝</span><span class="fname">03-限制与质疑.md</span></div>
+    <div class="file-row" style="padding-left: 28px;"><span>📝</span><span class="fname">04-工程化建议.md</span></div>
+    <div class="file-row" style="padding-left: 14px;"><span>📁</span><span class="fname">superpowers-deep-dive</span></div>
+    <div class="file-row" style="padding-left: 28px;"><span>📄</span><span class="fname">cover-classroom.html</span></div>
+    <div class="file-row" style="padding-left: 28px;"><span>📄</span><span class="fname">article-final.html</span></div>
+  </div>
+
+  <!-- 高亮指针 -->
+  <div class="pointer"></div>
+
+  <!-- 右键菜单 -->
+  <div class="menu">
+    <div class="menu-tag">📝 01-技术拆解.md</div>
+    <div class="menu-divider"></div>
+
+    <div class="menu-item first">
+      <span class="mi-icon">🔗</span>
+      <span class="mi-text">在新标签页打开</span>
+      <span class="mi-shortcut" style="background:rgba(201,169,97,0.2);color:#C9A961;padding:2px 6px;border-radius:3px;font-weight:700;">v1.13.1 NEW</span>
+    </div>
+
+    <div class="menu-divider"></div>
+
+    <div class="menu-item">
+      <span class="mi-icon">📂</span>
+      <span class="mi-text">在 Finder 打开</span>
+    </div>
+    <div class="menu-item">
+      <span class="mi-icon">📋</span>
+      <span class="mi-text">复制完整路径</span>
+      <span class="mi-shortcut">⌘+Shift+C</span>
+    </div>
+    <div class="menu-item">
+      <span class="mi-icon">📄</span>
+      <span class="mi-text">复制文件名</span>
+    </div>
+  </div>
+
+  <!-- 主区域（虚化背景） -->
+  <div class="main" style="margin-top:40px;">
+    <div class="sub-content">
+      <h1>ARIS：对抗式 Multi-Agent 协作的技术拆解</h1>
+      <p>长 Agent 任务会产生"plausible unsupported success"...</p>
+      <p style="margin-top:12px;">ARIS 的核心创新：将质量保障提升为一等工作流层...</p>
+      <p style="margin-top:12px;">通过跨家族对抗审查打破 self-play 盲点...</p>
+    </div>
+  </div>
+
+  <!-- 顶部条 -->
+  <div class="header">
+    <span class="title">📝 01-技术拆解.md</span>
+    <span style="width:1px;height:16px;background:rgba(255,255,255,0.2);"></span>
+    <span style="color:#9CA3AF;font-size:12px;">右键文件试试新功能 →</span>
+  </div>
+</body></html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8" /><style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 1280px; height: 800px; font-family: -apple-system, "PingFang SC", sans-serif; background: #FAFAF7; overflow: hidden; }
+  /* 半透明遮罩背景（暗示弹出层） */
+  .bg { position: absolute; inset: 0; background: linear-gradient(135deg, #FAFAF7 0%, #F1F1ED 100%); opacity: 0.4; }
+  /* 模糊背景内容 */
+  .behind { position: absolute; inset: 0; padding: 24px; opacity: 0.3; filter: blur(2px); }
+  .behind .article { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+  .behind h1 { font-size: 28px; font-weight: 900; margin-bottom: 16px; }
+  .behind p { font-size: 14px; line-height: 1.7; color: #6B7280; margin-bottom: 12px; }
+  /* 时光机条 */
+  .tm-bar { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); background: #1A1D23; color: #E5E7EB; padding: 10px 16px; border-radius: 12px; display: flex; gap: 8px; align-items: center; font-size: 12.5px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 10; }
+  .tm-bar .tm-label { color: #C9A961; font-weight: 700; margin-right: 6px; }
+  .tm-bar .tm-btn { background: rgba(255,255,255,0.06); padding: 5px 11px; border-radius: 6px; cursor: pointer; }
+  .tm-bar .tm-btn:hover { background: rgba(201,169,97,0.18); color: #C9A961; }
+  .tm-bar .tm-btn.cur { background: #C9A961; color: #1A1D23; font-weight: 700; }
+  /* 历史抽屉 */
+  .drawer { position: absolute; right: 0; top: 0; width: 480px; height: 800px; background: #fff; border-left: 1px solid #E5E7EB; box-shadow: -8px 0 24px rgba(0,0,0,0.06); z-index: 5; display: flex; flex-direction: column; }
+  .drawer-header { padding: 20px 24px; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; gap: 10px; }
+  .drawer-header .h-icon { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #1A1D23, #2D3139); color: #C9A961; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .drawer-header h3 { font-size: 16px; font-weight: 700; flex: 1; }
+  .drawer-header .close { color: #9CA3AF; font-size: 18px; cursor: pointer; }
+  /* 历史项 */
+  .drawer-list { flex: 1; overflow-y: auto; padding: 12px; }
+  .h-item { background: #FAFAF7; border: 1px solid #E5E7EB; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+  .h-item.current { background: rgba(201,169,97,0.08); border-color: #C9A961; }
+  .h-item .h-time { font-size: 11.5px; font-weight: 700; color: #6B7280; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; gap: 8px; align-items: center; }
+  .h-item.current .h-time { color: #C9A961; }
+  .h-item .h-tag { font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.5px; }
+  .h-item .h-tag.auto { background: rgba(99,102,241,0.12); color: #6366F1; }
+  .h-item .h-tag.cur-tag { background: #C9A961; color: #1A1D23; }
+  .h-item .h-tag.bk { background: rgba(245,158,11,0.15); color: #B45309; }
+  .h-item .h-diff { font-size: 12px; color: #6B7280; margin-bottom: 8px; }
+  .h-item .h-diff .add { color: #10B981; font-weight: 700; }
+  .h-item .h-diff .del { color: #DC2626; font-weight: 700; }
+  .h-item .h-actions { display: flex; gap: 6px; margin-top: 4px; }
+  .h-item .h-act { font-size: 11.5px; padding: 4px 10px; border-radius: 4px; cursor: pointer; background: #fff; border: 1px solid #E5E7EB; color: #2D3139; font-weight: 600; }
+  .h-item .h-act:hover { background: #1A1D23; color: #C9A961; border-color: #1A1D23; }
+  .h-item .h-act.primary { background: #C9A961; color: #1A1D23; border-color: #C9A961; }
+  /* diff 预览 */
+  .diff-preview { font-family: "SF Mono", Menlo, monospace; font-size: 11.5px; background: #1A1D23; color: #E5E7EB; padding: 8px 10px; border-radius: 4px; line-height: 1.6; margin: 6px 0 8px; }
+  .diff-preview .add-l { color: #10B981; }
+  .diff-preview .del-l { color: #FCA5A5; text-decoration: line-through; opacity: 0.7; }
+</style></head>
+<body>
+  <div class="bg"></div>
+  <div class="behind">
+    <div class="article">
+      <h1>ARIS：对抗式 Multi-Agent 协作的技术拆解</h1>
+      <p>长 Agent 任务会产生"plausible unsupported success"——看似合理但缺乏证据支撑的成功。</p>
+      <p>ARIS 的核心创新：将质量保障提升为一等工作流层。通过跨家族对抗审查打破 self-play 盲点。</p>
+      <p>论文承认：当前仅有观察性证据，缺乏受控对照评估——这点很重要，避免我们陷入...</p>
+      <p>实验数据显示，跨模型审查相比单模型自审，发现 plausible-but-wrong 错误的概率提升 3.2 倍...</p>
+      <p>三层证据-主张审计的设计：实验完整性 → 主张映射 → 论文级核对。</p>
+    </div>
+  </div>
+
+  <!-- 时光机快捷条 -->
+  <div class="tm-bar">
+    <span class="tm-label">⏱ 时光机</span>
+    <span class="tm-btn">5 分钟前</span>
+    <span class="tm-btn cur">10 分钟前</span>
+    <span class="tm-btn">30 分钟前</span>
+    <span class="tm-btn">1 小时前</span>
+    <span class="tm-btn">1 天前</span>
+  </div>
+
+  <!-- 历史抽屉 -->
+  <div class="drawer">
+    <div class="drawer-header">
+      <div class="h-icon">⏱</div>
+      <h3>历史版本 · 12 个快照</h3>
+      <span class="close">×</span>
+    </div>
+    <div class="drawer-list">
+      <div class="h-item current">
+        <div class="h-time">
+          <span>● 当前版本</span>
+          <span class="h-tag cur-tag">CURRENT</span>
+        </div>
+        <div class="h-diff">最新编辑：2 分钟前</div>
+      </div>
+
+      <div class="h-item">
+        <div class="h-time">
+          <span>10 分钟前 · 23:12:08</span>
+          <span class="h-tag auto">AUTO</span>
+        </div>
+        <div class="h-diff"><span class="add">+24</span> 行 · <span class="del">-8</span> 行</div>
+        <div class="diff-preview">
+<span class="add-l">+ ARIS 的核心创新：将质量保障提升为</span><br>
+<span class="add-l">+ 一等工作流层。</span><br>
+<span class="del-l">- ARIS 用对抗机制提升质量。</span>
+        </div>
+        <div class="h-actions">
+          <span class="h-act">👁 预览</span>
+          <span class="h-act primary">↩ 恢复</span>
+        </div>
+      </div>
+
+      <div class="h-item">
+        <div class="h-time">
+          <span>27 分钟前 · 22:55:14</span>
+          <span class="h-tag auto">AUTO</span>
+        </div>
+        <div class="h-diff"><span class="add">+12</span> 行 · <span class="del">-3</span> 行</div>
+        <div class="h-actions">
+          <span class="h-act">👁 预览</span>
+          <span class="h-act primary">↩ 恢复</span>
+        </div>
+      </div>
+
+      <div class="h-item">
+        <div class="h-time">
+          <span>1 小时前 · 22:18:42</span>
+          <span class="h-tag bk">PRE-OVERWRITE</span>
+        </div>
+        <div class="h-diff"><span class="add">+8</span> 行 · <span class="del">-15</span> 行</div>
+        <div class="h-actions">
+          <span class="h-act">👁 预览</span>
+          <span class="h-act primary">↩ 恢复</span>
+        </div>
+      </div>
+
+      <div class="h-item">
+        <div class="h-time">
+          <span>3 小时前 · 20:34:21</span>
+          <span class="h-tag auto">AUTO</span>
+        </div>
+        <div class="h-diff"><span class="add">+45</span> 行 · <span class="del">-2</span> 行</div>
+        <div class="h-actions">
+          <span class="h-act">👁 预览</span>
+          <span class="h-act primary">↩ 恢复</span>
+        </div>
+      </div>
+
+      <div class="h-item">
+        <div class="h-time">
+          <span>1 天前 · 23:48:55</span>
+          <span class="h-tag auto">AUTO</span>
+        </div>
+        <div class="h-diff"><span class="add">+102</span> 行 · 初稿</div>
+      </div>
+    </div>
+  </div>
+</body></html>
