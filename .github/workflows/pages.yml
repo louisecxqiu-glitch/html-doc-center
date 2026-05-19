@@ -1,0 +1,43 @@
+name: Deploy landing page to GitHub Pages
+
+# 触发条件：main 分支上 docs/landing/ 路径有变更时
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/landing/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:  # 允许手动触发
+
+# GitHub Pages 部署的权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 并发控制：同时只跑一个部署，新部署取消旧的
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact (docs/landing/ as site root)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs/landing
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
