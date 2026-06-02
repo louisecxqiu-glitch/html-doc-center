@@ -7,6 +7,89 @@
 
 ---
 
+## [v1.13.2] — 2026-05-27 · 00:30 · 修复侧边栏目录树双重渲染 Bug
+
+> Louis 截图反馈：DocCenter 搜索框输入 `step` 后，「演化推理链」目录下 6 个 Step 文件**各显示 2 次**，匹配数 17（实际期望 11）。刷新页面后正常 → 是 v1.10 引入的自动刷新增量逻辑（`diffTreeAndPatch`）的边缘 bug。
+
+### 👤 用户故事
+
+**场景**：在 DocCenter 已打开的状态下，外部新建一个目录 `演化推理链/` 并往里塞 6 个 HTML 文件（mtime 接近，30 秒内全部生成）。
+
+**之前**：30s 自动刷新触发增量 patch，6 个新文件**在侧边栏各出现 2 次**。搜索框计数虚高、视觉污染严重，必须手动 `Cmd+Shift+R` 全量刷新才能恢复。
+
+**现在**：自动刷新增量 patch 正确去重，6 个文件每个只出现 1 次，与全量刷新结果一致。
+
+**一句话**：自动刷新不再"看见鬼影"。
+
+### 🔧 改动 / 三段式
+
+| 维度 | 内容 |
+|---|---|
+| 问题 | 在 DocCenter 已打开的状态下新建一个目录并放入 N 个文件，30s auto-refresh 后，目录内每个文件在侧边栏出现 2 次。匹配数翻倍，视觉混乱 |
+| 根因 | `diffTreeAndPatch` 的 `added` 列表同时包含父目录和它内部的新文件时（`flatTree` 通常父在子之前），循环按 Map 顺序处理：(1) 处理父目录时 `renderNode` **递归生成包含全部子节点的子树**并 append；(2) 接着处理 N 个新文件时**又各自 renderNode 一次**并 append 到刚被步骤 1 创建的父容器下 → 每个子文件被渲染 2 次。原作者第 712-713 行注释 `// 父节点也是新增的，等下一轮（实际它会一起出现，所以这里跳过没问题）` 暴露考虑过"子在父之前"场景，但**忽略了"父在子之前"这个常见顺序** |
+| 解法 | 在 `for (const p of added)` 循环最前面加**祖先剪枝**：构造 `addedSet = new Set(added)`，对每个 p 沿 `parentPath` 链向上回溯，若任意祖先也在 `addedSet` 里，则 `continue`（祖先的 `renderNode` 已经把它一起渲染了）。最小改动 ~10 行，不动 `renderNode`、不动 `flatTree`、不影响 v1.10.4 的 mtime_desc 排序修复 |
+
+### 🐛 Bug
+
+- **修复双重渲染** · `web/app.js` 行 701-718。新增祖先剪枝逻辑：
+
+```js
+const addedSet = new Set(added);
+for (const p of added) {
+  const meta = newFlat.get(p);
+  if (!meta) continue;
+  // v1.13.2: 祖先剪枝
+  let anc = meta.parentPath;
+  let skipBecauseAncestorAdded = false;
+  while (anc !== null && anc !== undefined) {
+    if (addedSet.has(anc)) { skipBecauseAncestorAdded = true; break; }
+    const ancMeta = newFlat.get(anc);
+    anc = ancMeta ? ancMeta.parentPath : null;
+  }
+  if (skipBecauseAncestorAdded) continue;
+  // ……原有插入定位逻辑保持不变
+}
+```
+
+### ✅ 验证
+
+Node.js 单元验证 3 个场景全过：
+1. **复现场景**（新建目录 + 6 文件）：`added.length=7` → 独立渲染 1 个目录，6 文件全跳过 ✅
+2. **反向场景**（仅新增单文件，父目录已存在）：`added.length=1` → 独立渲染该文件 ✅（无误伤）
+3. **多层嵌套**（连建 3 层 + 1 文件）：`added.length=3` → 仅渲染最顶层 ✅（无误伤）
+
+⚠️ **真实浏览器演练**：用户需 `Cmd+Shift+R` 硬刷新后造一次复现确认。本 patch 是纯前端修改，无需重启 server。
+
+### 📐 架构
+
+| 文件 | 改动 |
+|---|---|
+| `web/app.js` | +10 行（祖先剪枝 if 块）|
+| `docs/superpowers/plans/2026-05-27-v1.13.2-diff-tree-double-render-fix.md` | 新增 plan |
+| `CHANGELOG.md` | v1.13 卡片合并 v1.13.2 |
+| `docs/CHANGELOG-detailed.md` | 本卡片 |
+
+### 🎯 改动统计
+
+| 维度 | 数值 |
+|---|---|
+| 修改文件 | 1 个（仅 `web/app.js`）|
+| 新增代码 | ~10 行 |
+| 单元验证场景 | 3 个全过 |
+| 实际执行时间 | 约 18 分钟（含 plan + 单元验证 + CHANGELOG）|
+
+### 🔍 反 Bug 5 条铁律自检
+
+| # | 铁律 | 本次状态 |
+|---|---|---|
+| 1 | 真实浏览器演练 | ⚠️ 待用户 Cmd+Shift+R 硬刷新后实测确认 |
+| 2 | 守卫表达式必须显式验证 | ✅ `addedSet.has(anc)` 在闭包内可见 |
+| 3 | CSS 改 .active/display 前 grep inline style | N/A（不涉及 CSS）|
+| 4 | DOM 切换后用 rAF | N/A（不涉及 display 切换后立刻读位置）|
+| 5 | 自驱模式 ≠ 跳过用户视角 | ⚠️ 同 #1，待用户实测 |
+
+---
+
 ## [v1.13.1] — 2026-05-18 · 22:50 · 右键菜单新增「在新标签页打开」
 
 > Louis 截图反馈：在 DocCenter 侧栏右键文件时，菜单只有「Finder / 复制路径 / 复制文件名」三档操作系统级动作，缺一个**在浏览器新标签页打开**的选项。v1.13.0 加 md 三视图后，"同时打开两篇 md 对比"的诉求变明显（左 tab 看 A 文件 / 右 tab 看 B 文件），这个 patch 补上。
