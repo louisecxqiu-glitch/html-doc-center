@@ -699,9 +699,23 @@
     }
 
     // 新增：找到父节点 DOM，按 newFlat 里的同级排序插入到正确位置（v1.10.4: 修正 mtime_desc 排序失效）
+    // v1.13.2: 祖先剪枝——若某个祖先目录也在 added 集合里，渲染祖先时 renderNode 已递归生成了 p，
+    //          跳过避免双重渲染（修复"新建目录+内含文件"场景下侧边栏重复显示 bug）
+    const addedSet = new Set(added);
     for (const p of added) {
       const meta = newFlat.get(p);
       if (!meta) continue;
+      // v1.13.2: 祖先剪枝
+      {
+        let anc = meta.parentPath;
+        let skipBecauseAncestorAdded = false;
+        while (anc !== null && anc !== undefined) {
+          if (addedSet.has(anc)) { skipBecauseAncestorAdded = true; break; }
+          const ancMeta = newFlat.get(anc);
+          anc = ancMeta ? ancMeta.parentPath : null;
+        }
+        if (skipBecauseAncestorAdded) continue;
+      }
       const parentPath = meta.parentPath;
       let parentChildrenContainer;
       let parentNode = null;
@@ -1386,6 +1400,15 @@
     state.isDirty = false;
     state.iframeReady = false;
 
+    // v1.13.0: 同步 URL ?path= 让链接可分享 / 收藏夹书签可用（不触发 popstate）
+    try {
+      const u = new URL(window.location.href);
+      if (u.searchParams.get("path") !== node.abs_path) {
+        u.searchParams.set("path", node.abs_path);
+        window.history.replaceState({}, "", u.toString());
+      }
+    } catch (e) { /* 静默 */ }
+
     // 高亮
     $$(".tree-node-label.active").forEach(n => n.classList.remove("active"));
     $$(".tree-node-label[data-file]").forEach(n => {
@@ -1497,6 +1520,34 @@
         body: JSON.stringify({ abs_path: absPath, zoom: String(zoom) }),
       });
     } catch (_) { /* 不阻塞 UI */ }
+  }
+
+  // v1.13.0: 从 URL ?path=<absPath> 直接打开文件（支持外链直达 / 同标签切文件）
+  // 返回 true 表示成功打开，false 表示无 path 参数或打开失败（调用方决定后续动作）
+  async function tryOpenFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const absPath = params.get("path");
+      if (!absPath) return false;
+
+      // 同一文件已打开 → 不重复加载，但仍视作"已处理"（避免回退到 session restore 覆盖）
+      if (state.currentFile && state.currentFile.absPath === absPath) return true;
+
+      // 校验文件可访问（HEAD 请求 /api/file，403/404 都视为不可访问）
+      const headResp = await fetch(API.file(absPath), { method: "HEAD" });
+      if (!headResp.ok) {
+        console.warn("[v1.13.0] tryOpenFromUrl: file not accessible, status=" + headResp.status + ", path=" + absPath);
+        return false;
+      }
+
+      const name = absPath.split("/").pop() || absPath;
+      const type = absPath.toLowerCase().endsWith(".md") ? "md" : "html";
+      await openFile({ abs_path: absPath, name, type, path: absPath }, { silent: true });
+      return true;
+    } catch (e) {
+      console.warn("[v1.13.0] tryOpenFromUrl failed:", e);
+      return false;
+    }
   }
 
   async function tryRestoreLastSession() {
@@ -2594,8 +2645,15 @@
     await loadTree();
     setStatus(window.i18n.t("header.status.unopened"), "");
 
-    // F3 尝试恢复上次会话（如有则自动打开文件）
-    await tryRestoreLastSession();
+    // v1.13.0: 优先解析 URL ?path= 参数（链接直达），失败再回退到 session 恢复
+    const urlOpened = await tryOpenFromUrl();
+    if (!urlOpened) {
+      // F3 尝试恢复上次会话（如有则自动打开文件）
+      await tryRestoreLastSession();
+    }
+
+    // v1.13.0: 监听 URL 参数变化（同标签内链接切换、popstate）
+    window.addEventListener("popstate", () => { tryOpenFromUrl(); });
 
     // 首次刷新：无论是否恢复了文件，目录都默认展开（pinned），
     // 让用户一眼看到自己在哪、还有哪些文件可切。

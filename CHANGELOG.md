@@ -8,6 +8,42 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## v1.14 — Reactive URL Routing · 响应式 URL 路由
+*2026-06-02 · v1.14.0*
+
+**EN**
+- 🔗 SPA now reacts to `?path=<absPath>` URL changes — paste a new link, file switches instantly
+- 🔄 Two-way sync: clicking a file in the tree updates URL via `replaceState` — every URL is shareable
+- 🚀 First-load priority: URL `?path=` beats session restore (link wins over last-opened)
+- 🐛 **Fix: link sharing & cross-tool preview was broken** — pasting a DocCenter URL into IDE preview / browser tab kept showing the previously opened file instead of the target one
+
+**中文**
+- 🔗 SPA 现在响应 URL `?path=<绝对路径>` 变化——粘贴新链接，文件立刻切换
+- 🔄 双向同步：点击侧栏文件会通过 `replaceState` 同步到 URL——任何打开的 URL 都可以分享/收藏
+- 🚀 首次加载优先级：URL `?path=` 优先于 session restore（链接直达 > 上次打开）
+- 🐛 **修复链接分享 / 跨工具预览失效** —— 之前粘贴 DocCenter URL 到 IDE 预览或新标签时一直显示旧文件而非目标文件
+
+**👤 用户故事**
+- **场景**：Louis 让 AI 助手生成多份 HTML 报告，AI 每次贴一条 `http://localhost:9901/?path=...` 链接到对话里
+- **之前**：CodeBuddy 内置浏览器是单实例，已经开了 9901 标签后再点新链接，URL 变了但 SPA 不响应——视觉上还是旧文件，体感"链接坏的"
+- **现在**：粘贴新链接 / 内置浏览器导航 / 浏览器前进后退 都会触发 `tryOpenFromUrl` 重读 `?path=` 并切到对应文件
+- **一句话**：链接终于真的是"链接"了，不再是"装饰"
+
+**🐛 Bug 三段式：URL 参数变化无响应**
+- **问题**：`http://localhost:9901/?path=A.html` 已打开后，访问 `?path=B.html` 不会切到 B
+- **根因**：app.js 完全没有 URL 参数解析逻辑——`init()` 直接走 `tryRestoreLastSession`（恢复上次会话），从未读过 `window.location.search`。原 memory 描述"用 ?path= 能定位文件"是局部正确（首次加载时 server 没传 path 给前端，但前端 SPA 自己也没解析），切换文件场景完全失效
+- **解法**：新增 `tryOpenFromUrl()` 函数，三处接入：(1) `init()` 启动时优先调用，失败再 fallback 到 session restore；(2) `popstate` 事件监听器（覆盖浏览器前进/后退）；(3) `openFile()` 内通过 `history.replaceState` 反向同步 URL，让用户点侧栏切文件后 URL 也跟着更新
+
+**📐 改动细节**
+- `web/app.js` 三处修改（约 +60 行 -2 行）：
+  - L1395-1410：`openFile()` 内新增 URL 同步逻辑（`replaceState` 不触发 popstate，避免循环）
+  - L1525-1550：新增 `tryOpenFromUrl()` 函数（HEAD 请求 `/api/file` 探活后才加载，403/404 自动降级）
+  - L2648-2656：`init()` 改造 + popstate 监听器
+- 自验：HEAD 探活避开了 scan_root 外路径误打开，错误路径直接静默 fallback
+- 零侵入：所有现有逻辑（侧栏点击 / 收藏夹 / 最近打开 / session 恢复）行为完全不变
+
+---
+
 ## v1.13 — Markdown Three-View · Markdown 三视图
 *2026-05-17 → 2026-05-27 · v1.13.0 → v1.13.2*
 
