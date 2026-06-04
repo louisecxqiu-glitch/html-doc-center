@@ -1,0 +1,18 @@
+{
+  "name": "hotpage",
+  "version": "1.10.1",
+  "description": "Local HTML workbench for the AI era. Turns any folder into a browsable, editable, auto-saving document hub — in one command.",
+  "author": "Louis Jobs",
+  "repository": "https://github.com/louisjobs/hotpage",
+  "license": "MIT",
+  "keywords": ["html", "preview", "editor", "local", "artifact", "document"],
+  "categories": ["developer-tools", "productivity"],
+  "runtime": "python",
+  "min_claude_code_version": "1.0.0",
+  "capabilities": {
+    "commands": true,
+    "skills": true,
+    "mcp": true,
+    "agents": false
+  }
+}

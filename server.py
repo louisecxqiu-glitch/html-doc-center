@@ -21,6 +21,8 @@ import os
 import re
 import sys
 import time
+import base64
+import mimetypes
 import shutil
 import subprocess
 import platform
@@ -310,12 +312,14 @@ def _walk_dir(base: Path, current: Path, exclude: set, sort_by: str = "mtime_des
                         "children": children,
                     })
             elif entry.is_file(follow_symlinks=False):
-                # v1.3: 同时扫描 .html 和 .md
+                # v1.3: .html/.md; v1.15.1: 图片
                 low = entry.name.lower()
                 if low.endswith(".html"):
                     node_type = "html"
                 elif low.endswith(".md"):
                     node_type = "md"
+                elif any(low.endswith(ext) for ext in (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg")):
+                    node_type = "image"
                 else:
                     continue
                 try:
@@ -648,16 +652,35 @@ SAVER_INJECT_MARKER = "<!-- html-doc-center:saver-injected -->"
 
 def inject_saver(html: str, file_path: str) -> str:
     """
-    在 HTML 里注入 saver-runtime.js 引用。
+    在 HTML 里注入 saver-runtime.js 引用 + <base href> 资源代理。
     - 已注入过（有 marker）则跳过
     - 优先插到 </body> 前；没有 body 则追加到文件尾
     - 通过 window.__DOC_CENTER__ 变量传递文件路径等上下文
+    - v1.15: 注入 <base href> 让相对路径资源走 /api/asset/ 代理
     """
     if SAVER_INJECT_MARKER in html:
         return html
 
     import html as html_escape_mod
     safe_path = html_escape_mod.escape(file_path).replace('"', '&quot;')
+
+    # v1.15: 注入 <base href> 让相对路径走资源代理（如果原 HTML 没有 <base>）
+    has_base = bool(re.search(r"<base\s", html, re.IGNORECASE))
+    if not has_base:
+        base_href = _make_base_href(file_path)
+        base_tag = f'<base href="{base_href}">\n'
+        # 插入到 <head> 之后（或 <html> 之后，或文件最前）
+        head_m = re.search(r"<head[^>]*>", html, re.IGNORECASE)
+        if head_m:
+            insert_pos = head_m.end()
+            html = html[:insert_pos] + "\n" + base_tag + html[insert_pos:]
+        else:
+            html_m = re.search(r"<html[^>]*>", html, re.IGNORECASE)
+            if html_m:
+                insert_pos = html_m.end()
+                html = html[:insert_pos] + "\n" + base_tag + html[insert_pos:]
+            else:
+                html = base_tag + html
 
     snippet = (
         f'\n{SAVER_INJECT_MARKER}\n'
@@ -713,6 +736,58 @@ def render_md_shell(md_path: Path, port: int) -> str:
             .replace("{{SERVER_ORIGIN}}", server_origin))
 
 
+def _render_image_shell(img_path: Path) -> str:
+    """
+    v1.15.1: 生成图片预览壳子 HTML。
+    居中显示图片 + 文件名，不注入 saver-runtime（图片不可编辑）。
+    图片 src 走 /api/asset/ 代理。
+    """
+    import html as html_escape_mod
+    file_name = html_escape_mod.escape(img_path.name)
+    # 图片 URL 走 asset 代理
+    dir_path = str(img_path.parent)
+    encoded_dir = base64.urlsafe_b64encode(dir_path.encode("utf-8")).decode("utf-8").rstrip("=")
+    img_url = f"/api/asset/{encoded_dir}/{img_path.name}"
+
+    return f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>{file_name} · Image Preview</title>
+<style>
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{
+    background: #1a1a2e;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }}
+  .img-container {{
+    max-width: 95vw; max-height: 80vh;
+    background: #fff; border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    padding: 8px; display: flex; align-items: center; justify-content: center;
+  }}
+  .img-container img {{
+    max-width: 100%; max-height: 78vh;
+    object-fit: contain; border-radius: 4px;
+  }}
+  .filename {{
+    margin-top: 16px; color: rgba(255,255,255,.7);
+    font-size: 13px; letter-spacing: .5px;
+  }}
+</style>
+</head>
+<body>
+  <div class="img-container">
+    <img src="{img_url}" alt="{file_name}">
+  </div>
+  <div class="filename">🖼️ {file_name}</div>
+</body>
+</html>"""
+
+
 async def handle_file(request):
     """
     GET /api/file?path=<相对或绝对路径>
@@ -726,18 +801,22 @@ async def handle_file(request):
 
     safe = _resolve_safe(raw, cfg.get("scan_roots", []))
     suffix = safe.suffix.lower() if safe else ""
-    if not safe or not safe.is_file() or suffix not in (".html", ".md"):
-        return web.json_response({"ok": False, "error": "非法或不存在的文档路径（仅支持 .html / .md）"}, status=403)
+    IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg")
+    SUPPORTED_EXTS = (".html", ".md") + IMAGE_EXTS
+    if not safe or not safe.is_file() or suffix not in SUPPORTED_EXTS:
+        return web.json_response({"ok": False, "error": "非法或不存在的文件路径"}, status=403)
 
     try:
         if suffix == ".html":
             with open(safe, "r", encoding="utf-8", errors="replace") as f:
                 content = f.read()
             injected = inject_saver(content, str(safe))
-        else:
-            # .md → 壳子包装
+        elif suffix == ".md":
             port = int(cfg.get("port", 9901))
             injected = render_md_shell(safe, port)
+        else:
+            # v1.15.1: 图片 → 预览壳子（不注入 saver，不可编辑）
+            injected = _render_image_shell(safe)
     except FileNotFoundError as e:
         return web.json_response({"ok": False, "error": f"模板缺失: {e}"}, status=500)
     except Exception as e:
@@ -750,6 +829,56 @@ async def handle_file(request):
     resp.headers["Expires"] = "0"
     resp.headers["Vary"] = "*"
     return resp
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# v1.15: 静态资源代理
+# ─────────────────────────────────────────────────────────────────────────────
+def _make_base_href(file_path: str) -> str:
+    """生成 <base href> 指向文件所在目录的资源代理 URL"""
+    dir_path = str(Path(file_path).parent)
+    encoded = base64.urlsafe_b64encode(dir_path.encode("utf-8")).decode("utf-8").rstrip("=")
+    return f'/api/asset/{encoded}/'
+
+
+async def handle_asset(request):
+    """
+    GET /api/asset/{encoded_dir}/{path:.*}
+    代理 HTML 同目录/子目录下的静态资源（图片/CSS/JS/字体等）。
+    encoded_dir = urlsafe_b64encode(目录绝对路径) 去尾部 =
+    """
+    encoded_dir = request.match_info["encoded_dir"]
+    rel_path = request.match_info.get("path", "")
+
+    if not rel_path:
+        return web.Response(status=400, text="Missing resource path")
+
+    # 解码 base 目录（补回尾部 padding）
+    try:
+        padded = encoded_dir + "=" * (-len(encoded_dir) % 4)
+        base_dir = base64.urlsafe_b64decode(padded.encode()).decode("utf-8")
+    except Exception:
+        return web.Response(status=400, text="Invalid base directory encoding")
+
+    # 拼合绝对路径
+    full_path = (Path(base_dir) / rel_path).resolve()
+
+    # 安全校验：必须在 scan_roots 内
+    cfg = request.app["config"]
+    safe = _resolve_safe(str(full_path), cfg.get("scan_roots", []))
+    if not safe or not safe.is_file():
+        return web.Response(status=403, text="Access denied or file not found")
+
+    # 不代理 .html / .md（这些走 /api/file）
+    if safe.suffix.lower() in (".html", ".md"):
+        return web.Response(status=403, text="Use /api/file for HTML/MD documents")
+
+    # 推断 MIME type
+    mime, _ = mimetypes.guess_type(str(safe))
+    if not mime:
+        mime = "application/octet-stream"
+
+    return web.FileResponse(safe, headers={"Content-Type": mime})
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1602,6 +1731,8 @@ def create_app() -> web.Application:
     # v1.10.6: 手动清理过期快照
     app.router.add_post("/api/cleanup-snapshots", handle_cleanup_snapshots)
     app.router.add_post("/api/sparsify-snapshots", handle_sparsify_snapshots)  # v1.11.6
+    # v1.15: 静态资源代理（HTML 引用的本地图片/CSS/JS/字体）
+    app.router.add_get("/api/asset/{encoded_dir}/{path:.*}", handle_asset)
 
     return app
 

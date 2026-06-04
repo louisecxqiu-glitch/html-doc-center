@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DocCenter — A local-first workbench for the HTML you keep generating</title>
+<meta name="description" content="A local-first workbench for browsing, editing, and time-traveling through the HTML and Markdown files you keep generating with AI." />
+<style>
+  /* ============ Type & color tokens ============ */
+  :root {
+    --ink:        #1F1F1F;        /* Anthropic deep ink */
+    --ink-soft:   #2D2A26;
+    --paper:      #F5F4EE;        /* Warm off-white */
+    --paper-2:    #EDEAE0;        /* Slightly deeper */
+    --muted:      #6B645A;        /* Warm gray */
+    --line:       #D8D2C4;
+    --accent:     #CC785C;        /* Anthropic coffee orange */
+    --accent-2:   #D4A27F;        /* Camel */
+    --accent-dk:  #A85C42;
+
+    --serif: 'Tiempos Headline', 'Source Serif Pro', 'Iowan Old Style', 'PT Serif', Georgia, 'Times New Roman', serif;
+    --sans:  'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    --mono:  'JetBrains Mono', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+    --max-w: 920px;
+  }
+
+  /* ============ Reset & base ============ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: var(--accent); text-decoration: none; transition: color .15s; }
+  a:hover { color: var(--accent-dk); }
+  p { margin: 0 0 1.2em; }
+  ::selection { background: var(--accent); color: var(--paper); }
+
+  /* ============ Nav ============ */
+  .nav {
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: saturate(180%) blur(8px);
+    background: rgba(245, 244, 238, 0.92);
+  }
+  .nav-inner {
+    max-width: var(--max-w); margin: 0 auto;
+    padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand {
+    font-family: var(--serif);
+    font-size: 19px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .brand .dot { color: var(--accent); }
+  .nav-links {
+    display: flex; gap: 28px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .nav-links a {
+    color: var(--muted);
+    transition: color .15s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 14px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 999px;
+    transition: background .15s;
+  }
+  .nav-cta:hover { background: var(--accent-dk); color: var(--paper); }
+
+  /* ============ Section base ============ */
+  section {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 96px 32px;
+  }
+  @media (max-width: 720px) {
+    section { padding: 64px 24px; }
+  }
+
+  /* ============ Hero ============ */
+  .hero {
+    padding-top: 120px;
+    padding-bottom: 80px;
+  }
+  .hero-eyebrow {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    margin-bottom: 28px;
+    text-transform: uppercase;
+  }
+  .hero-eyebrow .pin {
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 10px;
+    transform: translateY(-2px);
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: 64px;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 32px;
+    color: var(--ink);
+  }
+  .hero h1 .italic {
+    font-style: italic;
+    color: var(--accent-dk);
+  }
+  @media (max-width: 720px) {
+    .hero h1 { font-size: 42px; }
+  }
+  .hero-sub {
+    font-size: 21px;
+    line-height: 1.55;
+    color: var(--muted);
+    max-width: 640px;
+    margin: 0 0 48px;
+    font-weight: 400;
+  }
+  .hero-cta {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 22px;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all .15s;
+    border: 1px solid transparent;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-primary:hover {
+    background: var(--accent-dk);
+    color: var(--paper);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+  .btn-secondary:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn .arr { transition: transform .2s; display: inline-block; }
+  .btn:hover .arr { transform: translateX(4px); }
+
+  .hero-meta {
+    margin-top: 56px;
+    display: flex; gap: 40px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    flex-wrap: wrap;
+  }
+  .hero-meta span::before {
+    content: '— ';
+    color: var(--accent);
+    margin-right: 4px;
+  }
+
+  /* ============ What it is ============ */
+  .definition {
+    padding-top: 40px;
+    padding-bottom: 80px;
+  }
+  .definition .quote {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+    color: var(--ink-soft);
+    max-width: 760px;
+    border-left: 3px solid var(--accent);
+    padding-left: 32px;
+    margin: 0;
+    font-style: italic;
+  }
+  .definition .quote em {
+    font-style: normal;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  @media (max-width: 720px) {
+    .definition .quote { font-size: 22px; padding-left: 20px; }
+  }
+
+  /* ============ Features (long-form) ============ */
+  .features {
+    border-top: 1px solid var(--line);
+    padding-top: 96px;
+  }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: 42px;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 0 0 24px;
+    color: var(--ink);
+  }
+  .section-lead {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 640px;
+    margin: 0 0 64px;
+  }
+
+  .feat {
+    margin-bottom: 96px;
+  }
+  .feat:last-child { margin-bottom: 0; }
+  .feat-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+  .feat h3 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px;
+    color: var(--ink);
+  }
+  .feat-desc {
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    max-width: 680px;
+    margin: 0 0 28px;
+  }
+  .feat-desc strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .feat-detail {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 680px;
+    margin: 0 0 28px;
+  }
+  .feat-shot {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.02), 0 20px 60px -20px rgba(31,31,31,0.18);
+    background: var(--paper-2);
+  }
+  .feat-shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ============ Why this exists (essay) ============ */
+  .essay {
+    border-top: 1px solid var(--line);
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+  .essay-body {
+    font-family: var(--serif);
+    font-size: 21px;
+    font-weight: 400;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    max-width: 680px;
+    letter-spacing: -0.003em;
+  }
+  .essay-body p { margin: 0 0 1.3em; }
+  .essay-body em {
+    color: var(--accent-dk);
+    font-style: italic;
+  }
+  .essay-body .sig {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 40px;
+    font-style: normal;
+    letter-spacing: 0.02em;
+  }
+
+  /* ============ Quick start ============ */
+  .quickstart {
+    border-top: 1px solid var(--line);
+    padding-top: 96px;
+    padding-bottom: 64px;
+  }
+  .code {
+    background: var(--ink);
+    color: #E8E4D8;
+    border-radius: 6px;
+    padding: 28px 32px;
+    font-family: var(--mono);
+    font-size: 14.5px;
+    line-height: 1.85;
+    margin: 32px 0;
+    overflow-x: auto;
+  }
+  .code .cmt   { color: #847D6E; }
+  .code .accent { color: var(--accent-2); }
+  .code .prompt { color: #847D6E; user-select: none; margin-right: 8px; }
+
+  .qs-note {
+    font-size: 14.5px;
+    color: var(--muted);
+    margin-top: 16px;
+  }
+  .qs-note code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--paper-2);
+    padding: 2px 7px;
+    border-radius: 3px;
+    color: var(--ink-soft);
+  }
+
+  /* ============ Footer ============ */
+  footer {
+    border-top: 1px solid var(--line);
+    margin-top: 32px;
+    padding: 48px 32px 64px;
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--muted);
+    max-width: var(--max-w);
+    margin-left: auto; margin-right: auto;
+  }
+  footer .foot-links {
+    display: flex; gap: 32px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  footer .foot-links a {
+    color: var(--muted);
+    font-weight: 500;
+    transition: color .15s;
+  }
+  footer .foot-links a:hover { color: var(--accent-dk); }
+  footer .sig {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--ink-soft);
+  }
+  footer .license {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ Nav ============ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="brand">DocCenter<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#why">Why</a>
+      <a href="#start">Get started</a>
+    </div>
+    <a class="nav-cta" href="https://github.com/louisecxqiu-glitch/html-doc-center" target="_blank">
+      GitHub →
+    </a>
+  </div>
+</nav>
+
+<!-- ============ Hero ============ -->
+<section class="hero">
+  <div class="hero-eyebrow"><span class="pin"></span>Open source · v1.13.1</div>
+  <h1>A workbench for the HTML<br>you keep <span class="italic">generating.</span></h1>
+  <p class="hero-sub">
+    Browse, edit, and time-travel through the local HTML and Markdown
+    files your AI tools keep producing. One Python file. No npm. Fully
+    offline.
+  </p>
+  <div class="hero-cta">
+    <a class="btn btn-primary" href="#start">
+      Get started <span class="arr">→</span>
+    </a>
+    <a class="btn btn-secondary" href="https://github.com/louisecxqiu-glitch/html-doc-center" target="_blank">
+      View source on GitHub
+    </a>
+  </div>
+  <div class="hero-meta">
+    <span>local-first</span>
+    <span>MIT licensed</span>
+    <span>Python 3.8+ &amp; aiohttp</span>
+    <span>~127 KB runtime</span>
+  </div>
+</section>
+
+<!-- ============ Definition ============ -->
+<section class="definition">
+  <blockquote class="quote">
+    The files AI generates pile up faster than you can read them.
+    DocCenter is a <em>quiet workbench</em> for browsing, editing, and
+    quietly archiving every version you ever cared about — without
+    Notion, without GitHub, without leaving your machine.
+  </blockquote>
+</section>
+
+<!-- ============ Features ============ -->
+<section id="features" class="features">
+  <div class="section-label">What it does</div>
+  <h2 class="section-title">Three things, done well.</h2>
+  <p class="section-lead">
+    Most tools try to be everything. DocCenter is opinionated: it solves
+    three problems the AI era invented, and stays out of your way for
+    the rest.
+  </p>
+
+  <!-- Feature 01 -->
+  <article class="feat">
+    <div class="feat-num">— 01 —</div>
+    <h3>Three-view Markdown editing.</h3>
+    <p class="feat-desc">
+      <strong>Source. Split. Preview.</strong> A drag-resizable splitter
+      sits between editor and preview. Your view mode and ratio persist
+      across sessions — close the tab, reopen, find it exactly as you
+      left it.
+    </p>
+    <p class="feat-detail">
+      No external editor required. No plugin to install. Just open
+      <code style="font-family:var(--mono);font-size:.9em;background:var(--paper-2);padding:1px 6px;border-radius:3px;">.md</code>
+      and start typing. Switch view in one click.
+    </p>
+    <div class="feat-shot">
+      <img src="https://raw.githubusercontent.com/louisecxqiu-glitch/html-doc-center/main/docs/landing/images/screen-01-md-three-view.png"
+           alt="Markdown three-view: source, split, and preview modes with a drag-resizable splitter" />
+    </div>
+  </article>
+
+  <!-- Feature 02 -->
+  <article class="feat">
+    <div class="feat-num">— 02 —</div>
+    <h3>Never lose what you wrote.</h3>
+    <p class="feat-desc">
+      Stop typing for two seconds. DocCenter writes a snapshot. Forever.
+      A <strong>time machine</strong> bar lets you jump back five
+      minutes, an hour, a day. The history drawer shows line-level
+      diffs and restores anything with a pre-restore backup of the
+      current state.
+    </p>
+    <p class="feat-detail">
+      No git commit ceremony. No "wait, did I save?" anxiety. Snapshots
+      are plain files in
+      <code style="font-family:var(--mono);font-size:.9em;background:var(--paper-2);padding:1px 6px;border-radius:3px;">_auto-save/</code>,
+      gitignorable and inspectable. Gradient thinning prevents the
+      timeline from exploding.
+    </p>
+    <div class="feat-shot">
+      <img src="https://raw.githubusercontent.com/louisecxqiu-glitch/html-doc-center/main/docs/landing/images/screen-03-time-machine.png"
+           alt="Time machine quick bar and history drawer with line-level diff and restore actions" />
+    </div>
+  </article>
+
+  <!-- Feature 03 -->
+  <article class="feat">
+    <div class="feat-num">— 03 —</div>
+    <h3>Everything you wrote, in one tree.</h3>
+    <p class="feat-desc">
+      Point DocCenter at the folders where your AI-generated files
+      live. It builds a single navigable tree across them — HTML
+      reports, Markdown drafts, deck covers, every artifact. Click to
+      render. Click to edit. <strong>The browser becomes your studio.</strong>
+    </p>
+    <p class="feat-detail">
+      Three-tab sidebar (Tree / Favorites / Recent). Path search with
+      hit highlighting. Bilingual UI. Dark mode that follows your
+      system. Right-click for context actions. Open any file in a new
+      tab for side-by-side reading.
+    </p>
+    <div class="feat-shot">
+      <img src="https://raw.githubusercontent.com/louisecxqiu-glitch/html-doc-center/main/docs/landing/images/screen-02-main.png"
+           alt="DocCenter main UI showing a rendered HTML business report with the sidebar tree and edit toolbar" />
+    </div>
+  </article>
+</section>
+
+<!-- ============ Why this exists ============ -->
+<section id="why" class="essay">
+  <div class="section-label">Why this exists</div>
+  <h2 class="section-title">A note from the author.</h2>
+
+  <div class="essay-body">
+    <p>
+      I built DocCenter because I was drowning in HTML files.
+    </p>
+    <p>
+      Every evening I would generate five decks, three reports, two
+      covers with Claude. By the next morning they were lost — scattered
+      across
+      <code style="font-family:var(--mono);font-size:0.75em;color:var(--ink-soft);">outputs/</code>,
+      <code style="font-family:var(--mono);font-size:0.75em;color:var(--ink-soft);">drafts/</code>,
+      <code style="font-family:var(--mono);font-size:0.75em;color:var(--ink-soft);">~/Desktop/</code>.
+      To fix a typo, I would open VS Code, find the file, edit the
+      source, refresh the browser. Five steps for a typo.
+    </p>
+    <p>
+      And every once in a while, I would lose <em>the good version</em>
+      — the one with the larger font, the slightly different gradient,
+      the bullet I would never write again.
+    </p>
+    <p>
+      So I wrote a small Python file. It scans my folders, renders my
+      HTML in a browser, injects a quiet editor, and snapshots
+      everything I type. Fifty-one versions later, it became the tool
+      I open every morning before anything else.
+    </p>
+    <p>
+      It is local-first because my work is local. It is zero-dependency
+      because dependencies are debt. It is open source because the
+      problem isn't mine alone.
+    </p>
+    <p>
+      If you also generate too much HTML, this might be for you.
+    </p>
+    <p class="sig">— Louis Qiu, June 2026</p>
+  </div>
+</section>
+
+<!-- ============ Quick start ============ -->
+<section id="start" class="quickstart">
+  <div class="section-label">Get started</div>
+  <h2 class="section-title">Three commands.</h2>
+  <p class="section-lead">
+    Python 3.8 or newer. No npm, no docker, no account. If you have
+    Python, you have DocCenter in about thirty seconds.
+  </p>
+
+  <pre class="code"><span class="cmt"># Clone the repository</span>
+<span class="prompt">$</span> <span class="accent">git clone</span> https://github.com/louisecxqiu-glitch/html-doc-center.git
+<span class="prompt">$</span> <span class="accent">cd</span> html-doc-center
+
+<span class="cmt"># Install the single dependency</span>
+<span class="prompt">$</span> <span class="accent">pip3 install</span> aiohttp
+
+<span class="cmt"># Start the workbench</span>
+<span class="prompt">$</span> <span class="accent">python3</span> server.py
+
+<span class="cmt"># Open in your browser</span>
+<span class="prompt">$</span> <span class="accent">open</span> http://localhost:9901</pre>
+
+  <p class="qs-note">
+    First-time setup creates <code>~/.codebuddy/html-doc-center/config.json</code>.
+    Add directories you want to scan via the gear icon (⚙) in the
+    sidebar footer. Settings are remembered across restarts.
+  </p>
+</section>
+
+<!-- ============ Footer ============ -->
+<footer>
+  <div class="foot-links">
+    <a href="https://github.com/louisecxqiu-glitch/html-doc-center" target="_blank">GitHub</a>
+    <a href="https://github.com/louisecxqiu-glitch/html-doc-center/blob/main/CHANGELOG.md" target="_blank">Changelog</a>
+    <a href="https://github.com/louisecxqiu-glitch/html-doc-center/releases" target="_blank">Releases</a>
+    <a href="https://github.com/louisecxqiu-glitch/html-doc-center/issues" target="_blank">Issues</a>
+  </div>
+  <p class="sig">A quiet workbench for noisy AI workflows.</p>
+  <p class="license">MIT LICENSED · BUILT BY LOUIS QIU · © 2026</p>
+</footer>
+
+</body>
+</html>

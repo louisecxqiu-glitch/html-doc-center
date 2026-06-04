@@ -109,7 +109,8 @@
     }
     const rows = items.slice(0, RECENT_MAX).map(item => {
       const name = item.name || item.path.split("/").pop();
-      const icon = item.path.toLowerCase().endsWith(".md") ? "📝" : "📄";
+      const lp = item.path.toLowerCase();
+      const icon = lp.endsWith(".md") ? "📝" : /\.(png|jpe?g|gif|webp|svg)$/.test(lp) ? "🖼️" : "📄";
       const timeLabel = formatRecentTime(item.ts);
       return `<div class="recent-item" data-path="${item.path}" title="${escapeHtml(item.path)}">
         <span class="recent-icon">${icon}</span>
@@ -553,7 +554,8 @@
     }
     const rows = items.map(item => {
       const isDir = item.type === "dir";
-      const icon = isDir ? "📁" : (item.path.toLowerCase().endsWith(".md") ? "📝" : "📄");
+      const lp2 = item.path.toLowerCase();
+      const icon = isDir ? "📁" : lp2.endsWith(".md") ? "📝" : /\.(png|jpe?g|gif|webp|svg)$/.test(lp2) ? "🖼️" : "📄";
       const name = item.path.split("/").pop() || item.path;
       return `<div class="fav-item" data-path="${item.path}" data-type="${item.type}" title="${item.path}">
         <span class="fav-icon">${icon}</span>
@@ -622,7 +624,7 @@
   function countFiles(nodes) {
     let n = 0;
     for (const node of nodes) {
-      if (node.type === "html" || node.type === "md") n++;
+      if (node.type === "html" || node.type === "md" || node.type === "image") n++;
       if (node.children) n += countFiles(node.children);
     }
     return n;
@@ -965,7 +967,7 @@
 
     const icon = document.createElement("span");
     icon.className = "tree-icon tree-icon-btn";
-    icon.textContent = node.type === "md" ? "📝" : "📄";
+    icon.textContent = node.type === "md" ? "📝" : node.type === "image" ? "🖼️" : "📄";
     icon.title = window.i18n.t("menu.tooltip.icon");
     icon.addEventListener("click", (e) => {
       e.stopPropagation();
