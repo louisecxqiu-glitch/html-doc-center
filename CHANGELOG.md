@@ -8,6 +8,71 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## v1.15 — Static Asset Proxy & Image Preview · 静态资源代理与图片预览
+
+### v1.15.2 — Image Preview Timeout Fix · 图片预览超时修复
+*2026-06-08 · v1.15.2*
+
+**EN**
+- 🐛 **Fix: image preview always showing "File failed to load or timed out"** — PNG/JPG/GIF/WebP/SVG files in the tree triggered the 12s fallback dialog every time
+
+**中文**
+- 🐛 **修复：图片预览始终弹出"文件加载失败或超时"** — 树列表中的 PNG/JPG/GIF/WebP/SVG 文件每次打开都触发 12 秒超时兜底弹窗
+
+**🐛 Bug 三段式**
+- **问题**：在 DocCenter 中点击任何图片文件，等 12 秒后弹出"文件加载失败或超时"错误弹窗，实际图片内容是能加载的
+- **根因**：图片预览壳子（`_render_image_shell()`）不注入 `saver-runtime.js`（设计正确，图片不可编辑），但也因此不会向父窗口发送 `ready` postMessage。而 `app.js` 第 1482 行的 12 秒超时检测依赖收到 `ready` 消息来取消 fallback——图片永远收不到 → 永远超时
+- **解法**：在图片壳子 HTML 的 `</body>` 前注入一小段 `<script>`，启动时立即向 `window.parent` 发送 `{ source: "doc-center-saver", type: "ready" }` 消息，满足父窗口的超时取消条件
+
+**📐 改动**
+- `server.py`：`_render_image_shell()` 新增 6 行 `<script>` 发送 ready 消息
+
+---
+
+### v1.15.1 — Image File Tree Support · 图片文件树展示
+*2026-06-04 · v1.15.1*
+
+**EN**
+- 🖼️ Image files (PNG/JPG/JPEG/GIF/WebP/SVG) now appear in the directory tree with 🖼️ icon
+- 📷 Click any image to preview in iframe — centered on dark background, no editing injection
+- 🔧 `/api/file` extended to accept image extensions, returns a lightweight preview shell HTML
+
+**中文**
+- 🖼️ 图片文件（PNG/JPG/JPEG/GIF/WebP/SVG）现在出现在目录树中，带 🖼️ 图标
+- 📷 点击图片在 iframe 中预览——深色背景居中展示，不注入编辑能力
+- 🔧 `/api/file` 扩展支持图片后缀，返回轻量预览壳子 HTML
+
+**📐 改动**
+- `server.py`：`handle_file()` 新增 `IMAGE_EXTS` 支持 + `_render_image_shell()` 函数
+- `server.py`：`_walk_dir()` 扫描逻辑扩展识别图片文件
+
+---
+
+### v1.15.0 — Static Asset Proxy · 静态资源代理
+*2026-06-04 · v1.15.0*
+
+**EN**
+- 🔧 **New `/api/asset/{encoded_dir}/{path}` route** — proxies local static resources (images, CSS, JS, fonts) referenced by HTML files via relative paths
+- 🏗️ `inject_saver()` now injects `<base href>` pointing to the asset proxy — all relative URLs in HTML documents resolve correctly
+- 🔒 Security: all asset access passes through `_resolve_safe()` whitelist check
+
+**中文**
+- 🔧 **新增 `/api/asset/` 静态资源代理路由** — 代理 HTML 文件通过相对路径引用的本地静态资源（图片、CSS、JS、字体）
+- 🏗️ `inject_saver()` 注入 `<base href>` 指向资源代理 — HTML 文档中的相对 URL 现在能正确解析
+- 🔒 安全：所有资源访问经过 `_resolve_safe()` 白名单校验
+
+**👤 用户故事**
+- **场景**：HTML 报告中用 `<img src="./images/chart.png">` 引用同目录图片
+- **之前**：DocCenter 通过 `/api/file` 代理 HTML 内容，但相对路径图片指向 `localhost:9901/images/chart.png`——404
+- **现在**：注入 `<base href="/api/asset/{encoded_dir}/">` 后，所有相对路径自动走资源代理，图片/CSS/JS 正常加载
+- **一句话**：HTML 里的相对路径终于不再 404 了
+
+**📐 改动**
+- `server.py`：新增 `handle_asset()` 路由 + `_make_base_href()` 辅助函数
+- `server.py`：`inject_saver()` 在 `<head>` 内注入 `<base href>`
+
+---
+
 ## v1.14 — Reactive URL Routing · 响应式 URL 路由
 *2026-06-02 · v1.14.0*
 

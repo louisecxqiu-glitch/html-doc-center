@@ -784,6 +784,12 @@ def _render_image_shell(img_path: Path) -> str:
     <img src="{img_url}" alt="{file_name}">
   </div>
   <div class="filename">🖼️ {file_name}</div>
+  <script>
+    // v1.15.2: 图片壳子发送 ready 消息，防止父窗口 12s 超时弹 fallback
+    if (window.parent !== window) {{
+      window.parent.postMessage({{ source: "doc-center-saver", type: "ready" }}, "*");
+    }}
+  </script>
 </body>
 </html>"""
 
