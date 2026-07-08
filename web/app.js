@@ -1401,6 +1401,9 @@
     };
     state.isDirty = false;
     state.iframeReady = false;
+    // v1.16.1: 正常打开文件时隐藏拖拽临时预览状态条
+    const _dpb = document.getElementById("drag-preview-bar");
+    if (_dpb) _dpb.style.display = "none";
 
     // v1.13.0: 同步 URL ?path= 让链接可分享 / 收藏夹书签可用（不触发 popstate）
     try {
@@ -1713,6 +1716,8 @@
     $$(".tree-node-label.active").forEach(n => n.classList.remove("active"));
     $("#empty-state").style.display = "flex";
     $("#doc-frame").style.display = "none";
+    const _dpbClose = document.getElementById("drag-preview-bar");
+    if (_dpbClose) _dpbClose.style.display = "none";
     $("#doc-frame").src = "about:blank";
     $("#breadcrumb").innerHTML = window.i18n.t("breadcrumb.empty_html");
     setStatus(window.i18n.t("header.status.unopened"), "");
@@ -2280,9 +2285,80 @@
     $("#browse-cancel").addEventListener("click", closeBrowseDialog);
     $("#browse-confirm").addEventListener("click", confirmBrowse);
     $("#new-root-input").addEventListener("keydown", (e) => { if (e.key === "Enter") addRoot(); });
-    // 侧边栏搜索框旁的 + 按钮 → 直接打开浏览弹窗
-    const btnAddDir = document.getElementById("btn-add-dir");
-    if (btnAddDir) btnAddDir.addEventListener("click", openBrowseDialog);
+    // v1.16.1: 侧边栏 ＋ 按钮 → 直接打开目录浏览弹窗（不经过设置面板）
+    const btnQuickAdd = document.getElementById("btn-quick-add-dir");
+    if (btnQuickAdd) btnQuickAdd.addEventListener("click", () => openBrowseDialog());
+    // v1.16.1: 空状态"添加文件夹"按钮 → 同样直达
+    const btnEmptyAdd = document.getElementById("btn-empty-add-dir");
+    if (btnEmptyAdd) btnEmptyAdd.addEventListener("click", () => openBrowseDialog());
+
+    // ───────────── v1.16: 拖拽 HTML/MD 文件到主界面预览 ─────────────
+    const editor = document.querySelector(".editor");
+    if (editor) {
+      let dragCounter = 0;
+
+      editor.addEventListener("dragenter", (e) => {
+        if (!e.dataTransfer?.types?.includes("Files")) return;
+        e.preventDefault();
+        dragCounter++;
+        editor.classList.add("drag-over");
+      });
+
+      editor.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        dragCounter--;
+        if (dragCounter <= 0) {
+          dragCounter = 0;
+          editor.classList.remove("drag-over");
+        }
+      });
+
+      editor.addEventListener("dragover", (e) => {
+        if (!e.dataTransfer?.types?.includes("Files")) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+      });
+
+      editor.addEventListener("drop", async (e) => {
+        if (!e.dataTransfer?.files?.length) return;
+        e.preventDefault();
+        dragCounter = 0;
+        editor.classList.remove("drag-over");
+
+        const files = Array.from(e.dataTransfer.files);
+        const target = files.find(f => /\.html?$/i.test(f.name))
+                    || files.find(f => /\.md$/i.test(f.name));
+        if (!target) {
+          toast(window.i18n?.t("toast.drag.no_html") || "请拖入 HTML 或 Markdown 文件", "warning");
+          return;
+        }
+
+        try {
+          const text = await target.text();
+          const iframe = document.getElementById("doc-frame");
+          if (!iframe) return;
+
+          // 隐藏空状态，显示 iframe + 临时预览状态条
+          const emptyState = document.getElementById("empty-state");
+          if (emptyState) emptyState.style.display = "none";
+          iframe.style.display = "block";
+          iframe.srcdoc = text;
+          // v1.16.1: 显示临时预览状态条
+          const previewBar = document.getElementById("drag-preview-bar");
+          if (previewBar) previewBar.style.display = "block";
+
+          // 更新面包屑
+          const bc = document.getElementById("breadcrumb");
+          if (bc) {
+            bc.innerHTML = `<b>${escapeHtml(target.name)}</b> <span class="bc-meta" style="color:#c9a961">📋 ${window.i18n?.t("breadcrumb.drag_preview") || "拖入预览（未保存）"}</span>`;
+          }
+
+          toast(`${window.i18n?.t("toast.drag.loaded") || "已加载"}：${target.name}`, "success");
+        } catch (err) {
+          toast(window.i18n?.t("toast.drag.failed") || "文件读取失败", "error", err.message);
+        }
+      });
+    }
     $("#search-box").addEventListener("input", applySearchFilter);
     $("#btn-close-file").addEventListener("click", closeCurrentFile);
 

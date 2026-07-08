@@ -25,14 +25,21 @@ AI coding tools (Claude Code, Cursor, Copilot) generate HTML artifacts constantl
 
 ## Quick Start
 
+### Option 1: Double-click launch (recommended, no terminal)
+
+1. Download the project (ZIP or `git clone https://github.com/louisjobs/hotpage.git`)
+2. Double-click `启动 HotPage.command` (Mac) or `启动 HotPage.bat` (Windows)
+3. Browser opens automatically → start using
+
+> First run auto-installs the dependency (`aiohttp`), requires internet.
+
+### Option 2: Command line
+
 ```bash
-# Install
-pip install aiohttp
 git clone https://github.com/louisjobs/hotpage.git
 cd hotpage
-
-# Run
-python3 server.py
+pip install aiohttp
+python3 server.py --open-browser
 # → http://localhost:9901
 ```
 

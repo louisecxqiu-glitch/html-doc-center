@@ -8,6 +8,58 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## v1.16.1 — Empty State & Drag Preview Closure · 空状态改造与拖拽闭环
+
+*2026-07-08 · v1.16.1*
+
+**EN**
+- 🎯 **Empty state redesign** — "Pick a file from sidebar" → "👇 Drag HTML here, or click ＋ to add folders" + a prominent "📂 Add folder" button right in the empty state
+- 📋 **Drag preview status bar** — dropped files now show a gold status bar "📋 Temporary preview · Not managed, edits won't be saved" — no more dead-end confusion
+- ⚡ **Sidebar ＋ direct-to-browse** — removed the settings panel detour; clicking ＋ now opens the folder browser directly (was: settings → wait → browse)
+- 🔧 **Python missing UX** — double-click scripts now auto-open python.org download page instead of just printing a URL
+
+**中文**
+- 🎯 **空状态改造** — 从"从侧边栏选文件"变成"👇 拖入 HTML 预览，或点 ＋ 添加文件夹" + 空状态里直接放一个醒目的"📂 添加文件夹"按钮
+- 📋 **拖拽预览状态条** — 拖入文件后顶部显示金色条"📋 临时预览 · 此文件未纳入管理，编辑不会保存"——不再是"看了改不了"的死胡同
+- ⚡ **侧边栏＋直达浏览** — 去掉设置面板中转，点＋直接打开目录浏览器（原来：设置面板→等200ms→浏览弹窗）
+- 🔧 **Python 缺失体验** — 双击脚本检测到没装 Python 时自动打开下载页，不再只打印一行 URL
+
+**📐 UX 框架对照**
+- Norman 可视性：空状态从"不可发现"→"自我解释"（Krug 第一定律）
+- Nielsen #1 系统状态可见：拖拽预览有明确状态条
+- Nielsen #6 识别优于回忆：空状态直接给操作入口
+- Cooper #1 不要让用户感觉蠢：拖入后明确告知"临时预览"而非沉默
+
+---
+
+## v1.16 — Usability & Onboarding · 使用方便性优化
+
+*2026-07-07 · v1.16.0*
+
+**EN**
+- 🚀 **Double-click launch** — `启动 HotPage.command` (Mac) / `启动 HotPage.bat` (Windows), no terminal needed, auto-installs deps + opens browser
+- 📂 **Enlarged "Browse folders" button** — the tiny 30px 📂 icon is now a prominent dashed button with text label
+- ➕ **Sidebar quick-add** — "＋" button in sidebar header, one click → settings → folder browser, no more digging
+- 📎 **Drag-and-drop preview** — drag HTML/MD files from Finder/Explorer into the main area, preview instantly (no scan_root needed)
+- 🔧 **`--open-browser` CLI flag** — `python3 server.py --open-browser` auto-opens browser on startup
+- 🔧 **`--port` CLI flag** — override port from command line
+
+**中文**
+- 🚀 **双击启动** — Mac 双击 `.command`、Windows 双击 `.bat`，自动检查环境+装依赖+开浏览器，零命令行
+- 📂 **放大"浏览文件夹"按钮** — 原来 30px 的 📂 小图标改成醒目虚线大按钮 + "浏览文件夹…"文字
+- ➕ **侧边栏快速添加** — 侧边栏 header 加"＋"按钮，一键直达目录浏览器，不用再开设置面板翻找
+- 📎 **拖拽预览** — 从 Finder 拖 HTML/MD 文件到主界面，金色虚线提示 → 松开即预览，不走 scan_root
+- 🔧 **`--open-browser` 参数** — 启动后 1.5 秒自动打开浏览器
+- 🔧 **`--port` 参数** — 命令行指定端口
+
+**👤 用户故事**
+- **场景**：非技术用户想用 HotPage 浏览 AI 生成的 HTML 报告
+- **之前**：打开终端 → pip install → python3 server.py → 手动开浏览器 → 设置面板里找 30px 小图标加文件夹
+- **现在**：双击 `启动 HotPage.command` → 浏览器自动打开 → 拖 HTML 文件进去就能看 → 点侧边栏"＋"加文件夹
+- **一句话**：从"需要会命令行"到"双击就能用"
+
+---
+
 ## v1.15 — Static Asset Proxy & Image Preview · 静态资源代理与图片预览
 
 ### v1.15.2 — Image Preview Timeout Fix · 图片预览超时修复

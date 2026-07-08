@@ -69,6 +69,7 @@
       <div class="sidebar-header">
         <input type="search" id="search-box" data-i18n-placeholder="sidebar.search.placeholder" placeholder="Search file name / path… (Esc to close)" />
         <!-- v1.11.2: 排序按钮（弹出菜单）+ '+' 已搬到设置面板 -->
+        <button id="btn-quick-add-dir" class="btn-quick-add" data-i18n-title="sidebar.add_dir.tooltip" title="添加文件夹">＋</button>
         <div class="sort-btn-wrap">
           <button id="btn-sort" class="btn-sort" data-i18n-title="sidebar.sort.tooltip" title="Sort order">⇅</button>
           <div id="sort-menu" class="sort-menu" style="display:none;">
@@ -111,13 +112,18 @@
       <div class="editor-body">
         <div class="empty-state" id="empty-state">
           <div class="empty-icon">📄</div>
-          <h2 data-i18n="welcome.title">Local HTML Document Workbench</h2>
-          <p data-i18n="welcome.subtitle">Pick an HTML file from the sidebar — editing / annotation is enabled automatically.</p>
+          <h2 data-i18n="welcome.title">HotPage · 本地 HTML 工作台</h2>
+          <p data-i18n="welcome.subtitle_new">👇 拖入 HTML / Markdown 文件预览，或点侧边栏 ＋ 添加文件夹</p>
+          <div class="empty-actions">
+            <button class="btn-browse-large" id="btn-empty-add-dir" data-i18n="welcome.add_folder">📂 添加文件夹</button>
+          </div>
           <ul>
-            <li data-i18n-html="welcome.bullet.autosave">Edits and annotations <b>auto-save in 2 seconds</b> to <code>_auto-save/</code></li>
-            <li data-i18n-html="welcome.bullet.choice">On close or switch you can <b>overwrite source</b> or <b>save as new version</b></li>
-            <li data-i18n-html="welcome.bullet.clipboard">After "save as new", the path is copied to your clipboard</li>
+            <li data-i18n-html="welcome.bullet.autosave">编辑和批注 <b>2 秒自动保存</b> 到 <code>_auto-save/</code></li>
+            <li data-i18n-html="welcome.bullet.choice">关闭或切换时可 <b>覆盖源文件</b> 或 <b>另存为新版本</b></li>
           </ul>
+        </div>
+        <div class="drag-preview-bar" id="drag-preview-bar" style="display:none;">
+          <span data-i18n="preview.temporary">📋 临时预览 · 此文件未纳入管理，编辑不会保存</span>
         </div>
         <iframe id="doc-frame" style="display:none;"></iframe>
       </div>
@@ -159,9 +165,11 @@
           <h4 data-i18n="settings.scan.title">Scan directories</h4>
           <div id="scan-roots-list"></div>
           <div class="scan-add">
-            <input type="text" id="new-root-input" data-i18n-placeholder="settings.scan.placeholder" placeholder="Absolute path, e.g. /Users/.../reports" />
-            <button id="btn-browse-root" class="btn-browse" data-i18n-title="settings.scan.browse" title="Browse folders">📂</button>
-            <button id="btn-add-root" class="btn-primary" data-i18n="btn.add">Add</button>
+            <button id="btn-browse-root" class="btn-browse-large" data-i18n="settings.scan.browse_large">📂 浏览文件夹…</button>
+            <div class="scan-add-manual">
+              <input type="text" id="new-root-input" data-i18n-placeholder="settings.scan.placeholder" placeholder="Absolute path, e.g. /Users/.../reports" />
+              <button id="btn-add-root" class="btn-primary" data-i18n="btn.add">Add</button>
+            </div>
           </div>
           <p class="hint" data-i18n-html="settings.scan.hint">Defaults to <code>outputs/</code>. Add any directory to scan HTML / Markdown in real time.</p>
         </div>

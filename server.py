@@ -1744,17 +1744,32 @@ def create_app() -> web.Application:
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="HotPage — Local HTML workbench")
+    parser.add_argument("--open-browser", action="store_true",
+                        help="Automatically open browser after server starts")
+    parser.add_argument("--port", type=int, default=None,
+                        help="Port to listen on (overrides config, default: 9901)")
+    args = parser.parse_args()
+
     app = create_app()
     cfg = app["config"]
     cleanup_old_snapshots(cfg)
     cleanup_dead_favorites(cfg)  # v1.6: 启动时清理失效收藏
-    port = int(cfg.get("port", 9901))
+    port = args.port if args.port else int(cfg.get("port", 9901))
 
     _log("=" * 60)
-    _log("🚀 HTML Document Center 启动")
+    _log("🚀 HotPage 启动")
     _log(f"📂 扫描目录: {cfg.get('scan_roots')}")
     _log(f"🌐 访问: http://localhost:{port}")
     _log("=" * 60)
+
+    if args.open_browser:
+        import threading, webbrowser
+        def _open_browser():
+            time.sleep(1.5)
+            webbrowser.open(f"http://localhost:{port}")
+        threading.Thread(target=_open_browser, daemon=True).start()
 
     web.run_app(app, host="127.0.0.1", port=port, print=None)
 

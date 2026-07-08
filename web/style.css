@@ -274,6 +274,66 @@ code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.92em; ba
 .sidebar-header input:focus { border-color: var(--gold); }
 
 /* 目录区 + 添加目录按钮（搜索框右侧） */
+/* v1.16: 侧边栏快速添加文件夹按钮 */
+.btn-quick-add {
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gold-soft, rgba(201,169,97,0.1));
+  border: 1px solid rgba(201,169,97,0.3);
+  border-radius: 6px;
+  font-size: 18px; font-weight: 300;
+  color: var(--gold, #c9a961);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-quick-add:hover {
+  background: rgba(201,169,97,0.2);
+  border-color: var(--gold, #c9a961);
+  transform: scale(1.05);
+}
+.btn-quick-add:active { transform: translateY(1px); }
+
+/* v1.16: 拖拽悬停视觉反馈 */
+.editor.drag-over { position: relative; }
+.editor.drag-over::after {
+  content: "📎 松开以预览 HTML / Markdown";
+  position: absolute;
+  inset: 0;
+  background: rgba(201, 169, 97, 0.08);
+  border: 3px dashed var(--gold, #c9a961);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--gold, #c9a961);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* v1.16: 设置面板大号浏览按钮 */
+.btn-browse-large {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--gold-soft, rgba(201,169,97,0.12));
+  border: 2px dashed var(--gold, #c9a961);
+  border-radius: 8px;
+  font-size: 14px; font-weight: 500;
+  color: var(--ink, #1a1a1a);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 8px;
+}
+.btn-browse-large:hover {
+  background: rgba(201,169,97,0.2);
+  border-color: #b8964f;
+}
+.btn-browse-large:active { transform: translateY(1px); }
+.scan-add-manual { display: flex; gap: 6px; }
+.scan-add-manual input { flex: 1; }
+
 .btn-add-dir {
   flex-shrink: 0;
   width: 30px; height: 30px;
@@ -573,6 +633,19 @@ code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.92em; ba
 .empty-state p { margin: 0 0 10px; font-size: 13px; }
 .empty-state ul { list-style: none; padding: 0; font-size: 12px; line-height: 2; text-align: left; background: var(--bg-card); border: 1px solid var(--bg-muted); border-radius: 8px; padding: 14px 20px; }
 .empty-state ul li::before { content: "→ "; color: var(--gold); font-weight: 700; }
+.empty-actions { margin: 8px 0 4px; }
+.empty-actions .btn-browse-large { width: auto; margin-bottom: 0; }
+
+/* v1.16.1: 拖拽临时预览状态条 */
+.drag-preview-bar {
+  padding: 8px 16px;
+  background: rgba(201, 169, 97, 0.12);
+  border-bottom: 2px solid var(--gold, #c9a961);
+  font-size: 13px;
+  color: var(--gold, #c9a961);
+  text-align: center;
+  flex-shrink: 0;
+}
 
 /* ========== Modal ========== */
 .modal-backdrop {

@@ -42,3 +42,5 @@ CODEBUDDY.md
 
 # ─── 内部开发文档 / 快照 ───
 docs/superpowers/plans/*.internal.md
+HotPage.app/
+.mcp.json
