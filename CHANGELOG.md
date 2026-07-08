@@ -8,6 +8,26 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## v1.18 — Table Insert · 表格插入
+
+*2026-07-09 · v1.18.0*
+
+**EN**
+- 📊 **Table insert button** — new 📊 button in editor toolbar; prompt for rows×cols (e.g. `3×4`), inserts a styled HTML table at cursor via `insertHTML`
+- Supports 1-20 rows × 1-20 cols, with bordered cells and auto-width
+
+**中文**
+- 📊 **表格插入按钮** — 编辑器工具栏新增 📊 按钮；输入行×列（如 `3×4`），在光标处插入带边框的 HTML 表格
+- 支持 1-20 行 × 1-20 列，单元格自动带边框和内边距
+
+**👤 用户故事**
+- **场景**：用户在 HTML 报告里想加一个数据表格
+- **之前**：只能回 AI 重生成整段 HTML
+- **现在**：点 📊 → 输入 3×4 → 表格插入 → 直接在单元格里打字
+- **一句话**：从"回 AI 重做"到"工具栏一键插入"
+
+---
+
 ## v1.17 — Export & Autostart · 导出与开机自启
 
 *2026-07-09 · v1.17.0*

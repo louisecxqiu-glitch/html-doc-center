@@ -167,6 +167,7 @@
       <span class="sep"></span>
       <!-- v1.11.1 新增：链接 -->
       <button id="__dc_link" title="插入/编辑链接（选中文字后点击）">🔗</button>
+      <button id="__dc_table" title="插入表格">📊</button>
       <!-- v1.11.5: 更多排版（行高/字间距/代码块/引用块） -->
       <button id="__dc_more" title="更多排版（行高/字间距/代码/引用）">⋯</button>
       <span class="sep"></span>
@@ -244,6 +245,11 @@
         handleLinkButton();
         return;
       }
+      // v1.18: 表格按钮
+      if (btn.id === "__dc_table") {
+        handleTableButton();
+        return;
+      }
       // v1.11.5: 更多排版菜单（行高/字间距/代码/引用）
       if (btn.id === "__dc_more") {
         handleMoreMenu(btn);
@@ -260,6 +266,31 @@
         markDirty();
       }
     });
+  }
+
+  // v1.18: 表格插入
+  function handleTableButton() {
+    const input = prompt("插入表格（行×列，如 3×4）：", "3×4");
+    if (!input) return;
+    const m = input.match(/(\d+)\s*[×x*]\s*(\d+)/i);
+    if (!m) { alert("格式不正确，请输入如 3×4"); return; }
+    const rows = parseInt(m[1]);
+    const cols = parseInt(m[2]);
+    if (rows < 1 || cols < 1 || rows > 20 || cols > 20) {
+      alert("行列数需在 1-20 之间");
+      return;
+    }
+    let html = '<table style="border-collapse:collapse;width:100%;margin:12px 0;">';
+    for (let r = 0; r < rows; r++) {
+      html += '<tr>';
+      for (let c = 0; c < cols; c++) {
+        html += '<td style="border:1px solid #ddd;padding:8px;min-width:60px;">&nbsp;</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</table>';
+    try { document.execCommand("insertHTML", false, html); } catch (_) {}
+    markDirty();
   }
 
   // v1.11.1: 链接按钮处理
