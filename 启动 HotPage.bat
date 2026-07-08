@@ -54,7 +54,28 @@ if errorlevel 1 (
 
 echo.
 
-REM ── 3. 检查端口 ──
+REM ── 3. 询问是否设为开机自启 ──
+set STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
+if not exist "%STARTUP_DIR%\HotPage.lnk" (
+  echo 是否设为开机自启？(y/n)
+  set /p answer=
+  if /i "%answer%"=="y" (
+    echo Set oShell = CreateObject("WScript.Shell") > "%TEMP%\hp_shortcut.vbs"
+    echo Set oShortcut = oShell.CreateShortcut("%STARTUP_DIR%\HotPage.lnk") >> "%TEMP%\hp_shortcut.vbs"
+    echo oShortcut.TargetPath = "%~dpnx0" >> "%TEMP%\hp_shortcut.vbs"
+    echo oShortcut.WorkingDirectory = "%~dp0" >> "%TEMP%\hp_shortcut.vbs"
+    echo oShortcut.WindowStyle = 7 >> "%TEMP%\hp_shortcut.vbs"
+    echo oShortcut.Save >> "%TEMP%\hp_shortcut.vbs"
+    cscript //nologo "%TEMP%\hp_shortcut.vbs"
+    del "%TEMP%\hp_shortcut.vbs"
+    echo ✅ 已设为开机自启（Windows 开机后自动启动 HotPage）
+  ) else (
+    echo 跳过，如需后续设置可重新双击此文件
+  )
+  echo.
+)
+
+REM ── 4. 检查端口 ──
 netstat -ano | findstr ":9901 " | findstr "LISTENING" >nul
 if not errorlevel 1 (
   echo ⚠️  HotPage 已在运行（端口 9901 被占用）
@@ -66,14 +87,12 @@ if not errorlevel 1 (
   exit /b 0
 )
 
-REM ── 4. 启动服务 + 打开浏览器 ──
+REM ── 5. 启动服务 + 打开浏览器 ──
 echo 🚀 启动服务中...
 echo    地址：http://localhost:9901
 echo    按 Ctrl+C 停止服务
 echo.
 
-REM 2 秒后自动打开浏览器
 start /b cmd /c "timeout /t 2 /nobreak >nul && start http://localhost:9901"
 
-REM 前台运行 server
 %PYTHON% server.py

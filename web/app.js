@@ -1387,6 +1387,33 @@
     setStatus(window.i18n.t("status.load_failed"), "error");
   }
 
+  // ───────────── v1.17: 导出 PDF / 打印 ─────────────
+  function exportPDF() {
+    const iframe = document.getElementById("doc-frame");
+    if (!iframe || !iframe.contentWindow) {
+      toast(window.i18n?.t("toast.export.failed") || "导出失败", "error");
+      return;
+    }
+    try {
+      const doc = iframe.contentDocument;
+      // 注入打印样式：隐藏 saver 工具栏
+      if (doc && doc.head) {
+        let style = doc.getElementById("__dc_print_hide");
+        if (!style) {
+          style = doc.createElement("style");
+          style.id = "__dc_print_hide";
+          style.textContent = "@media print{#__dc_toolbar{display:none!important}body{padding-top:0!important}}";
+          doc.head.appendChild(style);
+        }
+      }
+      iframe.contentWindow.print();
+    } catch (e) {
+      // 跨域时 contentDocument 不可访问，直接 print
+      try { iframe.contentWindow.print(); }
+      catch (e2) { toast(window.i18n?.t("toast.export.failed") || "导出失败", "error", e2.message); }
+    }
+  }
+
   // ───────────── 打开文件 ─────────────
   async function openFile(node, opts = {}) {
     if (state.isDirty && state.currentFile) {
@@ -1478,6 +1505,8 @@
     $("#btn-close-file").disabled = false;
     // v1.10.2: 启用历史按钮
     const bh = $("#btn-history"); if (bh) bh.disabled = false;
+    // v1.17: 启用导出 PDF 按钮
+    const bep = $("#btn-export-pdf"); if (bep) bep.disabled = false;
     setStatus(window.i18n.t("status.loading"), "");
 
     // v1.10.6: iframe 加载兜底 — 12 秒超时未拿到 ready 消息就显示重试 UI
@@ -1724,6 +1753,8 @@
     $("#btn-close-file").disabled = true;
     // v1.10.2: 禁用历史按钮
     const bh = $("#btn-history"); if (bh) bh.disabled = true;
+    // v1.17: 禁用导出 PDF 按钮
+    const bep2 = $("#btn-export-pdf"); if (bep2) bep2.disabled = true;
     // 清空上次会话
     saveLastSession("", "75");
     // 关闭后空态 → 目录保持展开状态
@@ -2268,6 +2299,9 @@
 
     // v1.10.2: 历史版本按钮
     $("#btn-history").addEventListener("click", () => HISTORY.open());
+    // v1.17: 导出 PDF / 打印
+    const btnExportPdf = $("#btn-export-pdf");
+    if (btnExportPdf) btnExportPdf.addEventListener("click", exportPDF);
     // v1.10.5: 帮助按钮
     const bhelp = $("#btn-help"); if (bhelp) bhelp.addEventListener("click", () => showShortcutHelp());
     $("#history-drawer-close").addEventListener("click", () => HISTORY.close());
@@ -2346,6 +2380,9 @@
           // v1.16.1: 显示临时预览状态条
           const previewBar = document.getElementById("drag-preview-bar");
           if (previewBar) previewBar.style.display = "block";
+          // v1.17: 拖拽预览也启用导出按钮
+          const bep3 = document.getElementById("btn-export-pdf");
+          if (bep3) bep3.disabled = false;
 
           // 更新面包屑
           const bc = document.getElementById("breadcrumb");

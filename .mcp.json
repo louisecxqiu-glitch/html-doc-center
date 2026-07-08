@@ -1,11 +1,3 @@
 {
-  "mcpServers": {
-    "hotpage": {
-      "command": "python3",
-      "args": ["${PLUGIN_DIR}/server.py", "--mcp"],
-      "env": {
-        "HOTPAGE_PORT": "9901"
-      }
-    }
-  }
+  "mcpServers": {}
 }

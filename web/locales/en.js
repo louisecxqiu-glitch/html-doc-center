@@ -89,6 +89,8 @@ window.LOCALE_EN = {
   'welcome.subtitle_new': '👇 Drag HTML/MD files here to preview, or click ＋ in sidebar to add folders',
   'welcome.add_folder': '📂 Add folder',
   'preview.temporary': '📋 Temporary preview · Not managed, edits won't be saved',
+  'btn.export_pdf': 'Export PDF / Print',
+  'toast.export.failed': 'Export failed',
   'settings.scan.hint': 'Defaults to <code>outputs/</code>. Add any directory to scan HTML / Markdown in real time.',
   'settings.refresh.title': '📡 Tree auto-refresh',
   'settings.refresh.label': 'Refresh interval',

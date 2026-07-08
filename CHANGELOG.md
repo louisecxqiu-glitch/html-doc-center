@@ -8,6 +8,26 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## v1.17 — Export & Autostart · 导出与开机自启
+
+*2026-07-09 · v1.17.0*
+
+**EN**
+- 📄 **Export PDF / Print** — new 📄 button in toolbar, calls `iframe.contentWindow.print()` with injected `@media print` CSS to hide the editor toolbar; works for both managed files and drag-dropped previews
+- 🔧 **Startup autostart prompt** — double-click scripts now ask "Set as startup autostart? (y/n)" on first run; Mac generates launchd plist dynamically, Windows creates Startup folder shortcut
+
+**中文**
+- 📄 **导出 PDF / 打印** — 顶栏新增 📄 按钮，调用浏览器原生打印（可另存为 PDF），自动注入 `@media print` 样式隐藏编辑器工具栏；管理的文件和拖拽预览都能导出
+- 🔧 **开机自启提示** — 双击脚本首次运行时询问"是否设为开机自启？"，Mac 动态生成 launchd plist，Windows 创建启动文件夹快捷方式
+
+**👤 用户故事**
+- **场景**：用户编辑完 HTML 报告，想发给老板
+- **之前**：只能发 .html 文件，老板可能打不开
+- **现在**：点 📄 按钮 → 浏览器打印对话框 → 另存为 PDF → 发给老板
+- **一句话**：从"只能发 HTML"到"一键导出 PDF"
+
+---
+
 ## v1.16.1 — Empty State & Drag Preview Closure · 空状态改造与拖拽闭环
 
 *2026-07-08 · v1.16.1*
