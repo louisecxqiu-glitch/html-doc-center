@@ -8,6 +8,24 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## v1.18.2 — Windows Fixes & Markdown Preview · Windows 兼容与 MD 预览修复
+
+*2026-07-15 · v1.18.2*
+
+**EN**
+- 🐛 **Fix: static asset version bump v1.12.0 → v1.18.2** — browser was caching pre-v1.16 app.js on Windows, causing "Settings button no response" and "Browse dialog load failed" because the cached JS couldn't find new DOM elements
+- 📝 **Markdown drag-preview rendering** — dropped MD files now renders as formatted HTML (headings/bold/code/lists/quotes) instead of plain text
+- 🎨 **PDF export preserves color** — injected `print-color-adjust: exact` into print CSS so background colors survive "Save as PDF"
+- 🔄 **Scan root auto-enable on re-add** — adding a previously-disabled directory now enables it instead of showing "already exists"
+
+**中文**
+- 🐛 **修复：静态资源版本号 v1.12.0 → v1.18.2** — 浏览器缓存了 v1.16 之前的旧 app.js，导致 Windows 上"设置按钮无反应"和"浏览对话框加载失败"（旧 JS 找不到新 DOM 元素）
+- 📝 **Markdown 拖拽预览渲染** — 拖入 MD 文件现在渲染为格式化 HTML（标题/粗体/代码/列表/引用），不再是纯文本
+- 🎨 **PDF 导出保留彩色** — 打印 CSS 注入 `print-color-adjust: exact`，背景色不再被"另存为 PDF"剥掉
+- 🔄 **重新添加已禁用目录时自动启用** — 不再提示"已存在"，而是自动启用并显示
+
+---
+
 ## v1.18 — Table Insert · 表格插入
 
 *2026-07-09 · v1.18.0*

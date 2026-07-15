@@ -1387,6 +1387,42 @@
     setStatus(window.i18n.t("status.load_failed"), "error");
   }
 
+  // ───────────── v1.18.2: 极简 Markdown → HTML 渲染（拖拽预览用） ─────────────
+  function renderMarkdownSimple(md) {
+    function esc(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+    let html = esc(md);
+    // 代码块 ```
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function(_, lang, code) {
+      return '<pre style="background:#1a1d23;color:#e5e7eb;padding:16px;border-radius:8px;overflow-x:auto;font-family:monospace;font-size:13px;line-height:1.6;"><code>' + code + '</code></pre>';
+    });
+    // 行内代码
+    html = html.replace(/`([^`]+)`/g, '<code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:0.9em;">$1</code>');
+    // 标题
+    html = html.replace(/^### (.+)$/gm, '<h3 style="margin:20px 0 8px;font-size:18px;">$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2 style="margin:24px 0 10px;font-size:22px;">$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1 style="margin:28px 0 12px;font-size:28px;">$1</h1>');
+    // 粗体/斜体
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    // 链接
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:#2563eb;">$1</a>');
+    // 引用
+    html = html.replace(/^&gt; (.+)$/gm, '<blockquote style="border-left:3px solid #c9a961;padding-left:12px;margin:12px 0;color:#666;">$1</blockquote>');
+    // 无序列表
+    html = html.replace(/^(\s*)[-*] (.+)$/gm, '$1<li>$2</li>');
+    html = html.replace(/(<li>[\s\S]*?<\/li>)/g, function(m) {
+      return '<ul style="margin:8px 0;padding-left:24px;">' + m + '</ul>';
+    });
+    // 有序列表
+    html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+    // 分割线
+    html = html.replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid #ddd;margin:20px 0;">');
+    // 段落（空行分段）
+    html = html.replace(/\n\n+/g, '</p><p style="margin:8px 0;line-height:1.8;">');
+    html = '<div style="max-width:800px;margin:0 auto;padding:32px;font-family:-apple-system,"PingFang SC",sans-serif;color:#1a1a1a;line-height:1.8;"><p style="margin:8px 0;line-height:1.8;">' + html + '</p></div>';
+    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body>' + html + '</body></html>';
+  }
+
   // ───────────── v1.17: 导出 PDF / 打印 ─────────────
   function exportPDF() {
     const iframe = document.getElementById("doc-frame");
@@ -1402,7 +1438,7 @@
         if (!style) {
           style = doc.createElement("style");
           style.id = "__dc_print_hide";
-          style.textContent = "@media print{#__dc_toolbar{display:none!important}body{padding-top:0!important}}";
+          style.textContent = "@media print{#__dc_toolbar{display:none!important}body{padding-top:0!important}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}";
           doc.head.appendChild(style);
         }
       }
@@ -1892,11 +1928,24 @@
       // 去重：规范化路径后对比（去掉尾部斜杠、展开 ~）
       const normalize = s => s.replace(/\/+$/, "").replace(/^~/, "");
       const np = normalize(p);
-      const existing = roots.some(item => {
+      const existingIdx = roots.findIndex(item => {
         const ep = typeof item === "string" ? item : item.path;
         return normalize(ep) === np;
       });
-      if (existing) { toast(window.i18n.t("toast.scan.exists"), "warning"); return; }
+      if (existingIdx >= 0) {
+        // v1.18.1: 已存在但 disabled → 自动启用，而非拒绝
+        const item = roots[existingIdx];
+        const isEnabled = typeof item === "string" ? true : item.enabled !== false;
+        if (isEnabled) {
+          toast(window.i18n.t("toast.scan.exists"), "warning");
+          return;
+        }
+        roots[existingIdx] = { path: p, enabled: true };
+        await updateRoots(roots);
+        input.value = "";
+        sidebarCtl.show(true);
+        return;
+      }
 
       roots.push({ path: p, enabled: true });
       await updateRoots(roots);
@@ -2376,7 +2425,16 @@
           const emptyState = document.getElementById("empty-state");
           if (emptyState) emptyState.style.display = "none";
           iframe.style.display = "block";
-          iframe.srcdoc = text;
+
+          // v1.18.2: MD 文件需要渲染成 HTML 再塞进 iframe
+          const isMD = /\.md$/i.test(target.name);
+          let htmlContent;
+          if (isMD) {
+            htmlContent = renderMarkdownSimple(text);
+          } else {
+            htmlContent = text;
+          }
+          iframe.srcdoc = htmlContent;
           // v1.16.1: 显示临时预览状态条
           const previewBar = document.getElementById("drag-preview-bar");
           if (previewBar) previewBar.style.display = "block";
