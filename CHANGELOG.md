@@ -8,6 +8,22 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## v1.18.3 — Windows Compatibility Hardening · Windows 兼容性加固
+
+*2026-07-16 · v1.18.3*
+
+**EN**
+- 🖥️ **OneDrive Desktop redirect** — browse dialog now detects `%OneDrive%` env var and redirects "Desktop"/"Documents" shortcuts to OneDrive paths
+- 🔧 **explorer /select path with spaces** — `subprocess.run(f'explorer /select,"{target}"', shell=True)` to handle paths like `C:\Users\My Documents\file.html`
+- 🧪 **Windows self-check script** — `hotpage-windows-check.py` runs 10 diagnostic checks (Python/aiohttp/config/port/path-separator/browser)
+
+**中文**
+- 🖥️ **OneDrive 桌面重定向** — 目录浏览器检测 `%OneDrive%` 环境变量，自动把"桌面"/"文稿"快捷入口重定向到 OneDrive 路径
+- 🔧 **explorer 路径含空格** — `explorer /select,"路径"` 用引号包裹，修复 `C:\Users\My Documents\file.html` 类路径
+- 🧪 **Windows 自测脚本** — `hotpage-windows-check.py` 跑 10 项诊断检查
+
+---
+
 ## v1.18.2 — Windows Fixes & Markdown Preview · Windows 兼容与 MD 预览修复
 
 *2026-07-15 · v1.18.2*

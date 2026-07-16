@@ -73,7 +73,7 @@
     let list = recentGet();
     // 去重：把同路径移除后前插
     list = list.filter(it => it.path !== node.abs_path);
-    list.unshift({ path: node.abs_path, name: node.name || node.abs_path.split("/").pop(), ts: now });
+    list.unshift({ path: node.abs_path, name: node.name || node.abs_path.split(/[/\\]/).pop(), ts: now });
     if (list.length > RECENT_MAX) list = list.slice(0, RECENT_MAX);
     recentSave(list);
     state.recent = list;
@@ -108,7 +108,7 @@
       return;
     }
     const rows = items.slice(0, RECENT_MAX).map(item => {
-      const name = item.name || item.path.split("/").pop();
+      const name = item.name || item.path.split(/[/\\]/).pop();
       const lp = item.path.toLowerCase();
       const icon = lp.endsWith(".md") ? "📝" : /\.(png|jpe?g|gif|webp|svg)$/.test(lp) ? "🖼️" : "📄";
       const timeLabel = formatRecentTime(item.ts);
@@ -131,7 +131,7 @@
         const p = row.dataset.path;
         // v1.11.11: 切到目录 Tab 让用户在树里看到当前文件的高亮和位置
         sidebarTabsCtl && sidebarTabsCtl.activate("tree");
-        openFile({ abs_path: p, name: p.split("/").pop(), type: p.toLowerCase().endsWith(".md") ? "md" : "html" });
+        openFile({ abs_path: p, name: p.split(/[/\\]/).pop(), type: p.toLowerCase().endsWith(".md") ? "md" : "html" });
       });
     });
     container.querySelectorAll(".recent-remove").forEach(btn => {
@@ -556,7 +556,7 @@
       const isDir = item.type === "dir";
       const lp2 = item.path.toLowerCase();
       const icon = isDir ? "📁" : lp2.endsWith(".md") ? "📝" : /\.(png|jpe?g|gif|webp|svg)$/.test(lp2) ? "🖼️" : "📄";
-      const name = item.path.split("/").pop() || item.path;
+      const name = item.path.split(/[/\\]/).pop() || item.path;
       return `<div class="fav-item" data-path="${item.path}" data-type="${item.type}" title="${item.path}">
         <span class="fav-icon">${icon}</span>
         <span class="fav-name">${escapeHtml(name)}</span>
@@ -578,7 +578,7 @@
         sidebarTabsCtl && sidebarTabsCtl.activate("tree");
         if (type === "file") {
           // 构造类 node 对象传给 openFile（openFile 会调 scrollToActiveFile）
-          openFile({ abs_path: p, name: p.split("/").pop(), type: p.toLowerCase().endsWith(".md") ? "md" : "html" });
+          openFile({ abs_path: p, name: p.split(/[/\\]/).pop(), type: p.toLowerCase().endsWith(".md") ? "md" : "html" });
         } else {
           // 目录 → 等 Tab 切换后下一帧再 scrollToPath
           requestAnimationFrame(() => {
@@ -592,7 +592,7 @@
         e.stopPropagation();
         const p = btn.dataset.path;
         const it = state.favorites.find(i => i.path === p);
-        if (it) toggleFavorite(p, it.type, p.split("/").pop());
+        if (it) toggleFavorite(p, it.type, p.split(/[/\\]/).pop());
       });
     });
   }
@@ -1002,7 +1002,7 @@
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       e.preventDefault();
-      toggleFavorite(absPath, type, absPath.split("/").pop());
+      toggleFavorite(absPath, type, absPath.split(/[/\\]/).pop());
     });
     return btn;
   }
@@ -1030,7 +1030,7 @@
         // dirty 文件不允许拖走（提前拦截，一行 class 都不碰，避免残留视觉）
         if (state.currentFile && state.currentFile.absPath === absPath && state.isDirty) {
           e.preventDefault();
-          toast(window.i18n.t("toast.move.save_first"), "warning", absPath.split("/").pop());
+          toast(window.i18n.t("toast.move.save_first"), "warning", absPath.split(/[/\\]/).pop());
           return;
         }
         e.stopPropagation();
@@ -1100,7 +1100,7 @@
       return;
     }
     // 同父目录检测
-    const srcParent = srcPayload.path.split("/").slice(0, -1).join("/");
+    const srcParent = srcPayload.path.split(/[/\\]/).slice(0, -1).join("/");
     if (srcParent === dstDirAbs) {
       toast(window.i18n.t("toast.move.same_dir"), "info");
       return;
@@ -1610,7 +1610,7 @@
         return false;
       }
 
-      const name = absPath.split("/").pop() || absPath;
+      const name = absPath.split(/[/\\]/).pop() || absPath;
       const type = absPath.toLowerCase().endsWith(".md") ? "md" : "html";
       await openFile({ abs_path: absPath, name, type, path: absPath }, { silent: true });
       return true;
@@ -1870,7 +1870,7 @@
   function middleEllipsis(str, maxLen) {
     if (str.length <= maxLen) return str;
     // 按路径分隔符智能截断：保留前两段 + 最后一段
-    const parts = str.split("/").filter(Boolean);
+    const parts = str.split(/[/\\]/).filter(Boolean);
     if (parts.length > 3) {
       const head = "/" + parts.slice(0, 2).join("/");
       const tail = parts.slice(-2).join("/");
@@ -2010,7 +2010,7 @@
       bc.innerHTML = window.i18n.t("browse.shortcut_label_html");
       return;
     }
-    const parts = current.split("/").filter(Boolean);
+    const parts = current.split(/[/\\]/).filter(Boolean);
     let html = '<span class="bc-item bc-link" data-path="">🏠</span>';
     let accumulated = "";
     for (let i = 0; i < parts.length; i++) {

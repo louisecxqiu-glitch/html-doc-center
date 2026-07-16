@@ -545,6 +545,19 @@ async def handle_browse(request):
                 {"name": "📄 文稿", "path": str(Path(home) / "Documents")},
                 {"name": "⬇️ 下载", "path": str(Path(home) / "Downloads")},
             ]
+            # v1.18.3: Windows OneDrive 重定向兜底
+            if platform.system() == "Windows":
+                onedrive = os.environ.get("OneDrive", "")
+                if onedrive:
+                    for r in roots:
+                        if "桌面" in r["name"] or "Desktop" in r["name"]:
+                            od_desktop = os.path.join(onedrive, "Desktop")
+                            if Path(od_desktop).is_dir():
+                                r["path"] = od_desktop
+                        if "文稿" in r["name"] or "Documents" in r["name"]:
+                            od_docs = os.path.join(onedrive, "Documents")
+                            if Path(od_docs).is_dir():
+                                r["path"] = od_docs
             # 过滤存在的目录
             roots = [r for r in roots if Path(r["path"]).is_dir()]
             # 也加入已有的 scan_roots 的父目录作为快捷入口
@@ -1512,8 +1525,10 @@ async def handle_reveal(request):
         if system == "Darwin":  # macOS
             subprocess.run(["open", "-R", target], check=False, timeout=5)
         elif system == "Windows":
-            # explorer /select,<path>
-            subprocess.run(["explorer", f"/select,{target}"], check=False, timeout=5)
+            # v1.18.3: explorer /select, 路径含空格时需要用两个参数
+            # 但 explorer.exe 不走 subprocess 的参数分割，必须用 /select,<path> 一体
+            # 用 shell=True + 引号包裹路径来处理空格
+            subprocess.run(f'explorer /select,"{target}"', shell=True, check=False, timeout=5)
         else:  # Linux / 其它
             # 无 reveal 能力，退化为打开父目录
             parent = str(safe.parent) if safe.is_file() else target
