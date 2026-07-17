@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n="meta.title">HTML Document Center · Local Workbench</title>
-  <link rel="stylesheet" href="/static/style.css?v=1.18.4" />
+  <link rel="stylesheet" href="/static/style.css?v=1.19.0" />
   <script>
     // v1.10.10: 主题早期恢复（避免页面闪烁）。三态：auto / light / dark
     (function() {
@@ -18,9 +18,9 @@
     })();
   </script>
   <!-- v1.12.0: i18n engine + locale dictionaries (must be loaded BEFORE app.js) -->
-  <script src="/static/locales/en.js?v=1.18.4"></script>
-  <script src="/static/locales/zh.js?v=1.18.4"></script>
-  <script src="/static/i18n.js?v=1.18.4"></script>
+  <script src="/static/locales/en.js?v=1.19.0"></script>
+  <script src="/static/locales/zh.js?v=1.19.0"></script>
+  <script src="/static/i18n.js?v=1.19.0"></script>
 </head>
 <body>
   <!-- 顶部：单栏 44px 承载所有功能 -->
@@ -71,6 +71,7 @@
         <input type="search" id="search-box" data-i18n-placeholder="sidebar.search.placeholder" placeholder="Search file name / path… (Esc to close)" />
         <!-- v1.11.2: 排序按钮（弹出菜单）+ '+' 已搬到设置面板 -->
         <button id="btn-quick-add-dir" class="btn-quick-add" data-i18n-title="sidebar.add_dir.tooltip" title="添加文件夹">＋</button>
+        <button id="btn-open-file" class="btn-quick-add" data-i18n-title="sidebar.open_file.tooltip" title="Open a file">📂</button>
         <div class="sort-btn-wrap">
           <button id="btn-sort" class="btn-sort" data-i18n-title="sidebar.sort.tooltip" title="Sort order">⇅</button>
           <div id="sort-menu" class="sort-menu" style="display:none;">
@@ -117,6 +118,7 @@
           <p data-i18n="welcome.subtitle_new">👇 拖入 HTML / Markdown 文件预览，或点侧边栏 ＋ 添加文件夹</p>
           <div class="empty-actions">
             <button class="btn-browse-large" id="btn-empty-add-dir" data-i18n="welcome.add_folder">📂 添加文件夹</button>
+            <button class="btn-browse-large" id="btn-empty-open-file" data-i18n="welcome.open_file">📄 打开文件</button>
           </div>
           <ul>
             <li data-i18n-html="welcome.bullet.autosave">编辑和批注 <b>2 秒自动保存</b> 到 <code>_auto-save/</code></li>
@@ -222,19 +224,58 @@
     </div>
   </div>
 
-  <!-- 目录浏览弹窗 -->
+  <!-- v1.19: Finder 风格双栏目录/文件浏览弹窗 -->
   <div class="modal-backdrop" id="browse-dialog" style="display:none;">
-    <div class="modal modal-wide browse-modal">
-      <h3 data-i18n="modal.folder.title">📂 Select a folder</h3>
-      <div class="browse-breadcrumb" id="browse-breadcrumb"></div>
-      <div class="browse-list" id="browse-list"></div>
+    <div class="modal modal-wide browse-modal browse-modal-finder">
+      <div class="browse-modal-header">
+        <h3 id="browse-modal-title" data-i18n="modal.folder.title.folder">📂 Select a folder</h3>
+        <button class="modal-close-x" id="browse-close-x" title="Close">✕</button>
+      </div>
+      <div class="browse-finder-body">
+        <aside class="browse-sidebar">
+          <div class="browse-sidebar-section">
+            <div class="browse-sidebar-label" data-i18n="modal.folder.shortcuts">📍 Shortcuts</div>
+            <div class="browse-sidebar-list" id="browse-shortcuts-list"></div>
+          </div>
+          <div class="browse-sidebar-section">
+            <div class="browse-sidebar-label" data-i18n="modal.folder.pinned">📌 Pinned</div>
+            <div class="browse-sidebar-list" id="browse-pinned-list"></div>
+          </div>
+          <div class="browse-sidebar-section">
+            <div class="browse-sidebar-label" data-i18n="modal.folder.recent">🕐 Recent</div>
+            <div class="browse-sidebar-list" id="browse-recent-list"></div>
+          </div>
+        </aside>
+        <main class="browse-main">
+          <div class="browse-breadcrumb" id="browse-breadcrumb"></div>
+          <div class="browse-list" id="browse-list"></div>
+        </main>
+      </div>
       <div class="browse-actions">
         <div class="browse-selected" id="browse-selected"></div>
         <div class="browse-btns">
           <button class="btn-browse-cancel" id="browse-cancel" data-i18n="modal.folder.cancel">Cancel</button>
-          <button class="btn-primary" id="browse-confirm" disabled data-i18n="modal.folder.confirm">Choose this folder</button>
+          <button class="btn-primary" id="browse-confirm" disabled data-i18n="modal.folder.confirm.folder">Choose this folder</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- v1.19: 拖入副本关闭时的二选一对话框 -->
+  <div class="modal-backdrop" id="dropbox-save-dialog" style="display:none;">
+    <div class="modal dropbox-save-modal">
+      <h3 data-i18n="dlg.dropbox.title">This dropbox file has unsaved changes</h3>
+      <div class="save-options">
+        <div class="save-option" id="dropbox-save-as-option">
+          <b data-i18n="dlg.dropbox.save_as">Save as new version</b>
+          <small data-i18n="dlg.dropbox.save_as.desc">Choose a location to save your edited copy</small>
+        </div>
+        <div class="save-option" id="dropbox-discard-option">
+          <b data-i18n="dlg.dropbox.discard">Discard</b>
+          <small data-i18n="dlg.dropbox.discard.desc">Drop the dropbox copy, edits lost</small>
+        </div>
+      </div>
+      <button class="modal-close" id="dropbox-cancel" data-i18n="btn.cancel">Cancel</button>
     </div>
   </div>
 
@@ -275,6 +316,6 @@
   <!-- Toast -->
   <div id="toast-container"></div>
 
-  <script src="/static/app.js?v=1.18.4"></script>
+  <script src="/static/app.js?v=1.19.0"></script>
 </body>
 </html>
