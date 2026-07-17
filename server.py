@@ -1921,6 +1921,24 @@ def main():
     cleanup_dead_favorites(cfg)  # v1.6: 启动时清理失效收藏
     port = args.port if args.port else int(cfg.get("port", 9901))
 
+    # 端口冲突自动重试（最多尝试 10 个端口）
+    import socket
+    original_port = port
+    for attempt in range(10):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("127.0.0.1", port))
+                break
+            except OSError:
+                if attempt == 0:
+                    _log(f"⚠️ 端口 {original_port} 被占用，尝试寻找可用端口…")
+                port += 1
+    else:
+        _log(f"❌ 端口 {original_port}-{original_port+9} 全部被占用，请用 --port 指定其他端口")
+        sys.exit(1)
+    if port != original_port:
+        _log(f"✅ 改用端口 {port}")
+
     _log("=" * 60)
     _log("🚀 HotPage 启动")
     _log(f"📂 扫描目录: {cfg.get('scan_roots')}")
