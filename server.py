@@ -1868,10 +1868,18 @@ async def handle_export_share(request):
         safe_name = re.sub(r'[^\w\u4e00-\u9fff\-]', '_', orig_name)[:50]
         ts = datetime.now().strftime("%Y-%m-%d")
         filename = f"{safe_name}-share-{ts}.html"
-        downloads = Path.home() / "Downloads"
-        if not downloads.exists():
-            downloads = Path.home() / "下载"
-        if not downloads.exists():
+        # Windows OneDrive 用户的 Downloads 可能在 OneDrive\Downloads
+        candidates = [
+            Path.home() / "Downloads",
+            Path.home() / "OneDrive" / "Downloads",
+            Path.home() / "下载",
+        ]
+        downloads = None
+        for c in candidates:
+            if c.exists() and c.is_dir():
+                downloads = c
+                break
+        if not downloads:
             downloads = Path.home()
         filepath = downloads / filename
         counter = 1
@@ -1976,24 +1984,28 @@ def main():
     _log("=" * 60)
     _log("🚀 HTML Studio 启动")
     _log(f"📂 扫描目录: {cfg.get('scan_roots')}")
-    _log(f"🌐 访问: http://localhost:{port}")
+    _log(f"🌐 访问: http://127.0.0.1:{port}")
     _log("=" * 60)
 
     if args.open_browser:
         import threading, webbrowser
         def _open_browser():
             time.sleep(1.5)
-            webbrowser.open(f"http://localhost:{port}")
+            webbrowser.open(f"http://127.0.0.1:{port}")
         threading.Thread(target=_open_browser, daemon=True).start()
 
-    # v1.19.8: 同时绑定 IPv4 + IPv6
-    # 根因：Windows 上 `localhost` 常解析为 `::1` (IPv6)，但 server 只听 127.0.0.1 (IPv4) 时
-    # 浏览器尝试 IPv6 连接失败 → fetch 抛 "Failed to fetch" / "获取失败"
-    # 修复：同时绑定 127.0.0.1 (IPv4) + ::1 (IPv6) 让两个地址都能连
-    if platform.system() == "Windows":
-        bind_hosts = ["127.0.0.1", "::1"]
-    else:
-        bind_hosts = ["127.0.0.1", "::1"]  # 同时支持 IPv6 (macOS 也有可能)
+    # v2.0: Windows 兼容 — 检测 IPv6 可用性，不可用则只绑 IPv4
+    # 根因：Windows 上 localhost 常解析为 ::1 (IPv6)，如果 ::1 绑定失败
+    # 服务启动失败或 fetch 请求 "加载失败"
+    # 修复：(1) 检测 ::1 可用性 (2) 浏览器用 127.0.0.1 打开（不走 localhost 解析）
+    bind_hosts = ["127.0.0.1"]
+    try:
+        import socket
+        with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
+            s.bind(("::1", 0))
+        bind_hosts.append("::1")
+    except OSError:
+        _log("⚠️ IPv6 (::1) 不可用，仅绑定 IPv4 (127.0.0.1)")
     web.run_app(app, host=bind_hosts, port=port, print=None)
 
 

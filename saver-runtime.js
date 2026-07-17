@@ -3174,27 +3174,37 @@
     let html = "<!DOCTYPE html>\n" + clone.outerHTML;
     html = html.replace(/<!-- html-doc-center:saver-injected -->\s*/g, "");
 
-    // 4. 下载
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
+    // 4. 通过后端 API 保存到 Downloads（知道确切路径），失败降级浏览器下载
     const origName = (CTX.filePath || "document").split(/[\/\\]/).pop().replace(/\.\w+$/, "");
-    const ts = new Date().toISOString().slice(0, 10);
-    a.download = `${origName}-share-${ts}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    setStatus("已保存", "");
-    // v1.19.6: 分享按钮反馈优化 — 用户痛点是"导出后不知道做了什么"
-    // 1. 明确告诉产物文件名（让用户能在下载列表里找到）
-    // 2. 说"已下载"而不是"已导出"（更直观）
-    // 3. 失败资源用普通语言说"X 个图片跨域未内联，保留原链接"
-    const shareFileName = `${origName}-share-${ts}.html`;
     const failedHint = failed > 0 ? `（${failed} 个跨域资源保留原链接）` : "";
-    toast(`✅ 已下载：${shareFileName}${failedHint}`, "success", 5000);
+    let saved = false;
+    try {
+      const resp = await fetch("/api/export-share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ html: html, name: origName })
+      });
+      const d = await resp.json();
+      if (d.ok) {
+        saved = true;
+        setStatus("已保存", "");
+        toast(`✅ 已保存到：${d.path}${failedHint}`, "success", 8000);
+      }
+    } catch (_) {}
+    if (!saved) {
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const ts = new Date().toISOString().slice(0, 10);
+      a.download = `${origName}-share-${ts}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setStatus("已保存", "");
+      toast(`✅ 已下载：${origName}-share-${ts}.html（请到下载文件夹查找）${failedHint}`, "success", 8000);
+    }
   }
 
   async function doSnapshot(force) {
