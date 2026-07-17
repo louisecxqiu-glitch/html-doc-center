@@ -111,6 +111,18 @@
           cursor: pointer; font-size: 12px; transition: all .15s;
         }
         #__dc_toolbar button:hover { background: rgba(201,169,97,0.15); color:#C9A961; border-color:#C9A961; }
+        /* v1.19.6: 模式类按钮激活态（间距/批注进入模式时） */
+        #__dc_toolbar button.dc-mode-active {
+          background: rgba(201,169,97,0.28) !important;
+          color: #C9A961 !important;
+          border-color: #C9A961 !important;
+          box-shadow: 0 0 0 2px rgba(201,169,97,0.25), inset 0 0 8px rgba(201,169,97,0.18);
+          animation: __dc_mode_blink 1.6s ease-in-out infinite;
+        }
+        @keyframes __dc_mode_blink {
+          0%, 100% { box-shadow: 0 0 0 2px rgba(201,169,97,0.25), inset 0 0 8px rgba(201,169,97,0.18); }
+          50%      { box-shadow: 0 0 0 3px rgba(201,169,97,0.45), inset 0 0 12px rgba(201,169,97,0.32); }
+        }
         #__dc_toolbar .sep { width:1px; height:18px; background: rgba(255,255,255,0.14); margin: 0 4px; }
         #__dc_toolbar .dc-status { margin-left:auto; color:#9CA3AF; font-size:11px; }
         #__dc_toolbar .dc-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; background:#10B981; transition:background .3s; }
@@ -179,18 +191,18 @@
       <button data-cmd="justifyFull" title="两端对齐" class="dc-align"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="3" width="14" height="1.6" rx="0.4"/><rect x="1" y="7.2" width="14" height="1.6" rx="0.4"/><rect x="1" y="11.4" width="14" height="1.6" rx="0.4"/></svg></button>
       <span class="sep"></span>
       <!-- v1.11.1 新增：链接 -->
-      <button id="__dc_link" title="插入/编辑链接（选中文字后点击；空选区可插入 URL）">🔗 链接</button>
-      <button id="__dc_table" title="插入表格（弹出 5 列 × 3 行选择器）">📊 表格</button>
+      <button id="__dc_link" title="插入/编辑链接（选中文字 → 设链接文字；空选 → 弹链接+URL输入框；已是链接 → 编辑/移除）">🔗 链接</button>
+      <button id="__dc_table" title="插入表格（弹出 5×3 网格选择器，鼠标拖选行列）">📊 表格</button>
       <!-- v1.11.5: 更多排版（行高/字间距/代码块/引用块） -->
-      <button id="__dc_more" title="更多排版（行高/字间距/代码块/引用块/图片）">⋯ 更多</button>
+      <button id="__dc_more" title="更多排版（行高/字间距/代码块/引用块/图片）">⋯ 排版</button>
       <span class="sep"></span>
       <button data-cmd="undo" title="撤销 Ctrl/⌘+Z（栈空时禁用）">↶ 撤销</button>
       <button data-cmd="redo" title="重做 Ctrl/Shift/⌘+⇧+Z（栈空时禁用）">↷ 重做</button>
       <span class="sep"></span>
-      <button id="__dc_spacing" title="块间距调整（按住 Alt/Option 键 + 点击目标块调整 padding/margin）">📐 间距</button>
+      <button id="__dc_spacing" title="块间距调整（点击进入间距模式 → 点任意块编辑上/下边距；再点或 Esc 退出）">📐 块间距</button>
       <button id="__dc_annotate" title="添加批注（选中文本后点击；按 Esc 退出批注模式）">💬 批注</button>
       <span class="sep"></span>
-      <button id="__dc_share" title="导出自包含 HTML（所有资源内嵌；发给别人双击即看，无需 DocCenter）">📦 分享</button>
+      <button id="__dc_share" title="导出自包含 HTML（所有 CSS/图片内嵌；点击后浏览器自动下载，发给别人双击即看，无需 DocCenter）">📦 导出分享</button>
       <span class="dc-status"><span class="dc-dot" id="__dc_dot"></span><span id="__dc_status_text">已保存</span></span>
     `;
     document.body.insertBefore(bar, document.body.firstChild);
@@ -2476,9 +2488,14 @@
     }
 
     // ─── 事件处理 ───────────────────────────────────────────────────────────
+    // v1.19.6: 间距模式状态（替代之前的 Alt+click 强制修饰键）
+    let modeActive = false;
+
     function onClick(e) {
-      // 仅在 ⌥/Alt + 普通点击时触发
-      if (!e.altKey) return;
+      // v1.19.6: 双触发——
+      //  1. 模式激活时普通点击就触发（用户友好）
+      //  2. 模式未激活时 Alt+click 仍可触发（保留高级用户快捷路径）
+      if (!modeActive && !e.altKey) return;
       // 忽略工具栏/浮窗/弹窗内部点击
       if (e.target.closest(
         "#__dc_toolbar, #__dc_block_popover, #__dc_img_popover, #__dc_color_palette, #__dc_rhythm_modal, .__dc_anno_pop, .__dc_spacing_indicator"
@@ -2496,6 +2513,8 @@
       if (e.key === "Escape") {
         e.preventDefault();
         deselectBlock();
+        // v1.19.6: Esc 退出时同步清模式状态
+        exitMode();
         return;
       }
       // 方向键微调（忽略输入框内的按键）
@@ -2527,9 +2546,25 @@
       }
     }
 
-    /** 工具栏的 📐 按钮兜底入口（给鼠标用户） */
+    /** 工具栏的 📐 按钮入口（v1.19.6: 改成模式切换，不再要求 Alt 键） */
     function enterBlockModeHint() {
-      toast("按住 Alt/Option 再点击要调整的块");
+      modeActive = !modeActive;
+      // 高亮工具栏按钮指示当前是否在模式中
+      const btn = document.getElementById("__dc_spacing");
+      if (btn) btn.classList.toggle("dc-mode-active", modeActive);
+      if (modeActive) {
+        toast("📐 已进入块间距模式：点击任意块编辑间距；再点按钮或按 Esc 退出", "info", 4000);
+      } else {
+        toast("📐 已退出块间距模式", "info", 2000);
+        deselectBlock();
+      }
+    }
+
+    /** v1.19.6: Esc 退出时同步清模式状态 */
+    function exitMode() {
+      modeActive = false;
+      const btn = document.getElementById("__dc_spacing");
+      if (btn) btn.classList.remove("dc-mode-active");
     }
 
     function init() {
@@ -3133,7 +3168,13 @@
     URL.revokeObjectURL(url);
 
     setStatus("已保存", "");
-    toast(`📦 已导出！内联 ${inlined} 个资源${failed > 0 ? `，${failed} 个跨域资源保留原链接` : ""}`);
+    // v1.19.6: 分享按钮反馈优化 — 用户痛点是"导出后不知道做了什么"
+    // 1. 明确告诉产物文件名（让用户能在下载列表里找到）
+    // 2. 说"已下载"而不是"已导出"（更直观）
+    // 3. 失败资源用普通语言说"X 个图片跨域未内联，保留原链接"
+    const shareFileName = `${origName}-share-${ts}.html`;
+    const failedHint = failed > 0 ? `（${failed} 个跨域资源保留原链接）` : "";
+    toast(`✅ 已下载：${shareFileName}${failedHint}`, "success", 5000);
   }
 
   async function doSnapshot(force) {
