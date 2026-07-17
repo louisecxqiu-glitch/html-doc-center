@@ -136,14 +136,13 @@
         }
         body { padding-top: 46px !important; }
       </style>
-      <span class="dc-title">🎨 HTML Studio</span>
       <span class="sep"></span>
-      <button data-cmd="bold"><b>B</b></button>
-      <button data-cmd="italic"><i>I</i></button>
-      <button data-cmd="underline"><u>U</u></button>
+      <button data-cmd="bold" title="加粗 ⌘B"><b>B</b></button>
+      <button data-cmd="italic" title="斜体 ⌘I"><i>I</i></button>
+      <button data-cmd="underline" title="下划线 ⌘U"><u>U</u></button>
       <span class="sep"></span>
       <!-- v1.8.0 新增：字号下拉 -->
-      <select id="__dc_fontsize" title="字号（对选中文字生效）">
+      <select id="__dc_fontsize" title="字号（对选中文字生效；选中后下拉自动复位以便下次选不同字号）">
         <option value="">字号</option>
         <option value="12">12 · 小</option>
         <option value="14">14</option>
@@ -154,10 +153,13 @@
         <option value="48">48 · 巨标</option>
       </select>
       <!-- v1.8.0 新增：字色（预设色板 + 取色器） -->
-      <div class="__dc_color_wrap" id="__dc_color_wrap" title="字色">
-        <button id="__dc_color_btn" style="color:#DC2626;"><b>A</b><span class="__dc_color_bar" style="background:#DC2626;"></span></button>
+      <div class="__dc_color_wrap" id="__dc_color_wrap" title="字色（点击选预设色或取色器）">
+        <button id="__dc_color_btn" style="color:#DC2626;" title="字色：当前红色。点击弹出色板选其他颜色。"><b>A</b><span class="__dc_color_bar" style="background:#DC2626;"></span></button>
       </div>
-      <button data-cmd="hiliteColor" data-val="#FDE68A" title="黄色高亮">🟡</button>
+      <!-- v1.19.2: 高亮色改成色板（之前只有一个黄色硬编码） -->
+      <div class="__dc_color_wrap" id="__dc_hilite_wrap" title="高亮背景色（点击选预设浅色或取色器）">
+        <button id="__dc_hilite_btn" style="color:#CA8A04;" title="高亮背景色：当前浅黄。点击弹出色板选其他颜色或清除。"><b>🖊</b><span class="__dc_color_bar" style="background:#FDE68A;"></span></button>
+      </div>
       <span class="sep"></span>
       <!-- v1.11.1 新增：对齐 4 按钮 -->
       <button data-cmd="justifyLeft" title="左对齐">⬅</button>
@@ -166,18 +168,18 @@
       <button data-cmd="justifyFull" title="两端对齐">☰</button>
       <span class="sep"></span>
       <!-- v1.11.1 新增：链接 -->
-      <button id="__dc_link" title="插入/编辑链接（选中文字后点击）">🔗</button>
-      <button id="__dc_table" title="插入表格">📊</button>
+      <button id="__dc_link" title="插入/编辑链接（选中文字后点击；空选区可插入 URL）">🔗 链接</button>
+      <button id="__dc_table" title="插入表格（弹出 5 列 × 3 行选择器）">📊 表格</button>
       <!-- v1.11.5: 更多排版（行高/字间距/代码块/引用块） -->
-      <button id="__dc_more" title="更多排版（行高/字间距/代码/引用）">⋯</button>
+      <button id="__dc_more" title="更多排版（行高/字间距/代码块/引用块/图片）">⋯ 更多</button>
       <span class="sep"></span>
-      <button data-cmd="undo" title="撤销 ⌘Z">↶</button>
-      <button data-cmd="redo" title="重做 ⇧⌘Z">↷</button>
+      <button data-cmd="undo" title="撤销 ⌘Z（栈空时禁用）">↶ 撤销</button>
+      <button data-cmd="redo" title="重做 ⇧⌘Z（栈空时禁用）">↷ 重做</button>
       <span class="sep"></span>
-      <button id="__dc_spacing" title="块间距调整（⌥ + 点击目标块）">📐 间距</button>
-      <button id="__dc_annotate">💬 批注</button>
+      <button id="__dc_spacing" title="块间距调整（⌥ + 点击目标块调整 padding/margin）">📐 间距</button>
+      <button id="__dc_annotate" title="添加批注（选中文本后点击；按 Esc 退出批注模式）">💬 批注</button>
       <span class="sep"></span>
-      <button id="__dc_share" title="导出自包含HTML（所有资源内嵌，发给别人双击即看）">📦 分享</button>
+      <button id="__dc_share" title="导出自包含 HTML（所有资源内嵌；发给别人双击即看，无需 DocCenter）">📦 分享</button>
       <span class="dc-status"><span class="dc-dot" id="__dc_dot"></span><span id="__dc_status_text">已保存</span></span>
     `;
     document.body.insertBefore(bar, document.body.firstChild);
@@ -227,9 +229,60 @@
       });
     }
 
+    // ─── v1.19.2: 高亮色板（之前只有一个硬编码黄色）────────────────
+    // 复用 showColorPalette（同一套色板组件），但用"清除高亮"按钮提供"无高亮"选项
+    const hiliteBtn = bar.querySelector("#__dc_hilite_btn");
+    if (hiliteBtn) {
+      let currentHilite = "#FDE68A";
+      hiliteBtn.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        saveSelection();
+      });
+      hiliteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const existing = document.getElementById("__dc_color_palette");
+        if (existing) { existing.remove(); return; }
+        showColorPalette(hiliteBtn, (color) => {
+          currentHilite = color;
+          const barEl = hiliteBtn.querySelector(".__dc_color_bar");
+          if (barEl) barEl.style.background = color;
+          restoreSelection();
+          // 用 hiliteColor command 包裹选区
+          document.execCommand("hiliteColor", false, color);
+          markDirty();
+        });
+        // 追加"清除高亮"按钮到弹窗底部
+        const palette = document.getElementById("__dc_color_palette");
+        if (palette) {
+          const clearBtn = document.createElement("button");
+          clearBtn.textContent = "✕ 清除高亮";
+          clearBtn.style.cssText = `
+            margin-top: 8px; width: 100%; padding: 6px;
+            background: rgba(220,38,38,0.12); color: #FCA5A5;
+            border: 1px solid rgba(220,38,38,0.3); border-radius: 6px;
+            cursor: pointer; font-size: 12px;
+          `;
+          clearBtn.addEventListener("mousedown", (e) => e.preventDefault());
+          clearBtn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            currentHilite = "transparent";
+            const barEl = hiliteBtn.querySelector(".__dc_color_bar");
+            if (barEl) barEl.style.background = "transparent";
+            restoreSelection();
+            document.execCommand("hiliteColor", false, "transparent");
+            markDirty();
+            palette.remove();
+          });
+          palette.appendChild(clearBtn);
+        }
+      });
+    }
+
     // ─── 普通按钮也需 mousedown preventDefault（B/I/U/高亮/Undo/Redo/对齐/链接） ───
     bar.querySelectorAll("button").forEach(b => {
-      if (b.id === "__dc_color_btn" || b.id === "__dc_annotate" || b.id === "__dc_spacing" || b.id === "__dc_share") return;
+      if (b.id === "__dc_color_btn" || b.id === "__dc_hilite_btn" ||
+          b.id === "__dc_annotate" || b.id === "__dc_spacing" || b.id === "__dc_share" ||
+          b.id === "__dc_link" || b.id === "__dc_table" || b.id === "__dc_more") return;
       b.addEventListener("mousedown", (e) => e.preventDefault());
     });
 
