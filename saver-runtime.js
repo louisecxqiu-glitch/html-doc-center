@@ -136,7 +136,7 @@
         }
         body { padding-top: 46px !important; }
       </style>
-      <span class="dc-title">📝 DocCenter</span>
+      <span class="dc-title">🎨 HTML Studio</span>
       <span class="sep"></span>
       <button data-cmd="bold"><b>B</b></button>
       <button data-cmd="italic"><i>I</i></button>

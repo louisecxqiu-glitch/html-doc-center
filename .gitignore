@@ -49,3 +49,4 @@ HotPage.app/
 build/
 dist/
 *.spec
+_dropbox/

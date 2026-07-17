@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-build.py — 跨平台 HotPage 打包脚本（Mac / Windows / Linux）
+build.py — 跨平台 HTML Studio 打包脚本（Mac / Windows / Linux）
 用法: python3 build.py
 依赖: pip install pyinstaller aiohttp
-产出: dist/HotPage (Mac/Linux) 或 dist/HotPage.exe (Windows)
+产出: dist/HTMLStudio (Mac/Linux) 或 dist/HTMLStudio.exe (Windows)
 """
 import subprocess
 import sys
@@ -12,7 +12,7 @@ import shutil
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
-APP_NAME = "HotPage"
+APP_NAME = "HTMLStudio"
 IS_WINDOWS = sys.platform == "win32"
 # PyInstaller --add-data 分隔符：Windows 用 ; Mac/Linux 用 :
 SEP = ";" if IS_WINDOWS else ":"
@@ -64,7 +64,7 @@ def main():
         print(f"✅ Build complete!")
         print(f"   📦 {output} ({size_mb:.1f} MB)")
         if IS_WINDOWS:
-            print(f"   💡 Double-click HotPage.exe to start")
+            print(f"   💡 Double-click HTMLStudio.exe to start")
         else:
             print(f"   💡 Double-click to start, or run: ./dist/{APP_NAME}")
         print(f"   🌐 Browser opens automatically")

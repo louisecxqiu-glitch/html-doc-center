@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-HotPage Windows 兼容性自测脚本
+HTML Studio Windows 兼容性自测脚本
 在 Windows 上运行：python hotpage-windows-check.py
 """
 import os, sys, platform, json, pathlib
 
 print("=" * 60)
-print("  HotPage Windows 兼容性自测")
+print("  HTML Studio Windows 兼容性自测")
 print("=" * 60)
 print()
 
@@ -86,7 +86,7 @@ for name, current, expected, ok in checks:
 print()
 print("=" * 60)
 if all_ok:
-    print("  ✅ 所有检查通过！HotPage 应该能在 Windows 上正常工作。")
+    print("  ✅ 所有检查通过！HTML Studio 应该能在 Windows 上正常工作。")
 else:
     print("  ❌ 有检查项未通过，请按上面的提示修复。")
 print("=" * 60)

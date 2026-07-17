@@ -1907,7 +1907,7 @@ def create_app() -> web.Application:
 def main():
     import argparse
     is_frozen = getattr(sys, 'frozen', False)
-    parser = argparse.ArgumentParser(description="HotPage — Local HTML workbench")
+    parser = argparse.ArgumentParser(description="HTML Studio — Local HTML workbench")
     parser.add_argument("--open-browser", action=argparse.BooleanOptionalAction,
                         default=is_frozen,
                         help="Automatically open browser after server starts (default: True in packaged mode, use --no-open-browser to disable)")
@@ -1940,7 +1940,7 @@ def main():
         _log(f"✅ 改用端口 {port}")
 
     _log("=" * 60)
-    _log("🚀 HotPage 启动")
+    _log("🚀 HTML Studio 启动")
     _log(f"📂 扫描目录: {cfg.get('scan_roots')}")
     _log(f"🌐 访问: http://localhost:{port}")
     _log("=" * 60)

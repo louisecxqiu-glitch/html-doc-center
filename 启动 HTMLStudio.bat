@@ -1,14 +1,14 @@
 @echo off
 chcp 65001 >nul
 REM ============================================================
-REM  HotPage 启动脚本（Windows）
-REM  双击此文件即可启动 HotPage，无需命令行
+REM  HTML Studio 启动脚本（Windows）
+REM  双击此文件即可启动 HTML Studio，无需命令行
 REM ============================================================
 
 cd /d "%~dp0"
 
 echo ═══════════════════════════════════════════
-echo   HotPage 启动中...
+echo   HTML Studio 启动中...
 echo ═══════════════════════════════════════════
 echo.
 
@@ -56,19 +56,19 @@ echo.
 
 REM ── 3. 询问是否设为开机自启 ──
 set STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
-if not exist "%STARTUP_DIR%\HotPage.lnk" (
+if not exist "%STARTUP_DIR%\HTML Studio.lnk" (
   echo 是否设为开机自启？(y/n)
   set /p answer=
   if /i "%answer%"=="y" (
     echo Set oShell = CreateObject("WScript.Shell") > "%TEMP%\hp_shortcut.vbs"
-    echo Set oShortcut = oShell.CreateShortcut("%STARTUP_DIR%\HotPage.lnk") >> "%TEMP%\hp_shortcut.vbs"
+    echo Set oShortcut = oShell.CreateShortcut("%STARTUP_DIR%\HTML Studio.lnk") >> "%TEMP%\hp_shortcut.vbs"
     echo oShortcut.TargetPath = "%~dpnx0" >> "%TEMP%\hp_shortcut.vbs"
     echo oShortcut.WorkingDirectory = "%~dp0" >> "%TEMP%\hp_shortcut.vbs"
     echo oShortcut.WindowStyle = 7 >> "%TEMP%\hp_shortcut.vbs"
     echo oShortcut.Save >> "%TEMP%\hp_shortcut.vbs"
     cscript //nologo "%TEMP%\hp_shortcut.vbs"
     del "%TEMP%\hp_shortcut.vbs"
-    echo ✅ 已设为开机自启（Windows 开机后自动启动 HotPage）
+    echo ✅ 已设为开机自启（Windows 开机后自动启动 HTML Studio）
   ) else (
     echo 跳过，如需后续设置可重新双击此文件
   )
@@ -78,7 +78,7 @@ if not exist "%STARTUP_DIR%\HotPage.lnk" (
 REM ── 4. 检查端口 ──
 netstat -ano | findstr ":9901 " | findstr "LISTENING" >nul
 if not errorlevel 1 (
-  echo ⚠️  HotPage 已在运行（端口 9901 被占用）
+  echo ⚠️  HTML Studio 已在运行（端口 9901 被占用）
   echo    直接打开浏览器访问：http://localhost:9901
   start http://localhost:9901
   echo.

@@ -1,8 +1,8 @@
-# 🔥 HotPage
+# 🎨 HTML Studio
 
-**Your local HTML workbench for the AI era.**
+**The HTML Editor & Viewer for the AI era.**
 
-Stop opening HTML files one by one. HotPage turns any folder into a browsable, editable, auto-saving document hub — in one command.
+Stop opening HTML files one by one. HTML Studio turns any folder into a browsable, editable, auto-saving document hub — in one command.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
@@ -10,7 +10,7 @@ Stop opening HTML files one by one. HotPage turns any folder into a browsable, e
 
 ---
 
-## Why HotPage?
+## Why HTML Studio?
 
 AI coding tools (Claude Code, Cursor, Copilot) generate HTML artifacts constantly — reports, dashboards, cover images, presentations. But then you're stuck:
 
@@ -19,16 +19,22 @@ AI coding tools (Claude Code, Cursor, Copilot) generate HTML artifacts constantl
 - No auto-save, no version history
 - Files scattered across directories
 
-**HotPage solves this.** One command, all your HTML in one place, instantly editable.
+**HTML Studio solves this.** One command, all your HTML in one place, instantly editable.
 
 ---
 
 ## Quick Start
 
-### Option 1: Double-click launch (recommended, no terminal)
+### Option 1: Download executable (recommended, zero install)
 
-1. Download the project (ZIP or `git clone https://github.com/louisjobs/hotpage.git`)
-2. Double-click `启动 HotPage.command` (Mac) or `启动 HotPage.bat` (Windows)
+1. Go to [Releases](https://github.com/louisecxqiu-glitch/html-doc-center/releases)
+2. Download `HTMLStudio-macOS` (Mac) or `HTMLStudio.exe` (Windows)
+3. Double-click to start — browser opens automatically
+
+### Option 2: Double-click launch (from source)
+
+1. Download the project (ZIP or `git clone https://github.com/louisecxqiu-glitch/html-doc-center.git`)
+2. Double-click `启动 HTMLStudio.command` (Mac) or `启动 HTMLStudio.bat` (Windows)
 3. Browser opens automatically → start using
 
 > First run auto-installs the dependency (`aiohttp`), requires internet.
@@ -36,8 +42,8 @@ AI coding tools (Claude Code, Cursor, Copilot) generate HTML artifacts constantl
 ### Option 2: Command line
 
 ```bash
-git clone https://github.com/louisjobs/hotpage.git
-cd hotpage
+git clone https://github.com/louisecxqiu-glitch/html-doc-center.git
+cd html-doc-center
 pip install aiohttp
 python3 server.py --open-browser
 # → http://localhost:9901
@@ -45,7 +51,7 @@ python3 server.py --open-browser
 
 Or as a **Claude Code Plugin**:
 ```
-/plugin install hotpage@claude-plugins-official
+/plugin install htmlstudio@claude-plugins-official
 ```
 
 ---
@@ -68,14 +74,14 @@ Or as a **Claude Code Plugin**:
 
 ## Claude Code Integration
 
-HotPage works as a Claude Code Plugin with MCP support:
+HTML Studio works as a Claude Code Plugin with MCP support:
 
 ```
 /hotpage ./report.html     # Open file in HotPage
 /hotpage serve ./outputs   # Serve a directory
 ```
 
-When Claude Code generates HTML, it automatically opens in HotPage for preview and editing.
+When Claude Code generates HTML, it automatically opens in HTML Studio for preview and editing.
 
 ### MCP Tools
 
@@ -132,7 +138,7 @@ Or configure via the in-app Settings panel (⚙️ button).
 
 ## Comparison
 
-| | HotPage | mcp-html-artifacts-preview | File Browser |
+| | HTML Studio | mcp-html-artifacts-preview | File Browser |
 |---|---------|---------------------------|--------------|
 | Editing | ✅ Inline edit + toolbar | ❌ View only | ❌ No |
 | Auto-save | ✅ 2s snapshot + 3-option | ❌ No | ❌ No |

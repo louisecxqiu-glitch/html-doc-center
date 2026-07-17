@@ -1,4 +1,4 @@
-name: Build HotPage
+name: Build HTML Studio
 
 on:
   push:
@@ -15,10 +15,10 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            artifact: HotPage
+            artifact: HTMLStudio
             label: macOS
           - os: windows-latest
-            artifact: HotPage.exe
+            artifact: HTMLStudio.exe
             label: Windows
     runs-on: ${{ matrix.os }}
     steps:
@@ -41,16 +41,16 @@ jobs:
         run: |
           cd dist
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            mv HotPage "HotPage-macOS"
-            echo "ASSET=HotPage-macOS" >> $GITHUB_ENV
+            mv HTMLStudio "HTMLStudio-macOS"
+            echo "ASSET=HTMLStudio-macOS" >> $GITHUB_ENV
           else
-            echo "ASSET=HotPage.exe" >> $GITHUB_ENV
+            echo "ASSET=HTMLStudio.exe" >> $GITHUB_ENV
           fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: HotPage-${{ matrix.label }}
+          name: HTMLStudio-${{ matrix.label }}
           path: dist/${{ env.ASSET }}
 
       - name: Release

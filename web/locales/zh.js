@@ -1,5 +1,5 @@
 /**
- * DocCenter — Chinese (Simplified) locale.
+ * HTML Studio — Chinese (Simplified) locale.
  * Keys must be in 1:1 correspondence with en.js.
  */
 window.LOCALE_ZH = {
@@ -75,7 +75,7 @@ window.LOCALE_ZH = {
   'btn.export_pdf': '导出 PDF / 打印',
   'toast.export.failed': '导出失败',
   'startup.ask_autostart': '🔧 是否设为开机自启？(y/n)',
-  'startup.autostart_set': '✅ 已设为开机自启（开机后自动启动 HotPage）',
+  'startup.autostart_set': '✅ 已设为开机自启（开机后自动启动 HTML Studio）',
   'startup.autostart_skip': '⏭️ 跳过，如需后续设置可重新双击此文件',
   'settings.scan.hint': '默认扫描 <code>outputs/</code>。可添加任意目录，实时扫描 HTML / Markdown 文件。',
   'settings.refresh.title': '📡 目录树自动刷新',

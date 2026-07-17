@@ -1,14 +1,14 @@
 #!/bin/bash
 # ============================================================
-#  HotPage 启动脚本（macOS）
-#  双击此文件即可启动 HotPage，无需命令行
+#  HTML Studio 启动脚本（macOS）
+#  双击此文件即可启动 HTML Studio，无需命令行
 # ============================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
 echo "═══════════════════════════════════════════"
-echo "  🔥 HotPage 启动中..."
+echo "  🔥 HTML Studio 启动中..."
 echo "═══════════════════════════════════════════"
 echo ""
 
@@ -87,11 +87,11 @@ if [ ! -f "$PLIST_PATH" ]; then
 </plist>
 PLIST_EOF
     launchctl load "$PLIST_PATH" 2>/dev/null
-    echo "✅ 已设为开机自启（Mac 开机后自动启动 HotPage）"
+    echo "✅ 已设为开机自启（Mac 开机后自动启动 HTML Studio）"
     sleep 2
     open "http://localhost:9901"
     echo ""
-    echo "🌐 浏览器已打开。HotPage 将在后台运行，可以关闭此窗口。"
+    echo "🌐 浏览器已打开。HTML Studio 将在后台运行，可以关闭此窗口。"
     echo "如需取消开机自启，运行：launchctl unload $PLIST_PATH"
     echo ""
     sleep 3
@@ -104,7 +104,7 @@ fi
 
 # ── 4. 检查端口是否已被占用 ──
 if lsof -i :9901 -sTCP:LISTEN &>/dev/null; then
-  echo "⚠️  HotPage 已在运行（端口 9901 被占用）"
+  echo "⚠️  HTML Studio 已在运行（端口 9901 被占用）"
   echo "   直接打开浏览器访问：http://localhost:9901"
   open "http://localhost:9901"
   echo ""

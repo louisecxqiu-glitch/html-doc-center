@@ -10,7 +10,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-APP_NAME="HotPage"
+APP_NAME="HTMLStudio"
 
 echo "🔨 Building $APP_NAME with PyInstaller..."
 echo "   Source: $SCRIPT_DIR"

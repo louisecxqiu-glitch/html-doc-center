@@ -1,5 +1,5 @@
 /**
- * DocCenter — English locale.
+ * HTML Studio — English locale.
  * Naming convention: <area>.<sub>.<element>  (flat keys, no nesting).
  *
  * Areas:
@@ -21,7 +21,7 @@
  */
 window.LOCALE_EN = {
   // ====== meta ======
-  'meta.title': 'HTML Document Center · Local Workbench',
+  'meta.title': 'HTML Studio · Local HTML Workbench',
 
   // ====== header ======
   'header.toggle_sidebar': 'Show / hide sidebar (⌘B)',
@@ -122,7 +122,7 @@ window.LOCALE_EN = {
   'modal.folder.up': '⬆️ Up',
 
   // ====== welcome / empty state ======
-  'welcome.title': 'Local HTML Document Workbench',
+  'welcome.title': 'HTML Studio · Local HTML Workbench',
   'welcome.subtitle': 'Pick an HTML file from the sidebar — editing / annotation is enabled automatically.',
   'welcome.bullet.autosave': 'Edits and annotations <b>auto-save in 2 seconds</b> to <code>_auto-save/</code>',
   'welcome.bullet.choice': 'On close or switch you can <b>overwrite source</b> or <b>save as new version</b>',
