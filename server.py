@@ -84,6 +84,7 @@ DEFAULT_CONFIG = {
     "tree_auto_refresh_seconds": 10,
     "port": 9901,
     "access_password": "",  # v2.1: 空则无密码；设了则访问需认证
+    "share_server": "",  # v2.4: 在线分享服务地址（如 https://xxx.loca.lt），空则禁用在线链接
 }
 
 _AUTH_SALT = "htmlstudio_2026"
@@ -854,7 +855,8 @@ def inject_saver(html: str, file_path: str) -> str:
         'window.__DOC_CENTER__ = {\n'
         f'  filePath: "{safe_path}",\n'
         '  serverOrigin: window.location.origin || "http://localhost:9901",\n'
-        '  inIframe: window.self !== window.top\n'
+        '  inIframe: window.self !== window.top,\n'
+        f'  shareServer: "{app.get("config", {}).get("share_server", "")}"\n'
         '};\n'
         '</script>\n'
         '<script src="/saver-runtime.js" defer></script>\n'

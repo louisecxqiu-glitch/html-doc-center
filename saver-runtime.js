@@ -3175,7 +3175,7 @@
     html = html.replace(/<!-- html-doc-center:saver-injected -->\s*/g, "");
 
     // 3.5 选择分享方式 + 密码设置 — 弹自定义模态框
-    const SHARE_SERVER = "http://21.6.56.139:8080"; // 分享服务地址
+    const SHARE_SERVER = (CTX.shareServer || "").trim(); // 从 config 读取分享服务地址
     const shareChoice = await new Promise((resolve) => {
       const overlay = document.createElement("div");
       overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483647;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;";
@@ -3214,7 +3214,10 @@
       const btnFile = overlay.querySelector("#_mode_file");
       const btnLink = overlay.querySelector("#_mode_link");
       btnFile.onclick = () => { mode = "file"; btnFile.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:#4a9eff;color:#fff;cursor:pointer;font-size:13px;"; btnLink.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;font-size:13px;"; };
-      btnLink.onclick = () => { mode = "link"; btnLink.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:#4a9eff;color:#fff;cursor:pointer;font-size:13px;"; btnFile.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;font-size:13px;"; };
+      btnLink.onclick = () => { 
+        if (!SHARE_SERVER) { toast("⚠️ 未配置分享服务，请联系管理员设置 config.json 的 share_server", "warning", null, 4000); return; }
+        mode = "link"; btnLink.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:#4a9eff;color:#fff;cursor:pointer;font-size:13px;"; btnFile.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;font-size:13px;"; 
+      };
       input.focus();
       ok.onclick = () => { const v = input.value; overlay.remove(); resolve({ mode, password: v }); };
       cancel.onclick = () => { overlay.remove(); resolve(null); };
