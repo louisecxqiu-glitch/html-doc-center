@@ -1,0 +1,61 @@
+name: Build HotPage
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            artifact: HotPage
+            label: macOS
+          - os: windows-latest
+            artifact: HotPage.exe
+            label: Windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller aiohttp
+
+      - name: Build
+        run: python build.py
+
+      - name: Rename for platform
+        shell: bash
+        run: |
+          cd dist
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            mv HotPage "HotPage-macOS"
+            echo "ASSET=HotPage-macOS" >> $GITHUB_ENV
+          else
+            echo "ASSET=HotPage.exe" >> $GITHUB_ENV
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HotPage-${{ matrix.label }}
+          path: dist/${{ env.ASSET }}
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ env.ASSET }}
+          generate_release_notes: true
