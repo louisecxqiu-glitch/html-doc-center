@@ -72,9 +72,12 @@ DEFAULT_CONFIG = {
     ],
     "snapshot_debounce_ms": 2000,
     "snapshot_retention_days": 7,
-    "tree_auto_refresh_seconds": 10,  # v1.10.0: 目录树自动刷新周期；0=关闭，5/10/30/60 可选
+    "tree_auto_refresh_seconds": 10,
     "port": 9901,
+    "access_password": "",  # v2.1: 空则无密码；设了则访问需认证
 }
+
+_AUTH_SALT = "htmlstudio_2026"
 
 # 目录扫描缓存（3 秒 TTL，避免高频扫盘）
 _tree_cache = {"ts": 0, "data": None, "roots_signature": None, "sort_by": None}
@@ -756,7 +759,7 @@ async def handle_config_post(request):
 
     cfg = request.app["config"]
     # 只允许更新白名单字段
-    allowed = {"scan_roots", "snapshot_debounce_ms", "snapshot_retention_days", "tree_auto_refresh_seconds"}
+    allowed = {"scan_roots", "snapshot_debounce_ms", "snapshot_retention_days", "tree_auto_refresh_seconds", "access_password"}
     changed = []
     for k, v in data.items():
         if k in allowed:
@@ -1898,8 +1901,63 @@ async def handle_export_share(request):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+import hashlib
+
+# v2.1: 密码保护 — 认证中间件 + 密码输入页
+def _auth_token(password):
+    """生成认证 token（密码 + salt 的 sha256）"""
+    return hashlib.sha256(f"{password}{_AUTH_SALT}".encode()).hexdigest()
+
+def _auth_page(error=""):
+    """返回密码输入 HTML 页"""
+    err_html = f'<p style="color:#f87171;margin:8px 0;">❌ {error}</p>' if error else ''
+    return web.Response(text=f'''<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>HTML Studio</title></head>
+<body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#0f1419;font-family:-apple-system,'PingFang SC',sans-serif;">
+<div style="background:#1a2028;padding:36px 40px;border-radius:12px;border:1px solid #2d3845;min-width:300px;">
+<h2 style="color:#e8eef5;margin:0 0 4px;">🎨 HTML Studio</h2>
+<p style="color:#6b7a8c;font-size:13px;margin:0 0 20px;">请输入密码</p>
+{err_html}
+<form method="POST" action="/api/auth">
+<input type="password" name="password" autofocus placeholder="密码"
+  style="width:100%;padding:10px 12px;border-radius:6px;border:1px solid #2d3845;background:#0f1419;color:#e8eef5;font-size:14px;margin-bottom:12px;box-sizing:border-box;">
+<button type="submit" style="width:100%;padding:10px;border-radius:6px;border:none;background:#4a9eff;color:#fff;font-size:14px;cursor:pointer;">进入</button>
+</form>
+</div></body></html>''', content_type="text/html")
+
+@web.middleware
+async def auth_middleware(request, handler):
+    cfg = request.app["config"]
+    password = cfg.get("access_password", "")
+    if not password:
+        return await handler(request)  # 没设密码，跳过
+    # 认证 API 不拦截
+    if request.path == "/api/auth":
+        return await handler(request)
+    # 检查 cookie
+    token = request.cookies.get("htmlstudio_auth", "")
+    if token == _auth_token(password):
+        return await handler(request)
+    # 未认证
+    if request.path.startswith("/api/"):
+        return web.json_response({"ok": False, "error": "未认证", "auth_required": True}, status=401)
+    return _auth_page()
+
+async def handle_auth(request):
+    """POST /api/auth — 验证密码，设置 cookie"""
+    cfg = request.app["config"]
+    password = cfg.get("access_password", "")
+    data = await request.post()
+    input_pwd = data.get("password", "")
+    if input_pwd and input_pwd == password:
+        resp = web.HTTPFound("/")
+        resp.set_cookie("htmlstudio_auth", _auth_token(password), httponly=True, max_age=30*24*3600, path="/")
+        return resp
+    return _auth_page(error="密码错误")
+
+
 def create_app() -> web.Application:
-    app = web.Application(client_max_size=100 * 1024 * 1024)  # 允许 100MB 的 HTML POST
+    app = web.Application(client_max_size=100 * 1024 * 1024, middlewares=[auth_middleware])
     app["config"] = load_config()
     # v1.19: 启动时清理 _dropbox/ 旧文件（7 天前）
     cleanup_dropbox()
@@ -1942,6 +2000,8 @@ def create_app() -> web.Application:
     app.router.add_get("/api/asset/{encoded_dir}/{path:.*}", handle_asset)
     # v2.0: 导出分享文件到 Downloads
     app.router.add_post("/api/export-share", handle_export_share)
+    # v2.1: 密码认证
+    app.router.add_post("/api/auth", handle_auth)
 
     return app
 
