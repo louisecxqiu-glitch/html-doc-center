@@ -3241,9 +3241,17 @@
     background: #0F1419; color: #C9A961;
     font: 12px/1.4 "SF Mono","Monaco","Menlo","Consolas",monospace;
     border: 1px solid rgba(201,169,97,0.25);
-    letter-spacing: 0.4px; user-select: all; -webkit-user-select: all;
-    text-align: center; overflow-x: auto; white-space: nowrap;
-    cursor: text;
+    letter-spacing: 0.4px;
+    text-align: center; overflow-x: auto;
+    cursor: text; outline: none;
+    min-width: 0; width: 100%;
+  }
+  #__dc_share_overlay .dc-pwd-display:focus {
+    border-color: #C9A961;
+    background: #0a0f15;
+  }
+  #__dc_share_overlay .dc-pwd-display::placeholder {
+    color: #6B7280; font-style: italic; opacity: 1;
   }
   #__dc_share_overlay .dc-pwd-empty {
     flex: 1; padding: 8px 10px; border-radius: 4px;
@@ -3306,10 +3314,9 @@
       <label class="dc-switch"><input type="checkbox" id="_pwd_enable"><span class="dc-switch-slider"></span></label>
     </div>
     <div class="dc-pwd-body" id="_pwd_body" style="display:none;">
-      <div class="dc-pwd-empty" id="_pwd_empty">点击 🎲 生成 12 位强密码</div>
-      <div class="dc-pwd-display" id="_pwd_display" style="display:none;"></div>
-      <button class="dc-icon-btn" id="_gen_pwd" title="生成新密码">🎲</button>
-      <button class="dc-icon-btn" id="_copy_pwd" title="复制密码" style="display:none;">📋</button>
+      <input type="text" id="_pwd_input" class="dc-pwd-display" placeholder="点击 🎲 生成强密码，或自己输入" maxlength="64" autocomplete="off" />
+      <button class="dc-icon-btn" id="_gen_pwd" title="生成 12 位强密码">🎲</button>
+      <button class="dc-icon-btn" id="_copy_pwd" title="复制密码">📋</button>
     </div>
     <div class="dc-pwd-hint" id="_pwd_hint" style="display:none;">接收方打开时需输入此密码</div>
   </div>
@@ -3326,8 +3333,7 @@
       const btnLink = $(".dc-mode[data-mode='link']");
       const pwdEnable = $("#_pwd_enable");
       const pwdBody = $("#_pwd_body");
-      const pwdEmpty = $("#_pwd_empty");
-      const pwdDisplay = $("#_pwd_display");
+      const pwdInput = $("#_pwd_input");
       const pwdHint = $("#_pwd_hint");
       const ok = $("#_ok");
       const cancel = $("#_cancel");
@@ -3338,14 +3344,7 @@
         if (pwdEnable.checked) {
           pwdBody.style.display = "flex";
           pwdHint.style.display = "block";
-          if (password) {
-            pwdDisplay.style.display = "block"; pwdDisplay.textContent = password;
-            pwdEmpty.style.display = "none";
-            copy.style.display = "inline-flex";
-          } else {
-            pwdDisplay.style.display = "none"; pwdEmpty.style.display = "block";
-            copy.style.display = "none";
-          }
+          copy.style.display = "inline-flex";
         } else {
           pwdBody.style.display = "none"; pwdHint.style.display = "none";
         }
@@ -3360,15 +3359,17 @@
         mode = "link";
         btnLink.classList.add("active"); btnFile.classList.remove("active");
       };
+      pwdInput.addEventListener("input", () => { password = pwdInput.value; });
       pwdEnable.onchange = () => {
-        if (pwdEnable.checked && !password) password = genPwd(); // 首次开启自动生成
-        if (!pwdEnable.checked) password = ""; // 关闭清空
+        if (pwdEnable.checked && !pwdInput.value) { password = genPwd(); pwdInput.value = password; }
+        if (!pwdEnable.checked) { password = ""; pwdInput.value = ""; }
         refreshPwdUI();
+        if (pwdEnable.checked) setTimeout(() => { pwdInput.focus(); pwdInput.select(); }, 0);
       };
-      gen.onclick = () => { password = genPwd(); refreshPwdUI(); };
+      gen.onclick = () => { password = genPwd(); pwdInput.value = password; pwdInput.focus(); pwdInput.select(); };
       copy.onclick = async () => {
-        try { await navigator.clipboard.writeText(password); toast("📋 密码已复制", "success", null, 1500); }
-        catch (_) { toast("复制失败，请手动选中", "warning", null, 2000); }
+        try { await navigator.clipboard.writeText(pwdInput.value); toast("📋 密码已复制", "success", null, 1500); }
+        catch (_) { pwdInput.select(); toast("复制失败，请手动复制", "warning", null, 2000); }
       };
       ok.onclick = () => { overlay.remove(); resolve({ mode, password }); };
       cancel.onclick = () => { overlay.remove(); resolve(null); };

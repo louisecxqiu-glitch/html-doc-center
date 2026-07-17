@@ -9,6 +9,87 @@ This project follows [Semantic Versioning](https://semver.org/).
 ---
 
 
+## v2.5.7 — Password Field Reverts to Editable Input
+
+*2026-07-18 00:55 · 密码框改回可编辑*
+
+**🐛 Bug · v2.5.0 改"只读展示"过头，用户无法改密码**
+- **问题**：用户想自定义密码（比如"test123"），但分享弹窗里的密码框是只读 div，只能点 🎲 重新生成。改不了自己想要的密码，分享后用自定义密码访问就报"密码错误"
+- **根因**：v2.5.0 改版时一刀切——`user-select: none` 整个弹窗 + 把密码展示从 `input` 改成 `div` + 配合 pwdEmpty/pwdDisplay 双态切换。`user-select: none` 防"文字可编辑"是合理的，但把 input 改成 div 就过头了——展示卡片是 UI 设计，但用户**就是想自己输密码**也得有入口
+- **解法**（v2.5.7）：
+  1. 密码区改回 `input type="text"`（`<input id="_pwd_input" class="dc-pwd-display" placeholder="点击 🎲 生成强密码，或自己输入" maxlength="64">`）
+  2. `addEventListener("input", ...)` 实时同步 `password = pwdInput.value` 到变量——任何手输的字符都进传到后端的 password
+  3. 移除 `pwdEmpty` / `pwdDisplay` 双 div 结构，简化为单一 input
+  4. CSS 调整：`user-select: auto`（input 默认） + focus 时高亮（金色边框 + 更深背景 `#0a0f15`）
+  5. 首次开启开关：自动生成密码 → 写入 input → 自动 focus + select（用户可直接覆盖）
+  6. 🎲 重新生成：写入 input + focus + select（一键覆盖）
+
+**🔧 配套 UX 调整**
+- 弹窗整体 `user-select: none` 保持（防标题/描述文字被误选）
+- 但密码 input 单独放开 `user-select: auto`（因为这就是要输入/编辑的）
+- 复制按钮复制的是 `pwdInput.value`（用户最终输的内容，不是自动生成的）
+
+**👤 用户故事**
+- 场景：Louis 想给自己分享的链接设个易记密码（比如 `test123`），但弹窗里的密码框是只读 div，无法手输
+- 之前：只能点 🎲 用随机密码，自己想要的密码输不进去，分享后访问报"密码错误"
+- 现在：input 可直接手输 + 🎲 快速生成 + 📋 复制三种方式并存，传到后端的 password 实时同步
+
+---
+
+## v2.5.6 — Business Plan Deck (biz-deck-writer Skill)
+
+*2026-07-18 00:35 · 用专业技能重做商业报告*
+
+**📐 架构 · 用 biz-deck-writer 技能重做商业报告**
+- 删除 v2.5.5 手写版 `business-plan-v1.html`（用户反馈"太丑"——没用本地技能）
+- 新生成 `business-plan-v1-deck.html`，12 页横向滑页 deck（CSS scroll-snap）
+- 5 章节叙事线：价值（P1-2）→ 场景（P5）→ 现状（P3-4）→ 需求（P6-9）→ 合作（P10-12）
+- 8 种页面版式：Hero 封面 / 价值主张 / 数据对比 / 现状分析 / 需求清单 / BMC 9 宫格 / 时间线 / CTA 收尾
+
+**🎨 UX · 4 主题轮换 + HTML Studio 金色品牌**
+- 把技能默认的迁移虾橙 `#ff5a1f` 改成 HTML Studio 金 `#C9A961`（和编辑器统一）
+- 4 主题轮换节奏：金 → 深 → 浅 → 米 → 深 → 浅 → 米 → 深 → 浅 → 米 → 深 → 金（无连续 3 页同主题）
+- 主题色映射：gold（封面/CTA）/ dark（价值/数据/风险）/ light（市场/模式/架构）/ cream（竞品/画布/里程碑）
+
+**🔒 安全 · R8 对比度规范严格执行**
+- 按技能 R8 速查表分主题写实色：gold 用 `#5a2408`，dark 用 `#C9A961/#bbb`，light/cream 用 `#8a6d1f/#2d2d2d`
+- 修正模板自带的 `opacity:0.55`（pagenum）和 `color:#555`（lead）违规
+- grep 自检：无 `opacity: 0.[0-7]`，无浅底 `#555/#666/#777` 正文
+- P8 定价页深底 `#888/#666` 修正为 `#aaa/#888`（对比度 ≥ 4.5:1）
+
+**👤 用户故事**
+- 场景：Louis 反馈"先做写报告怎么这么丑，本地不是很多技能吗"——指出我没用 biz-deck-writer
+- 之前：v2.5.5 手写普通 HTML 长文，视觉平庸
+- 现在：12 页专业横向滑页 deck，4 主题轮换，金色品牌统一，对比度合规，可 DocCenter 批注迭代
+
+---
+
+## v2.5.5 — Business Plan v1.0 Report
+
+*2026-07-18 00:15 · 商业报告 + 架构路线图*
+
+**📐 架构 · 输出完整商业报告**
+- 生成 `docs/business-plan-v1.html`，10 个章节覆盖：执行摘要、商业画布（BMC 9 模块）、价值主张画布（VPC）、市场分析（TAM/SAM/SOM）、竞品矩阵、定价策略、技术架构路线图（4 阶段）、里程碑规划、风险评估、待办与进展
+- 商业模式定调：**双轨制**——本地版开源全功能（不限制在线分享），云端版 SaaS 按层收费（Free/Pro/Team/Enterprise）
+- 核心 monetization：免费版分享页带"Made with HTML Studio"水印，Pro ¥29/月去水印 + 品牌定制 + 1 年有效期 + 数据统计
+- 增长飞轮：分享即曝光 → 接收方好奇 → 新用户 → 更多分享
+
+**🎨 UX · 报告视觉设计**
+- 和 DocCenter 编辑器同色系：背景 `#0F1419` + 卡片 `#1A1D23` 渐变 `#232830` + 金色 `#C9A961` + 蓝色 `#4A9EFF`
+- 商业画布用 CSS Grid 9 宫格布局（价值主张格金色高亮）
+- 价值主张画布左右双栏（客户蓝 + 价值金）
+- 路线图用时间线组件（已完成绿/进行中金/待启动蓝）
+- 定价卡片 Pro 层 `transform: scale(1.03)` 突出推荐
+- 风险矩阵用红色边框 + 高/中/低 三色标签
+- 待办三栏（已完成/进行中/待启动）
+
+**👤 用户故事**
+- 场景：Louis 要求"用商业画布等输出完整商业报告和技术架构路线图"，今晚收工前定方向
+- 之前：架构只在对话里讨论，没有沉淀文档，跨会话会丢失
+- 现在：一份可编辑的 HTML 报告，明天打开 9901 即可继续迭代
+
+---
+
 ## v2.5.4 — CloudBase Password Form Path Fix
 
 *2026-07-17 23:05 · 云函数 hotfix*

@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HTML Studio 商业报告 v1.0 · Deck</title>
+<style>
+  /* ===== Reset ===== */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                 "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #000;
+  }
+
+  /* ===== Deck 横向滑页 ===== */
+  .deck {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    height: 100vh;
+    width: 100vw;
+  }
+  .deck::-webkit-scrollbar { height: 6px; }
+  .deck::-webkit-scrollbar-thumb { background: rgba(201,169,97,0.5); border-radius: 3px; }
+  .deck::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+
+  .slide {
+    min-width: 100vw;
+    height: 100vh;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    padding: 56px 72px;
+    position: relative;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /*
+    对比度速查（WCAG AA ≥ 4.5:1 for normal text）
+    ┌─────────┬──────────────┬──────────────┬──────────────┬──────────────┐
+    │ 主题    │ 主正文       │ 次要说明     │ kicker/页码  │ 强调高亮     │
+    ├─────────┼──────────────┼──────────────┼──────────────┼──────────────┤
+    │ gold    │ #1a1a1a      │ #5a2408      │ #5a2408      │ #1a1a1a      │
+    │ dark    │ #f5f5f5      │ #bbb         │ #C9A961      │ #C9A961      │
+    │ light   │ #1a1a1a      │ #2d2d2d      │ #8a6d1f      │ #C9A961      │
+    │ cream   │ #1a1a1a      │ #2d2d2d      │ #8a6d1f      │ #5a2408      │
+    └─────────┴──────────────┴──────────────┴──────────────┴──────────────┘
+    禁止：opacity 0.5~0.7 在 .kicker/.pagenum/.signature 上
+    禁止：浅底用 #555/#666/#777 做正文
+  */
+
+  /* ===== 4 主题（HTML Studio 金色品牌） ===== */
+  .slide.gold {
+    background: linear-gradient(135deg, #C9A961 0%, #E5C97A 100%);
+    color: #1a1a1a;
+  }
+  .slide.dark {
+    background: #0e0e10;
+    color: #f5f5f5;
+  }
+  .slide.dark .accent { color: #C9A961; }
+  .slide.light {
+    background: #fafaf7;
+    color: #1a1a1a;
+  }
+  .slide.light .accent { color: #8a6d1f; }
+  .slide.cream {
+    background: #f5efe6;
+    color: #1a1a1a;
+  }
+  .slide.cream .accent { color: #5a2408; }
+
+  /* ===== 字级规范 ===== */
+  .hero {
+    font-size: 72px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  h1.page-title {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .lead {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.55;
+  }
+  .slide.light .lead, .slide.cream .lead { color: #2d2d2d; }
+  .slide.dark .lead { color: #bbb; }
+  .slide.gold .lead { color: #5a2408; }
+
+  .kicker {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .slide.gold .kicker { color: #5a2408; }
+  .slide.dark .kicker { color: #C9A961; }
+  .slide.light .kicker, .slide.cream .kicker { color: #8a6d1f; }
+
+  .pagenum {
+    position: absolute;
+    bottom: 28px;
+    right: 72px;
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+  }
+  .slide.gold .pagenum { color: #5a2408; }
+  .slide.dark .pagenum { color: #888; }
+  .slide.light .pagenum, .slide.cream .pagenum { color: #8a6d1f; }
+
+  .signature {
+    position: absolute;
+    bottom: 28px;
+    left: 72px;
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .slide.gold .signature { color: #5a2408; }
+  .slide.dark .signature { color: #888; }
+  .slide.light .signature, .slide.cream .signature { color: #8a6d1f; }
+
+  /* ===== 工具类 ===== */
+  .accent { color: #C9A961; font-weight: 700; }
+  .slide.gold .accent { color: #1a1a1a; }
+  .slide.light .accent, .slide.cream .accent { color: #5a2408; }
+  .row { display: flex; gap: 28px; }
+  .col { flex: 1; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+
+  .card {
+    background: rgba(255,255,255,0.7);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .slide.dark .card {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(201,169,97,0.25);
+  }
+  .slide.gold .card {
+    background: rgba(255,255,255,0.35);
+    border-color: rgba(90,36,8,0.20);
+  }
+
+  .num-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #C9A961;
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .slide.gold .num-badge { background: rgba(26,26,26,0.18); color: #1a1a1a; }
+
+  /* ===== 表格 ===== */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: rgba(201,169,97,0.18);
+    color: #5a2408;
+    font-weight: 600;
+    padding: 9px 12px;
+    text-align: left;
+    border: 1px solid rgba(201,169,97,0.30);
+    font-size: 12px;
+  }
+  .slide.dark th { color: #C9A961; border-color: rgba(201,169,97,0.35); }
+  td {
+    padding: 9px 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    color: #2d2d2d;
+    vertical-align: top;
+  }
+  .slide.dark td {
+    border-color: rgba(255,255,255,0.10);
+    color: #ddd;
+  }
+  tr:nth-child(even) td { background: rgba(0,0,0,0.04); }
+  .slide.dark tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+
+  /* ===== 时间线 ===== */
+  .timeline { position: relative; padding-left: 32px; }
+  .timeline::before {
+    content: ""; position: absolute;
+    left: 11px; top: 8px; bottom: 8px; width: 2px;
+    background: linear-gradient(180deg, #10B981 0%, #C9A961 50%, #4A9EFF 100%);
+  }
+  .tl-item {
+    position: relative; margin-bottom: 18px;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 8px;
+  }
+  .slide.dark .tl-item {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.10);
+  }
+  .tl-item::before {
+    content: ""; position: absolute;
+    left: -27px; top: 18px; width: 14px; height: 14px;
+    border-radius: 50%; border: 3px solid #fafaf7;
+  }
+  .slide.dark .tl-item::before { border-color: #0e0e10; }
+  .tl-item.done::before { background: #10B981; }
+  .tl-item.current::before { background: #C9A961; }
+  .tl-item.future::before { background: #4A9EFF; }
+
+  /* ===== BMC 9 宫格 ===== */
+  .bmc {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 6px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .bmc-cell {
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 6px;
+    padding: 10px;
+  }
+  .slide.dark .bmc-cell {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.10);
+  }
+  .bmc-cell .bt {
+    color: #8a6d1f; font-weight: 600; font-size: 10.5px;
+    margin-bottom: 6px; text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .slide.dark .bmc-cell .bt { color: #C9A961; }
+  .bmc-cell ul { margin: 2px 0 0 12px; }
+  .bmc-cell li { margin-bottom: 3px; color: #2d2d2d; font-size: 10.5px; }
+  .slide.dark .bmc-cell li { color: #ddd; }
+  .bmc-vp { grid-column: 3; grid-row: 1 / span 2; background: rgba(201,169,97,0.18); border-color: rgba(201,169,97,0.35); }
+  .bmc-rev { grid-column: 3 / span 3; grid-row: 3; background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.30); }
+  .bmc-cost { grid-column: 1 / span 2; grid-row: 3; }
+  .bmc-partners { grid-column: 1; grid-row: 1 / span 2; }
+  .bmc-segments { grid-column: 5; grid-row: 1 / span 2; }
+  .bmc-act { grid-column: 2; grid-row: 1; }
+  .bmc-res { grid-column: 2; grid-row: 2; }
+  .bmc-rel { grid-column: 4; grid-row: 1; }
+  .bmc-chan { grid-column: 4; grid-row: 2; }
+
+  /* ===== 风险卡 ===== */
+  .risk-card {
+    background: rgba(239,68,68,0.06);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .slide.dark .risk-card {
+    background: rgba(239,68,68,0.10);
+    border-color: rgba(239,68,68,0.30);
+  }
+  .risk-card .rt { color: #FCA5A5; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+  .risk-card .rd { font-size: 12px; color: #2d2d2d; margin-bottom: 6px; }
+  .slide.dark .risk-card .rd { color: #ddd; }
+  .risk-card .rm { font-size: 12px; color: #2d2d2d; }
+  .slide.dark .risk-card .rm { color: #bbb; }
+  .risk-card .rm strong { color: #C9A961; }
+  .risk-tag {
+    display: inline-block; font-size: 10px;
+    padding: 1px 8px; border-radius: 8px;
+    margin-left: 6px; font-weight: 600;
+  }
+  .risk-tag.high { background: rgba(239,68,68,0.25); color: #FCA5A5; }
+  .risk-tag.mid { background: rgba(245,158,11,0.25); color: #FCD34D; }
+  .risk-tag.low { background: rgba(16,185,129,0.25); color: #6EE7B7; }
+
+  /* ===== 架构图 ===== */
+  .arch {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(201,169,97,0.20);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 10.5px;
+    line-height: 1.45;
+    white-space: pre;
+    overflow-x: auto;
+    color: #ddd;
+  }
+
+  /* ===== 打印 ===== */
+  @media print {
+    .deck { display: block; overflow: visible; height: auto; }
+    .slide { page-break-after: always; min-width: 100%; height: 100vh; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- ============ P1 封面（金） ============ -->
+  <section class="slide gold">
+    <div style="margin-top: auto; margin-bottom: auto;">
+      <div class="kicker">HTML STUDIO · BUSINESS REPORT V1.0</div>
+      <h1 class="hero">把想法<br/>3 秒变成<br/>可分享的视觉内容</h1>
+      <p class="lead" style="margin-top: 28px; max-width: 720px;">
+        商业模式 · 技术架构 · 路线图 · 2026-07-18
+      </p>
+    </div>
+    <div class="signature">路易乔布斯 © 2026</div>
+    <div class="pagenum">01 / 12</div>
+  </section>
+
+  <!-- ============ P2 价值主张（深） ============ -->
+  <section class="slide dark">
+    <div style="margin: auto; text-align: center; max-width: 920px;">
+      <div class="kicker">VALUE PROPOSITION</div>
+      <h1 class="hero" style="font-size: 56px;">
+        编辑即所见，<span class="accent">分享即链接</span>。<br/>
+        不依赖任何平台，<span class="accent">双击即看</span>。
+      </h1>
+      <p class="lead" style="margin-top: 32px;">
+        价值链条覆盖 <strong style="color:#C9A961;">生成 → 编辑 → 分享 → 接收</strong> 四环。<br/>
+        当前已实现编辑与分享两环，下一步用 SaaS 覆盖分发与协作。
+      </p>
+      <div class="grid-3" style="margin-top: 40px; text-align: left;">
+        <div class="card">
+          <div class="kicker" style="margin-bottom:8px;">PAIN</div>
+          <p style="font-size:14px;">Word/PPT 排版麻烦；Notion 分享需登录；Markdown 太朴素；自建博客门槛高</p>
+        </div>
+        <div class="card">
+          <div class="kicker" style="margin-bottom:8px;">RELIEF</div>
+          <p style="font-size:14px;">contentEditable 所见即所得；分享无需登录；自包含 HTML 双击即看；开源数据不锁</p>
+        </div>
+        <div class="card">
+          <div class="kicker" style="margin-bottom:8px;">GAIN</div>
+          <p style="font-size:14px;">Pro 去水印 + 自定义品牌；1 年有效期；访问数据统计；团队协作</p>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">02 / 12</div>
+  </section>
+
+  <!-- ============ P3 市场分析（浅） ============ -->
+  <section class="slide light">
+    <div class="kicker">MARKET ANALYSIS</div>
+    <h1 class="page-title">三层市场估算 + 增长飞轮</h1>
+    <p class="lead" style="margin-bottom: 24px;">不直接竞争 Notion/语雀，切"对外分享"细分场景</p>
+
+    <div class="grid-3" style="margin-bottom: 24px;">
+      <div class="card">
+        <div class="kicker" style="margin-bottom:6px;">TAM · 总市场</div>
+        <p style="font-size:28px; font-weight:800; color:#C9A961; margin-bottom:6px;">~$50B/年</p>
+        <p style="font-size:13px; color:#2d2d2d;">全球内容创作 &amp; 分享工具市场<br/>含 Notion/语雀/飞书/Coda/Miro</p>
+      </div>
+      <div class="card">
+        <div class="kicker" style="margin-bottom:6px;">SAM · 可服务</div>
+        <p style="font-size:28px; font-weight:800; color:#C9A961; margin-bottom:6px;">~¥5 亿/年</p>
+        <p style="font-size:13px; color:#2d2d2d;">中文 HTML 内容分享场景<br/>500 万潜在用户 × ¥100 ARPU</p>
+      </div>
+      <div class="card">
+        <div class="kicker" style="margin-bottom:6px;">SOM · 可获取</div>
+        <p style="font-size:28px; font-weight:800; color:#C9A961; margin-bottom:6px;">~¥500 万/年</p>
+        <p style="font-size:13px; color:#2d2d2d;">3 年内：10 万免费 × 3% 转化<br/>× ¥29/月 × 12 = ¥1033 万/年</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:16px; margin-bottom:10px; color:#5a2408;">🔄 增长飞轮</h3>
+    <div class="card" style="background:rgba(201,169,97,0.10); border-color:rgba(201,169,97,0.30);">
+      <p style="font-size:14px; color:#2d2d2d; line-height:1.7;">
+        每个免费分享页底部的 <strong>"Made with HTML Studio"</strong> 水印 = 一次免费曝光<br/>
+        → 接收方好奇点击 → 成为新用户 → 创建更多分享 → 更多曝光<br/>
+        <strong style="color:#5a2408;">分享即增长，增长即分享</strong>。Pro 去水印 = 飞轮减速但直接变现；免费带水印 = 飞轮加速但不直接变现。<strong style="color:#5a2408;">两层用户互相供养</strong>。
+      </p>
+    </div>
+    <div class="pagenum">03 / 12</div>
+  </section>
+
+  <!-- ============ P4 竞品矩阵（米） ============ -->
+  <section class="slide cream">
+    <div class="kicker">COMPETITIVE LANDSCAPE</div>
+    <h1 class="page-title">5 个竞品 · 1 个差异化护城河</h1>
+    <p class="lead" style="margin-bottom: 20px;">没有竞品能同时做到"自包含 + 开源 + 极简分享"</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>产品</th>
+          <th>定位</th>
+          <th>分享方式</th>
+          <th>开源</th>
+          <th>HTML Studio 差异</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Notion</strong></td><td>全功能知识库</td><td>需登录 / 带 Notion 品牌</td><td>否</td><td>我们更轻、自包含、不锁数据</td></tr>
+        <tr><td><strong>语雀</strong></td><td>团队文档</td><td>需登录 / 公开页有限制</td><td>否</td><td>我们面向个人，分享无门槛</td></tr>
+        <tr><td><strong>StackEdit</strong></td><td>Markdown 编辑器</td><td>需对接第三方</td><td>是</td><td>我们支持富文本 + 一键分享</td></tr>
+        <tr><td><strong>drawio</strong></td><td>图表编辑器</td><td>导出文件 / 嵌入</td><td>是</td><td>不同赛道（图 vs 文），可互补</td></tr>
+        <tr><td><strong>飞书文档</strong></td><td>企业协作文档</td><td>需登录 / 企业内</td><td>否</td><td>我们面向对外分享，不绑定企业</td></tr>
+      </tbody>
+    </table>
+
+    <div class="card" style="margin-top: 20px; background:rgba(201,169,97,0.12); border-color:rgba(201,169,97,0.30);">
+      <p style="font-size:14px; color:#2d2d2d;">
+        <strong style="color:#5a2408;">差异化护城河</strong>：自包含 HTML（双击即看，不依赖平台）+ 开源本地版（数据不锁）+ 极简分享链路（编辑→一键链接）。<strong style="color:#5a2408;">没有一个是 Notion/语雀能轻易做到的</strong>——它们的产品形态决定了必须"留在平台内"。
+      </p>
+    </div>
+    <div class="pagenum">04 / 12</div>
+  </section>
+
+  <!-- ============ P5 用户痛点（深） ============ -->
+  <section class="slide dark">
+    <div class="kicker">CUSTOMER PROFILE · PRO TARGET</div>
+    <h1 class="page-title">Pro 目标用户：<span class="accent">内容创作者</span></h1>
+    <p class="lead" style="margin-bottom: 28px;">他们愿意为"品牌归属"付费——分享页带别人 logo = 不专业</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="kicker" style="margin-bottom:10px;">👤 客户任务 &amp; 痛点</div>
+        <ul style="font-size:13px; color:#ddd; margin-left:18px; line-height:1.8;">
+          <li>把技术想法/产品方案做成可分享的视觉内容</li>
+          <li><strong style="color:#FCA5A5;">痛点</strong>：Word/PPT 排版麻烦，样式不可控</li>
+          <li><strong style="color:#FCA5A5;">痛点</strong>：Notion/语雀分享需登录，接收方抗拒</li>
+          <li><strong style="color:#FCA5A5;">痛点</strong>：Markdown 太朴素，不够"好看"</li>
+          <li><strong style="color:#FCA5A5;">痛点</strong>：自建博客门槛高，维护成本重</li>
+          <li><strong style="color:#FCA5A5;">痛点</strong>：分享链接带平台水印，不专业</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="kicker" style="margin-bottom:10px;">💡 期望收益</div>
+        <ul style="font-size:13px; color:#ddd; margin-left:18px; line-height:1.8;">
+          <li><strong style="color:#C9A961;">收益</strong>：分享页带自己的品牌，不带货别人 logo</li>
+          <li><strong style="color:#C9A961;">收益</strong>：链接长期有效，不会 7 天就过期</li>
+          <li><strong style="color:#C9A961;">收益</strong>：能看到多少人看了、从哪来</li>
+          <li><strong style="color:#C9A961;">收益</strong>：内容自包含，离线也能看</li>
+          <li><strong style="color:#C9A961;">收益</strong>：数据不锁平台，随时可迁</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px; background:rgba(201,169,97,0.12); border-color:rgba(201,169,97,0.35);">
+      <p style="font-size:14px; color:#f5f5f5;">
+        <strong style="color:#C9A961;">契合度判断</strong>：客户最大痛点"分享页带平台水印不专业" ↔ Pro 核心价值"去水印 + 自定义品牌"。<strong style="color:#C9A961;">契合度高</strong>。次要痛点"链接 7 天过期" ↔ Pro"1 年有效期"。<strong style="color:#C9A961;">契合度高</strong>。
+      </p>
+    </div>
+    <div class="pagenum">05 / 12</div>
+  </section>
+
+  <!-- ============ P6 商业模式（浅） ============ -->
+  <section class="slide light">
+    <div class="kicker">BUSINESS MODEL</div>
+    <h1 class="page-title">双轨制：<span class="accent">本地开源</span> + <span class="accent">云端 SaaS</span></h1>
+    <p class="lead" style="margin-bottom: 24px;">本地版不限制在线分享——让用户先体验价值，再引导付费升级</p>
+
+    <div class="grid-2" style="margin-bottom: 24px;">
+      <div class="card" style="border-left:4px solid #10B981;">
+        <div class="kicker" style="margin-bottom:8px; color:#10B981;">本地版 · 开源</div>
+        <h3 style="font-size:18px; margin-bottom:8px; color:#1a1a1a;">流量入口 + 社区资产</h3>
+        <ul style="font-size:13px; color:#2d2d2d; margin-left:18px; line-height:1.8;">
+          <li>编辑器全功能（contentEditable）</li>
+          <li>离线分享（自包含 HTML 导出）</li>
+          <li>可自建分享服务（Docker）</li>
+          <li>永远免费，开源透明</li>
+          <li><strong>不限制在线分享功能</strong>——让用户体验到价值</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:4px solid #C9A961;">
+        <div class="kicker" style="margin-bottom:8px;">云端版 · SaaS</div>
+        <h3 style="font-size:18px; margin-bottom:8px; color:#1a1a1a;">增值服务 + 商业化主体</h3>
+        <ul style="font-size:13px; color:#2d2d2d; margin-left:18px; line-height:1.8;">
+          <li>托管分享（免运维）</li>
+          <li>品牌定制（Pro 去水印）</li>
+          <li>协作编辑（Team）</li>
+          <li>企业私有部署（Enterprise）</li>
+          <li><strong>按层收费</strong>——Free / Pro / Team / Enterprise</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="background:rgba(201,169,97,0.12); border-color:rgba(201,169,97,0.30);">
+      <p style="font-size:14px; color:#2d2d2d;">
+        <strong style="color:#5a2408;">核心设计</strong>：本地版和云端版功能不重叠——本地版做"创作"，云端版做"分发与协作"。用户不会问"我为什么不自己跑本地版"，因为本地版不提供"分发与协作"能力。<strong style="color:#5a2408;">愿意折腾 = 免费（自建 Docker）；不愿意折腾 = 付费用云端版</strong>。
+      </p>
+    </div>
+    <div class="pagenum">06 / 12</div>
+  </section>
+
+  <!-- ============ P7 商业画布（米） ============ -->
+  <section class="slide cream">
+    <div class="kicker">BUSINESS MODEL CANVAS</div>
+    <h1 class="page-title">9 模块商业模式全景</h1>
+    <p class="lead" style="margin-bottom: 16px;">价值主张（金）居中，成本/收入底部对照</p>
+
+    <div class="bmc">
+      <div class="bmc-cell bmc-partners">
+        <div class="bt">🤝 重要合作</div>
+        <ul>
+          <li>腾讯 CloudBase</li>
+          <li>微信开放平台</li>
+          <li>GitHub 开源社区</li>
+          <li>GitHub Actions CI/CD</li>
+          <li>内容创作者 KOL</li>
+          <li>企业渠道代理</li>
+        </ul>
+      </div>
+      <div class="bmc-cell bmc-act">
+        <div class="bt">⚙️ 关键业务</div>
+        <ul>
+          <li>编辑器迭代</li>
+          <li>分享服务运维</li>
+          <li>用户系统 &amp; 计费</li>
+          <li>开源社区运营</li>
+        </ul>
+      </div>
+      <div class="bmc-cell bmc-res">
+        <div class="bt">💎 核心资源</div>
+        <ul>
+          <li>编辑器引擎代码</li>
+          <li>CloudBase 基础设施</li>
+          <li>开源社区 &amp; Stars</li>
+          <li>创始人产品判断力</li>
+        </ul>
+      </div>
+      <div class="bmc-cell bmc-vp">
+        <div class="bt">⭐ 价值主张</div>
+        <ul>
+          <li><strong>3 秒生成可分享内容</strong></li>
+          <li>编辑即所见，分享即链接</li>
+          <li>零门槛——无需注册即可用</li>
+          <li>自包含 HTML——双击即看</li>
+          <li>品牌可控——Pro 去水印</li>
+          <li>开源可信——数据不锁平台</li>
+        </ul>
+      </div>
+      <div class="bmc-cell bmc-rel">
+        <div class="bt">💬 客户关系</div>
+        <ul>
+          <li>自助服务 Free/Pro</li>
+          <li>社区支持 GitHub</li>
+          <li>专属客服 Team+</li>
+          <li>方案顾问 Enterprise</li>
+        </ul>
+      </div>
+      <div class="bmc-cell bmc-chan">
+        <div class="bt">📡 渠道通路</div>
+        <ul>
+          <li>GitHub 开源仓库</li>
+          <li>官网 html-studio.app</li>
+          <li>分享页水印引流</li>
+          <li>技术博客 &amp; 教程</li>
+        </ul>
+      </div>
+      <div class="bmc-cell bmc-segments">
+        <div class="bt">🎯 客户细分</div>
+        <ul>
+          <li><strong>Free</strong>：学生、独立开发者</li>
+          <li><strong>Pro</strong>：内容创作者、自媒体</li>
+          <li><strong>Team</strong>：5-20 人小公司</li>
+          <li><strong>Enterprise</strong>：中大型企业、政企</li>
+        </ul>
+      </div>
+      <div class="bmc-cell bmc-cost">
+        <div class="bt">💸 成本结构</div>
+        <ul>
+          <li>CloudBase 资源费（¥19.9/月起）</li>
+          <li>微信支付手续费（0.6%）</li>
+          <li>域名 &amp; SSL</li>
+          <li>开发时间（创始人主要投入）</li>
+        </ul>
+      </div>
+      <div class="bmc-cell bmc-rev">
+        <div class="bt">💰 收入来源</div>
+        <ul>
+          <li><strong>Pro 订阅</strong>：¥29/月 或 ¥290/年</li>
+          <li><strong>Team 订阅</strong>：¥199/月（5 人起，+¥40/人）</li>
+          <li><strong>Enterprise 买断</strong>：年付万级（私有部署 + 维护）</li>
+          <li><strong>超额按量</strong>：0.5 元/万次（CloudBase 转嫁）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pagenum">07 / 12</div>
+  </section>
+
+  <!-- ============ P8 定价策略（深） ============ -->
+  <section class="slide dark">
+    <div class="kicker">PRICING STRATEGY</div>
+    <h1 class="page-title">4 层定价 · 先 <span class="accent">Pro</span> 后 Team 再 Enterprise</h1>
+    <p class="lead" style="margin-bottom: 24px;">Pro ¥29/月锚定"去水印 + 品牌定制"这个明确付费动机</p>
+
+    <div class="grid-4" style="margin-bottom: 24px;">
+      <div class="card" style="text-align:center;">
+        <div class="kicker" style="margin-bottom:6px;">FREE</div>
+        <p style="font-size:32px; font-weight:800; color:#f5f5f5; margin:8px 0;">¥0<span style="font-size:14px; color:#aaa; font-weight:400;">/月</span></p>
+        <p style="font-size:11px; color:#aaa; margin-bottom:12px;">学生、独立开发者</p>
+        <ul style="font-size:11.5px; color:#ddd; text-align:left; list-style:none; line-height:1.7;">
+          <li>✓ 本地版全功能</li>
+          <li>✓ 云端 100 篇/月</li>
+          <li>✓ 7 天有效期</li>
+          <li style="color:#888;">✗ 带水印</li>
+          <li style="color:#888;">✗ 无统计</li>
+        </ul>
+      </div>
+      <div class="card" style="text-align:center; border:2px solid #C9A961; background:rgba(201,169,97,0.12); transform:scale(1.04);">
+        <div class="kicker" style="margin-bottom:6px;">PRO ⭐</div>
+        <p style="font-size:32px; font-weight:800; color:#C9A961; margin:8px 0;">¥29<span style="font-size:14px; color:#aaa; font-weight:400;">/月</span></p>
+        <p style="font-size:11px; color:#aaa; margin-bottom:12px;">内容创作者、自媒体</p>
+        <ul style="font-size:11.5px; color:#ddd; text-align:left; list-style:none; line-height:1.7;">
+          <li>✓ 本地版全功能</li>
+          <li>✓ 云端 1000 篇/月</li>
+          <li>✓ 1 年有效期</li>
+          <li>✓ 去水印</li>
+          <li>✓ 品牌定制 + 统计</li>
+        </ul>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="kicker" style="margin-bottom:6px;">TEAM</div>
+        <p style="font-size:32px; font-weight:800; color:#f5f5f5; margin:8px 0;">¥199<span style="font-size:14px; color:#aaa; font-weight:400;">/月起</span></p>
+        <p style="font-size:11px; color:#aaa; margin-bottom:12px;">5-20 人小团队</p>
+        <ul style="font-size:11.5px; color:#ddd; text-align:left; list-style:none; line-height:1.7;">
+          <li>✓ Pro 全部功能</li>
+          <li>✓ 5 人席位（+¥40/人）</li>
+          <li>✓ 团队素材库</li>
+          <li>✓ 协作编辑</li>
+          <li>✓ 统一品牌模板</li>
+        </ul>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="kicker" style="margin-bottom:6px;">ENTERPRISE</div>
+        <p style="font-size:24px; font-weight:800; color:#f5f5f5; margin:12px 0;">联系销售</p>
+        <p style="font-size:11px; color:#aaa; margin-bottom:12px;">中大型企业、政企</p>
+        <ul style="font-size:11.5px; color:#ddd; text-align:left; list-style:none; line-height:1.7;">
+          <li>✓ 私有部署 Docker</li>
+          <li>✓ SSO / LDAP</li>
+          <li>✓ 审计日志</li>
+          <li>✓ SLA 99.9%</li>
+          <li>✓ 年付万级起</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="background:rgba(201,169,97,0.10); border-color:rgba(201,169,97,0.30);">
+      <p style="font-size:13px; color:#f5f5f5;">
+        <strong style="color:#C9A961;">定价逻辑</strong>：Pro ¥29/月低于一杯星巴克，低于 Notion Personal Pro（¥8/月但功能受限），高于纯 Markdown 工具。锚定"去水印 + 品牌定制"。<strong style="color:#C9A961;">不设人为功能墙</strong>——让用户先体验分享价值，再用体验差异（水印/有效期/额度）驱动付费。
+      </p>
+    </div>
+    <div class="pagenum">08 / 12</div>
+  </section>
+
+  <!-- ============ P9 技术架构（浅） ============ -->
+  <section class="slide light">
+    <div class="kicker">TECHNICAL ARCHITECTURE</div>
+    <h1 class="page-title">4 阶段技术演进路线图</h1>
+    <p class="lead" style="margin-bottom: 20px;">每阶段 2-4 周，渐进式叠加，不推翻重来</p>
+
+    <div class="grid-2" style="gap:20px;">
+      <div>
+        <h3 style="font-size:15px; color:#5a2408; margin-bottom:8px;">Phase 1 · 已完成</h3>
+        <div class="arch">本地 HTML Studio (Python)
+  ├─ 编辑器 (saver-runtime.js)
+  ├─ 离线分享 (export-share API)
+  └─ 在线分享 → CloudBase 单环境
+                  ├─ 云函数
+                  └─ NoSQL: shares</div>
+      </div>
+      <div>
+        <h3 style="font-size:15px; color:#5a2408; margin-bottom:8px;">Phase 2 · Pro（1-2 周）</h3>
+        <div class="arch">本地版 + config.json token
+         │
+         ▼
+CloudBase /test/*
+  ├─ AuthMiddleware（识别 uid/匿名）
+  ├─ QuotaMiddleware（校验月度额度）
+  ├─ WatermarkMiddleware（免费注入水印）
+  └─ NoSQL: shares + users + usage_logs</div>
+      </div>
+      <div>
+        <h3 style="font-size:15px; color:#5a2408; margin-bottom:8px;">Phase 3 · Team（1 月）</h3>
+        <div class="arch">新增：
+  ├─ teams 集合 + team_members
+  ├─ /api/team/* 路由
+  ├─ WebSocket 实时协作
+  └─ 团队素材库（共享图片/模板）</div>
+      </div>
+      <div>
+        <h3 style="font-size:15px; color:#5a2408; margin-bottom:8px;">Phase 4 · Enterprise（2-3 月）</h3>
+        <div class="arch">企业独立 CloudBase 环境
+  ├─ audit_logs（审计日志）
+  ├─ sso_configs（SSO/LDAP/SAML）
+  ├─ 企业插件包
+  ├─ Docker Compose 一键部署
+  └─ 本地版指向企业环境</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px; background:rgba(201,169,97,0.12); border-color:rgba(201,169,97,0.30);">
+      <p style="font-size:13px; color:#2d2d2d;">
+        <strong style="color:#5a2408;">架构原则</strong>：① 渐进式——不改本地版代码，云端版加层 ② 匿名优先——不登录也能用，登录后解锁 Pro ③ 中间件模式——Auth/Quota/Watermark 不侵入业务逻辑 ④ 配置驱动——本地版 config.json 的 share_server 指向哪个后端就哪个
+      </p>
+    </div>
+    <div class="pagenum">09 / 12</div>
+  </section>
+
+  <!-- ============ P10 里程碑（米） ============ -->
+  <section class="slide cream">
+    <div class="kicker">MILESTONES</div>
+    <h1 class="page-title">时间线 · 4 个阶段交付物</h1>
+    <p class="lead" style="margin-bottom: 20px;">每阶段都有明确的验证指标</p>
+
+    <div class="timeline">
+      <div class="tl-item done">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <strong style="font-size:15px; color:#1a1a1a;">Phase 1 · 本地版 + 基础分享</strong>
+          <span style="font-size:11px; padding:2px 10px; border-radius:8px; background:rgba(16,185,129,0.18); color:#10B981; font-weight:600;">已完成</span>
+        </div>
+        <p style="font-size:11px; color:#8a6d1f; margin-bottom:6px;">2026-07-17</p>
+        <p style="font-size:13px; color:#2d2d2d;">本地编辑器 + 离线分享 + CloudBase 在线分享 + 密码保护 + macOS/Windows 打包。v2.5.0~v2.5.4 五个版本已发布。</p>
+      </div>
+      <div class="tl-item current">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <strong style="font-size:15px; color:#1a1a1a;">Phase 2 · Pro 上线</strong>
+          <span style="font-size:11px; padding:2px 10px; border-radius:8px; background:rgba(201,169,97,0.25); color:#8a6d1f; font-weight:600;">进行中</span>
+        </div>
+        <p style="font-size:11px; color:#8a6d1f; margin-bottom:6px;">2026-07-18 ~ 2026-08-01（2 周）</p>
+        <p style="font-size:13px; color:#2d2d2d;">用户系统 + 配额 + 水印 + 计费。Week 1：Auth + Quota 中间件；Week 2：水印 + 微信支付 + Pro 上线。<strong>验证指标：100 免费用户 + 3 Pro 转化</strong>。</p>
+      </div>
+      <div class="tl-item future">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <strong style="font-size:15px; color:#1a1a1a;">Phase 3 · Team 上线</strong>
+          <span style="font-size:11px; padding:2px 10px; border-radius:8px; background:rgba(74,158,255,0.18); color:#4A9EFF; font-weight:600;">待启动</span>
+        </div>
+        <p style="font-size:11px; color:#8a6d1f; margin-bottom:6px;">2026-08-15 ~ 2026-09-15（1 月）</p>
+        <p style="font-size:13px; color:#2d2d2d;">团队空间 + 协作编辑 + 统一品牌。<strong>验证指标：10 个 Team 付费</strong>。</p>
+      </div>
+      <div class="tl-item future">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <strong style="font-size:15px; color:#1a1a1a;">Phase 4 · Enterprise 私有部署</strong>
+          <span style="font-size:11px; padding:2px 10px; border-radius:8px; background:rgba(74,158,255,0.18); color:#4A9EFF; font-weight:600;">待启动</span>
+        </div>
+        <p style="font-size:11px; color:#8a6d1f; margin-bottom:6px;">2026-10 ~ 2026-12（2-3 月）</p>
+        <p style="font-size:13px; color:#2d2d2d;">SSO + 审计 + Docker 私有部署。<strong>验证指标：3 个 Enterprise 客户</strong>。</p>
+      </div>
+    </div>
+    <div class="pagenum">10 / 12</div>
+  </section>
+
+  <!-- ============ P11 风险评估（深） ============ -->
+  <section class="slide dark">
+    <div class="kicker">RISK ASSESSMENT</div>
+    <h1 class="page-title">6 项风险 · 高 2 / 中 3 / 低 1</h1>
+    <p class="lead" style="margin-bottom: 20px;">每项都有明确的缓解方案</p>
+
+    <div class="grid-2" style="gap:14px;">
+      <div class="risk-card">
+        <div class="rt">CloudBase 单点依赖<span class="risk-tag high">高</span></div>
+        <div class="rd">Pro/Team 全押 CloudBase，腾讯调价/停服/故障全盘受影响。</div>
+        <div class="rm"><strong>缓解</strong>：云函数代码标准 Node.js 可迁移；本地版 share_server.py 是独立 Python 实现，可随时切换后端。</div>
+      </div>
+      <div class="risk-card">
+        <div class="rt">创始人单点投入<span class="risk-tag high">高</span></div>
+        <div class="rd">当前只有创始人一人开发 + 运营，精力瓶颈明显。</div>
+        <div class="rm"><strong>缓解</strong>：Phase 2 后评估招第一个工程师；开源社区贡献者补充；非核心工作外包。</div>
+      </div>
+      <div class="risk-card">
+        <div class="rt">开源版被 fork 做竞品 SaaS<span class="risk-tag mid">中</span></div>
+        <div class="rd">本地版开源全功能，竞品可 fork 后自建 SaaS 抢市场。</div>
+        <div class="rm"><strong>缓解</strong>：云端版核心（用户系统/计费/协作/统计）不开源，竞品 fork 拿到的只是编辑器。</div>
+      </div>
+      <div class="risk-card">
+        <div class="rt">付费转化率低于 3%<span class="risk-tag mid">中</span></div>
+        <div class="rd">免费版体验太好，用户没动力升级 Pro。</div>
+        <div class="rm"><strong>缓解</strong>：水印是核心 monetization——内容创作者对"分享页带别人 logo"高度敏感。若转化低可调水印强度。</div>
+      </div>
+      <div class="risk-card">
+        <div class="rt">企业版合规要求<span class="risk-tag mid">中</span></div>
+        <div class="rd">政企客户可能要求数据不出境、等保三级、国密算法。</div>
+        <div class="rm"><strong>缓解</strong>：Enterprise 只做私有部署（数据在企业内网），不碰 SaaS 合规。</div>
+      </div>
+      <div class="risk-card">
+        <div class="rt">微信支付审核周期<span class="risk-tag low">低</span></div>
+        <div class="rd">微信支付商户号申请可能 1-2 周。</div>
+        <div class="rm"><strong>缓解</strong>：Week 1 就提交申请，Week 2 开发并行等待；或先用 Stripe 兜底。</div>
+      </div>
+    </div>
+    <div class="pagenum">11 / 12</div>
+  </section>
+
+  <!-- ============ P12 CTA 收尾（金） ============ -->
+  <section class="slide gold">
+    <div style="margin: auto; text-align: center; max-width: 900px;">
+      <div class="kicker">NEXT STEP · 2026-07-19</div>
+      <h1 class="hero" style="margin-bottom: 40px;">明天继续<br/>4 步推进 Pro</h1>
+      <div class="grid-2" style="text-align: left;">
+        <div class="card" style="background:rgba(255,255,255,0.35); border-color:rgba(90,36,8,0.20);">
+          <div class="num-badge" style="background:rgba(26,26,26,0.18); color:#1a1a1a;">1</div>
+          <h3 style="font-size:18px; margin-bottom:6px; color:#1a1a1a;">输出 Pro 详细 spec</h3>
+          <p style="font-size:13px; color:#5a2408;">接口定义 + 数据结构 + 错误码 + 中间件伪代码</p>
+        </div>
+        <div class="card" style="background:rgba(255,255,255,0.35); border-color:rgba(90,36,8,0.20);">
+          <div class="num-badge" style="background:rgba(26,26,26,0.18); color:#1a1a1a;">2</div>
+          <h3 style="font-size:18px; margin-bottom:6px; color:#1a1a1a;">调研 CloudBase Auth</h3>
+          <p style="font-size:13px; color:#5a2408;">微信扫码登录接入文档 + SDK 调研</p>
+        </div>
+        <div class="card" style="background:rgba(255,255,255,0.35); border-color:rgba(90,36,8,0.20);">
+          <div class="num-badge" style="background:rgba(26,26,26,0.18); color:#1a1a1a;">3</div>
+          <h3 style="font-size:18px; margin-bottom:6px; color:#1a1a1a;">提交微信支付申请</h3>
+          <p style="font-size:13px; color:#5a2408;">商户号申请（并行等待 1-2 周）</p>
+        </div>
+        <div class="card" style="background:rgba(255,255,255,0.35); border-color:rgba(90,36,8,0.20);">
+          <div class="num-badge" style="background:rgba(26,26,26,0.18); color:#1a1a1a;">4</div>
+          <h3 style="font-size:18px; margin-bottom:6px; color:#1a1a1a;">回顾本报告</h3>
+          <p style="font-size:13px; color:#5a2408;">打开 9901 看这份 deck，迭代架构方向</p>
+        </div>
+      </div>
+      <p style="margin-top:36px; font-size:14px; color:#5a2408;">
+        📊 验证指标：100 免费用户 + 3 Pro 转化 · 周期 2 周
+      </p>
+    </div>
+    <div class="signature">路易乔布斯 © 2026 · HTML Studio</div>
+    <div class="pagenum">12 / 12</div>
+  </section>
+
+</div>
+
+</body>
+</html>
