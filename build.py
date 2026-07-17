@@ -60,24 +60,52 @@ def main():
         "--noconfirm",
         "server.py",
     ]
+    # Mac: --windowed 生成 .app bundle
+    if not IS_WINDOWS:
+        cmd.append("--windowed")
     print(f"   Command: {' '.join(cmd)}")
     subprocess.check_call(cmd)
 
-    # 验证产物
-    ext = ".exe" if IS_WINDOWS else ""
-    output = SCRIPT_DIR / "dist" / f"{APP_NAME}{ext}"
+    # 验证产物 + Mac 上创建 .dmg
+    if IS_WINDOWS:
+        output = SCRIPT_DIR / "dist" / f"{APP_NAME}.exe"
+    else:
+        # --windowed 在 Mac 上生成 .app
+        app_path = SCRIPT_DIR / "dist" / f"{APP_NAME}.app"
+        # 创建 .dmg
+        dmg_path = SCRIPT_DIR / "dist" / f"{APP_NAME}.dmg"
+        if app_path.exists():
+            print("📦 Creating .dmg...")
+            # 先删旧 dmg
+            if dmg_path.exists():
+                dmg_path.unlink()
+            subprocess.check_call([
+                "hdiutil", "create",
+                "-volname", "HTML Studio",
+                "-srcfolder", str(app_path),
+                "-ov",
+                "-format", "UDZO",
+                str(dmg_path)
+            ])
+            output = dmg_path
+        else:
+            # 降级：无 --windowed 时可能是裸可执行文件
+            output = SCRIPT_DIR / "dist" / APP_NAME
+
     if output.exists():
         size_mb = output.stat().st_size / (1024 * 1024)
 
-        # macOS: ad-hoc 签名（避免 Gatekeeper "无法验证" 拦截）
+        # macOS: 对 .app 做 ad-hoc 签名（避免 Gatekeeper 拦截）
         if not IS_WINDOWS:
-            try:
-                subprocess.check_call([
-                    "codesign", "--force", "--sign", "-", str(output)
-                ])
-                print(f"🔐 Ad-hoc signed: {output}")
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                print(f"⚠️ codesign failed (non-fatal) — user may need to right-click → Open on first launch")
+            app_for_sign = SCRIPT_DIR / "dist" / f"{APP_NAME}.app"
+            if app_for_sign.exists():
+                try:
+                    subprocess.check_call([
+                        "codesign", "--force", "--deep", "--sign", "-", str(app_for_sign)
+                    ])
+                    print(f"🔐 Ad-hoc signed: {app_for_sign}")
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    print(f"⚠️ codesign failed (non-fatal) — user may need to right-click → Open on first launch")
 
         print()
         print(f"✅ Build complete!")
@@ -85,12 +113,12 @@ def main():
         if IS_WINDOWS:
             print(f"   💡 Double-click HTMLStudio.exe to start")
         else:
-            print(f"   💡 Double-click to start, or run: ./dist/{APP_NAME}")
+            print(f"   💡 Mount .dmg → drag HTMLStudio.app to Applications → double-click to start")
             print(f"   🔐 If Gatekeeper blocks: right-click → Open → Open")
         print(f"   🌐 Browser opens automatically")
         print()
         print(f"   To test without opening browser:")
-        print(f"   ./dist/{APP_NAME} --no-open-browser --port 9902")
+        print(f"   ./dist/{APP_NAME}.app/Contents/MacOS/{APP_NAME} --no-open-browser --port 9902")
     else:
         print("❌ Build failed! Output not found.")
         sys.exit(1)

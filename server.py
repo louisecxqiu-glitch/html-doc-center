@@ -43,6 +43,15 @@ if getattr(sys, 'frozen', False):
     # PyInstaller onefile 模式：资源打包在 _MEIPASS 临时解压目录
     _INSTALL_DIR = sys._MEIPASS
     WORKSPACE = os.path.expanduser("~")  # 打包后默认用用户主目录
+    # --windowed 模式下没有 stdout/stderr，重定向到日志文件
+    import io
+    _log_file = os.path.join(CONFIG_DIR, "server.log")
+    os.makedirs(CONFIG_DIR, exist_ok=True)
+    try:
+        sys.stdout = open(_log_file, "a", buffering=1)
+        sys.stderr = sys.stdout
+    except Exception:
+        pass
 else:
     # 源码运行：取 server.py 所在目录的父目录
     _INSTALL_DIR = os.path.dirname(os.path.abspath(__file__))
