@@ -135,54 +135,22 @@
           height: 3px; border-radius: 2px;
         }
         body { padding-top: 46px !important; }
-        /* v1.19.3: 对齐按钮用 CSS 画横线（Word/PPT 风格） */
+        /* v1.19.5: 对齐按钮用 inline SVG 画横线（Word/PPT 风格，跨平台一致） */
         #__dc_toolbar .dc-align {
-          position: relative;
-          min-width: 30px;
+          padding: 0 !important;
+          min-width: 28px;
         }
-        #__dc_toolbar .dc-align::before,
-        #__dc_toolbar .dc-align::after {
-          content: "";
-          position: absolute;
-          left: 50%;
-          background: currentColor;
-          border-radius: 1px;
+        #__dc_toolbar .dc-align svg {
+          display: block;
+          width: 16px;
+          height: 16px;
+          fill: currentColor;
         }
-        /* 用 2 条横线（top + bottom） + background 渐变做第三条线 */
-        #__dc_toolbar .dc-align::before {
-          top: 7px;  width: 14px; height: 1.5px; transform: translateX(-50%);
-        }
-        #__dc_toolbar .dc-align::after {
-          top: 18px; width: 14px; height: 1.5px; transform: translateX(-50%);
-        }
-        /* 中间第三条线：用 background 渐变（线性渐变绘制一条线） */
-        #__dc_toolbar .dc-align {
-          background-image: linear-gradient(currentColor, currentColor);
-          background-size: 14px 1.5px;
-          background-position: 50% 12.5px;
-          background-repeat: no-repeat;
-        }
-        /* 左对齐：所有线左对齐 */
-        #__dc_toolbar .dc-align-left::before { left: 25%; transform: translateX(-50%); }
-        #__dc_toolbar .dc-align-left::after  { left: 25%; transform: translateX(-50%); }
-        #__dc_toolbar .dc-align-left         { background-position: 25% 12.5px; }
-        /* 居中：所有线居中 */
-        #__dc_toolbar .dc-align-center::before { left: 50%; transform: translateX(-50%); }
-        #__dc_toolbar .dc-align-center::after  { left: 50%; transform: translateX(-50%); }
-        #__dc_toolbar .dc-align-center         { background-position: 50% 12.5px; }
-        /* 右对齐：所有线右对齐 */
-        #__dc_toolbar .dc-align-right::before { left: 75%; transform: translateX(-50%); }
-        #__dc_toolbar .dc-align-right::after  { left: 75%; transform: translateX(-50%); }
-        #__dc_toolbar .dc-align-right         { background-position: 75% 12.5px; }
-        /* 两端对齐：第 1/3 条短、中间长，模拟段落两端对齐 */
-        #__dc_toolbar .dc-align-justify::before { left: 25%; transform: translateX(-50%); width: 10px; }
-        #__dc_toolbar .dc-align-justify         { background-position: 50% 12.5px; background-size: 14px 1.5px; }
-        #__dc_toolbar .dc-align-justify::after  { left: 75%; transform: translateX(-50%); width: 10px; }
       </style>
       <span class="sep"></span>
-      <button data-cmd="bold" title="加粗 ⌘B"><b>B</b></button>
-      <button data-cmd="italic" title="斜体 ⌘I"><i>I</i></button>
-      <button data-cmd="underline" title="下划线 ⌘U"><u>U</u></button>
+      <button data-cmd="bold" title="加粗 Ctrl/⌘+B"><b>B</b></button>
+      <button data-cmd="italic" title="斜体 Ctrl/⌘+I"><i>I</i></button>
+      <button data-cmd="underline" title="下划线 Ctrl/⌘+U"><u>U</u></button>
       <span class="sep"></span>
       <!-- v1.8.0 新增：字号下拉 -->
       <select id="__dc_fontsize" title="字号（对选中文字生效；选中后下拉自动复位以便下次选不同字号）">
@@ -204,11 +172,11 @@
         <button id="__dc_hilite_btn" style="background:#FDE68A;color:#1A1D23;" title="高亮背景色：当前浅黄。点击弹出色板选其他颜色或清除。"><b>ab</b></button>
       </div>
       <span class="sep"></span>
-      <!-- v1.19.3: 对齐图标改成 Word/PPT 主流风格（用 ::before/::after 伪元素画 4 种横线对齐方式）-->
-      <button data-cmd="justifyLeft" title="左对齐" class="dc-align dc-align-left"></button>
-      <button data-cmd="justifyCenter" title="居中" class="dc-align dc-align-center"></button>
-      <button data-cmd="justifyRight" title="右对齐" class="dc-align dc-align-right"></button>
-      <button data-cmd="justifyFull" title="两端对齐" class="dc-align dc-align-justify"></button>
+      <!-- v1.19.5: 对齐按钮用 inline SVG（Word/PPT 风格横线图标） -->
+      <button data-cmd="justifyLeft" title="左对齐" class="dc-align"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="3" width="11" height="1.6" rx="0.4"/><rect x="1" y="7.2" width="14" height="1.6" rx="0.4"/><rect x="1" y="11.4" width="9" height="1.6" rx="0.4"/></svg></button>
+      <button data-cmd="justifyCenter" title="居中" class="dc-align"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="1.6" rx="0.4"/><rect x="1" y="7.2" width="14" height="1.6" rx="0.4"/><rect x="3.5" y="11.4" width="9" height="1.6" rx="0.4"/></svg></button>
+      <button data-cmd="justifyRight" title="右对齐" class="dc-align"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="3" width="11" height="1.6" rx="0.4"/><rect x="1" y="7.2" width="14" height="1.6" rx="0.4"/><rect x="6" y="11.4" width="9" height="1.6" rx="0.4"/></svg></button>
+      <button data-cmd="justifyFull" title="两端对齐" class="dc-align"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="3" width="14" height="1.6" rx="0.4"/><rect x="1" y="7.2" width="14" height="1.6" rx="0.4"/><rect x="1" y="11.4" width="14" height="1.6" rx="0.4"/></svg></button>
       <span class="sep"></span>
       <!-- v1.11.1 新增：链接 -->
       <button id="__dc_link" title="插入/编辑链接（选中文字后点击；空选区可插入 URL）">🔗 链接</button>
@@ -216,10 +184,10 @@
       <!-- v1.11.5: 更多排版（行高/字间距/代码块/引用块） -->
       <button id="__dc_more" title="更多排版（行高/字间距/代码块/引用块/图片）">⋯ 更多</button>
       <span class="sep"></span>
-      <button data-cmd="undo" title="撤销 ⌘Z（栈空时禁用）">↶ 撤销</button>
-      <button data-cmd="redo" title="重做 ⇧⌘Z（栈空时禁用）">↷ 重做</button>
+      <button data-cmd="undo" title="撤销 Ctrl/⌘+Z（栈空时禁用）">↶ 撤销</button>
+      <button data-cmd="redo" title="重做 Ctrl/Shift/⌘+⇧+Z（栈空时禁用）">↷ 重做</button>
       <span class="sep"></span>
-      <button id="__dc_spacing" title="块间距调整（⌥ + 点击目标块调整 padding/margin）">📐 间距</button>
+      <button id="__dc_spacing" title="块间距调整（按住 Alt/Option 键 + 点击目标块调整 padding/margin）">📐 间距</button>
       <button id="__dc_annotate" title="添加批注（选中文本后点击；按 Esc 退出批注模式）">💬 批注</button>
       <span class="sep"></span>
       <button id="__dc_share" title="导出自包含 HTML（所有资源内嵌；发给别人双击即看，无需 DocCenter）">📦 分享</button>
@@ -1628,7 +1596,7 @@
       const targetImg = selectedImg;
       if (!targetImg) return;
       if (!navigator.clipboard || !navigator.clipboard.read) {
-        toast("⚠️ 浏览器不支持剪贴板读取，请用 ⌘V 直接粘贴到页面");
+        toast("⚠️ 浏览器不支持剪贴板读取，请用 Ctrl/⌘+V 直接粘贴到页面");
         return;
       }
       try {
@@ -2561,7 +2529,7 @@
 
     /** 工具栏的 📐 按钮兜底入口（给鼠标用户） */
     function enterBlockModeHint() {
-      toast("按住 ⌥ 再点击要调整的块");
+      toast("按住 Alt/Option 再点击要调整的块");
     }
 
     function init() {
