@@ -1858,6 +1858,38 @@ async def handle_sparsify_snapshots(request):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# v2.0: 导出自包含 HTML 到 Downloads 文件夹
+async def handle_export_share(request):
+    """接收 HTML 内容，保存到 ~/Downloads/，返回完整路径"""
+    try:
+        data = await request.json()
+        html = data.get("html", "")
+        orig_name = data.get("name", "document")
+        safe_name = re.sub(r'[^\w\u4e00-\u9fff\-]', '_', orig_name)[:50]
+        ts = datetime.now().strftime("%Y-%m-%d")
+        filename = f"{safe_name}-share-{ts}.html"
+        downloads = Path.home() / "Downloads"
+        if not downloads.exists():
+            downloads = Path.home() / "下载"
+        if not downloads.exists():
+            downloads = Path.home()
+        filepath = downloads / filename
+        counter = 1
+        while filepath.exists():
+            filepath = downloads / f"{safe_name}-share-{ts}-{counter}.html"
+            counter += 1
+        filepath.write_text(html, encoding="utf-8")
+        _log(f"📦 分享文件已导出: {filepath}")
+        return web.json_response({
+            "ok": True,
+            "path": str(filepath),
+            "filename": filepath.name
+        })
+    except Exception as e:
+        _log(f"❌ 导出分享文件失败: {e}")
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 def create_app() -> web.Application:
     app = web.Application(client_max_size=100 * 1024 * 1024)  # 允许 100MB 的 HTML POST
     app["config"] = load_config()
@@ -1900,6 +1932,8 @@ def create_app() -> web.Application:
     app.router.add_post("/api/sparsify-snapshots", handle_sparsify_snapshots)  # v1.11.6
     # v1.15: 静态资源代理（HTML 引用的本地图片/CSS/JS/字体）
     app.router.add_get("/api/asset/{encoded_dir}/{path:.*}", handle_asset)
+    # v2.0: 导出分享文件到 Downloads
+    app.router.add_post("/api/export-share", handle_export_share)
 
     return app
 
@@ -1952,7 +1986,15 @@ def main():
             webbrowser.open(f"http://localhost:{port}")
         threading.Thread(target=_open_browser, daemon=True).start()
 
-    web.run_app(app, host="127.0.0.1", port=port, print=None)
+    # v1.19.8: 同时绑定 IPv4 + IPv6
+    # 根因：Windows 上 `localhost` 常解析为 `::1` (IPv6)，但 server 只听 127.0.0.1 (IPv4) 时
+    # 浏览器尝试 IPv6 连接失败 → fetch 抛 "Failed to fetch" / "获取失败"
+    # 修复：同时绑定 127.0.0.1 (IPv4) + ::1 (IPv6) 让两个地址都能连
+    if platform.system() == "Windows":
+        bind_hosts = ["127.0.0.1", "::1"]
+    else:
+        bind_hosts = ["127.0.0.1", "::1"]  # 同时支持 IPv6 (macOS 也有可能)
+    web.run_app(app, host=bind_hosts, port=port, print=None)
 
 
 if __name__ == "__main__":

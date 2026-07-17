@@ -446,5 +446,9 @@ window.LOCALE_ZH = {
   'toast.save_as.failed': '另存为失败：{msg}',
   'toast.recent.file_deleted': '文件已不存在，已从最近打开移除：{name}',
   'sidebar.recent.opened_ago': '{time}打开',
+  'modal.folder.path_input_placeholder': '输入绝对路径（如 C:\\Users\\xxx\\Documents 或 /Users/xxx/Documents）按 Enter 跳转',
+  'modal.folder.path_go': '跳转',
+  'modal.folder.path_input_empty': '请先输入路径',
+  'modal.folder.path_input_invalid': '路径不存在或不是目录：{path}',
   'dlg.dropbox.save_as_prompt': '输入保存副本的完整目标路径',
 };

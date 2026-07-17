@@ -460,5 +460,9 @@ window.LOCALE_EN = {
   'toast.save_as.failed': 'Save as failed: {msg}',
   'toast.recent.file_deleted': 'File no longer exists, removed from recent: {name}',
   'sidebar.recent.opened_ago': 'opened {time}',
+  'modal.folder.path_input_placeholder': 'Type absolute path (e.g. C:\\Users\\xxx\\Documents or /Users/xxx/Documents) and press Enter',
+  'modal.folder.path_go': 'Go',
+  'modal.folder.path_input_empty': 'Please type a path first',
+  'modal.folder.path_input_invalid': 'Path does not exist or is not a directory: {path}',
   'dlg.dropbox.save_as_prompt': 'Enter full destination path for the saved copy',
 };

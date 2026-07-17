@@ -1945,3 +1945,39 @@ mark.search-hit {
     border-radius: 4px;
   }
 }
+
+/* v1.19.8: 手动输入路径输入框（Windows 兼容性 fallback）*/
+.browse-path-input-row {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color, #eee);
+  background: var(--bg-secondary, #fafafa);
+}
+.browse-path-input-row input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color, #d0d0d0);
+  border-radius: 4px;
+  font: 12px/1.4 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg-input, #fff);
+  color: var(--text-primary, #1a1a1a);
+}
+.browse-path-input-row input:focus {
+  outline: none;
+  border-color: #C9A961;
+  box-shadow: 0 0 0 2px rgba(201,169,97,0.15);
+}
+.browse-path-input-row button {
+  padding: 6px 14px;
+  background: #C9A961;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.browse-path-input-row button:hover {
+  background: #B8983E;
+}

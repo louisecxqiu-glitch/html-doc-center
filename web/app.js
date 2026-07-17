@@ -2667,6 +2667,29 @@
     $("#browse-confirm").addEventListener("click", confirmBrowse);
     const browseCloseX = $("#browse-close-x");
     if (browseCloseX) browseCloseX.addEventListener("click", closeBrowseDialog);
+
+    // v1.19.8: 手动输入路径（Windows 兼容性 fallback + 高级用户快捷路径）
+    const pathInput = $("#browse-path-input");
+    const pathGo = $("#browse-path-go");
+    const goToTypedPath = () => {
+      const v = (pathInput?.value || "").trim();
+      if (!v) {
+        toast(window.i18n.t("modal.folder.path_input_empty") || "请先输入路径", "warning");
+        return;
+      }
+      // 标准化路径：去掉尾部斜杠、展开 ~
+      const normalized = v.replace(/[/\\]+$/, "");
+      if (normalized === "") return;
+      browseTo(normalized);
+    };
+    if (pathInput) {
+      pathInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); goToTypedPath(); }
+      });
+    }
+    if (pathGo) {
+      pathGo.addEventListener("click", goToTypedPath);
+    }
     $("#new-root-input").addEventListener("keydown", (e) => { if (e.key === "Enter") addRoot(); });
     // v1.16.1: 侧边栏 ＋ 按钮 → 直接打开目录浏览弹窗（不经过设置面板）
     const btnQuickAdd = document.getElementById("btn-quick-add-dir");
