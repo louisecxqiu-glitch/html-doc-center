@@ -2019,11 +2019,11 @@
     const list = $("#browse-list");
     list.innerHTML = window.i18n.t("browse.loading_html") || "Loading…";
     try {
-      // 用 URL + searchParams 拼 query，避免 path 为空时 "&mode=file" 裸接缺 "?" → /api/browse&mode=file → 404 纯文本 → r.json() 报 "Unexpected non-whitespace character after JSON"
+      // 用 URL + searchParams 拼 query，避免 path 为空时 "&mode=file" 裸接缺 "?" → /api/browse&mode=file → 404 纯文本
       const url = new URL(API.browse(path), location.origin);
       if (_browseMode === "file") url.searchParams.set("mode", "file");
-      const r = await fetch(url);
-      const d = await r.json();
+      // v1.19.1: 用 safeFetchJson 替代直接 r.json()，对非 JSON 响应给更友好错误
+      const d = await safeFetchJson(url);
       if (!d.ok) { list.innerHTML = `<div class="browse-empty">❌ ${d.error}</div>`; return; }
       renderBrowseBreadcrumb(d.current, d.is_root);
       renderBrowseSidebar(d);
@@ -2048,16 +2048,29 @@
     if (d.is_root) {
       const shortcuts = (d.dirs || []).filter(x => !x.name.startsWith("📌"));
       const pinned = (d.dirs || []).filter(x => x.name.startsWith("📌"));
-      shortcutsList.innerHTML = shortcuts.map(s =>
-        `<div class="browse-sidebar-item" data-path="${escapeHtml(s.path)}">
-          <span class="browse-sidebar-item-icon">${escapeHtml(s.name.charAt(0))}</span>
-          <span class="browse-sidebar-item-name">${escapeHtml(s.name.replace(/^[^\w]+\s*/, ""))}</span>
-        </div>`).join("");
-      pinnedList.innerHTML = pinned.map(p =>
-        `<div class="browse-sidebar-item" data-path="${escapeHtml(p.path)}">
+      // 按 name 前缀映射 icon（不再取首字符，避免 emoji 渲染成豆腐块）
+      const shortcutIcon = (name) => {
+        if (name.startsWith("🏠")) return "🏠";
+        if (name.startsWith("🖥") || /桌面|Desktop/i.test(name)) return "🖥";
+        if (name.startsWith("📄") || /文稿|Documents/i.test(name)) return "📄";
+        if (name.startsWith("⬇") || /下载|Downloads/i.test(name)) return "⬇";
+        return "📁";
+      };
+      shortcutsList.innerHTML = shortcuts.map(s => {
+        const icon = shortcutIcon(s.name);
+        const label = s.name.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}⬇]+\s*/u, "").trim();
+        return `<div class="browse-sidebar-item" data-path="${escapeHtml(s.path)}">
+          <span class="browse-sidebar-item-icon">${icon}</span>
+          <span class="browse-sidebar-item-name">${escapeHtml(label)}</span>
+        </div>`;
+      }).join("");
+      pinnedList.innerHTML = pinned.map(p => {
+        const label = p.name.replace(/^📌\s*/, "");
+        return `<div class="browse-sidebar-item" data-path="${escapeHtml(p.path)}">
           <span class="browse-sidebar-item-icon">📌</span>
-          <span class="browse-sidebar-item-name">${escapeHtml(p.name.replace(/^📌\s*/, ""))}</span>
-        </div>`).join("");
+          <span class="browse-sidebar-item-name">${escapeHtml(label)}</span>
+        </div>`;
+      }).join("");
     }
 
     // Recent：从 localStorage 读最近 5 条（复用现有 recentGet，数据结构 {path, name, ts}）
@@ -2136,10 +2149,19 @@
       const row = document.createElement("div");
       row.className = "browse-item";
       if (_browseSelected === d.path) row.classList.add("selected");
-      const icon = isRoot ? d.name.charAt(0) : "📁";
+      // isRoot 时 name 形如 "🏠 主目录"，单独取出 emoji 当图标 + 清理名字
+      let icon, label;
+      if (isRoot) {
+        const m = d.name.match(/^([\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}⬇]+)\s*(.*)$/u);
+        icon = m ? m[1] : "📁";
+        label = m ? m[2] : d.name;
+      } else {
+        icon = "📁";
+        label = d.name;
+      }
       row.innerHTML =
-        `<span class="browse-item-icon">${escapeHtml(icon)}</span>` +
-        `<span class="browse-item-name">${escapeHtml(d.name)}</span>`;
+        `<span class="browse-item-icon">${icon}</span>` +
+        `<span class="browse-item-name">${escapeHtml(label)}</span>`;
       // mode=folder: 单击选中，双击进入
       row.addEventListener("click", (e) => {
         e.stopPropagation();
