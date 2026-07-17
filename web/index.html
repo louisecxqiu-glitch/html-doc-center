@@ -216,6 +216,16 @@
           <p class="hint" data-i18n-html="settings.snapshot.hint_storage">Snapshots live at <code>{originalDir}/_auto-save/</code>. Pre-overwrite / pre-restore backups are retained until expiration.<br><strong>Sparsify rule</strong>: keep all from the last 10 minutes / 1 per minute for 10–60 minutes / 1 per hour for 1–24 hours / 1 per day older than 24 hours.</p>
         </div>
         <div class="settings-section">
+          <h4>🔒 密码保护</h4>
+          <div class="settings-row">
+            <label for="setting-password">访问密码</label>
+            <input type="password" id="setting-password" placeholder="留空则无密码保护" style="flex:1;padding:6px 10px;border-radius:6px;border:1px solid #2d3845;background:#0f1419;color:#e8eef5;font-size:13px;" />
+            <button id="btn-save-password" class="btn-primary">保存</button>
+            <button id="btn-clear-password" class="btn-secondary">清除</button>
+          </div>
+          <span class="settings-hint" id="password-result">设置密码后，打开 HTML Studio 需输入密码。留空则无保护。</span>
+        </div>
+        <div class="settings-section">
           <h4 data-i18n="settings.about.title">About</h4>
           <button id="btn-view-changelog" class="btn-link" data-i18n="settings.about.changelog">📖 View full changelog</button>
           <p class="hint" data-i18n="settings.about.changelog_hint">A timeline view of every version with features, polish, and fixes</p>

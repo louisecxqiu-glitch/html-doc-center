@@ -1828,6 +1828,16 @@
         ? d.config.snapshot_retention_days : 7;
       retSel.value = String(ret);
     }
+    // v2.1: 密码保护状态显示
+    const pwdInput = $("#setting-password");
+    if (pwdInput) pwdInput.value = "";
+    const pwdResult = $("#password-result");
+    if (pwdResult) {
+      pwdResult.textContent = d.config.access_password
+        ? "✅ 已设置密码保护（修改密码请在下方输入新密码）"
+        : "设置密码后，打开 HTML Studio 需输入密码。留空则无保护。";
+    }
+
     $("#settings-dialog").style.display = "flex";
   }
 
@@ -2630,6 +2640,43 @@
   function bindEvents() {
     $("#btn-refresh").addEventListener("click", () => { loadTree(true); refreshCurrentFile(); });
     $("#btn-settings").addEventListener("click", openSettings);
+
+    // v2.1: 密码保护 — 保存/清除
+    const btnSavePwd = $("#btn-save-password");
+    if (btnSavePwd) {
+      btnSavePwd.addEventListener("click", async () => {
+        const pwd = $("#setting-password").value;
+        try {
+          const r = await fetch(API.config, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ access_password: pwd }),
+          });
+          const d = await r.json();
+          if (!d.ok) throw new Error(d.error);
+          $("#password-result").textContent = pwd ? "✅ 密码已设置，立即生效" : "✅ 密码已清除";
+          $("#setting-password").value = "";
+          toast(pwd ? "密码已设置" : "密码已清除", "success");
+        } catch (e) { toast("保存失败", "error", e.message); }
+      });
+    }
+    const btnClearPwd = $("#btn-clear-password");
+    if (btnClearPwd) {
+      btnClearPwd.addEventListener("click", async () => {
+        try {
+          const r = await fetch(API.config, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ access_password: "" }),
+          });
+          const d = await r.json();
+          if (!d.ok) throw new Error(d.error);
+          $("#password-result").textContent = "✅ 密码已清除";
+          $("#setting-password").value = "";
+          toast("密码已清除", "success");
+        } catch (e) { toast("清除失败", "error", e.message); }
+      });
+    }
 
     // v1.10.10: 主题切换按钮（auto → light → dark → auto）
     const btnTheme = $("#btn-theme");
