@@ -3174,8 +3174,9 @@
     let html = "<!DOCTYPE html>\n" + clone.outerHTML;
     html = html.replace(/<!-- html-doc-center:saver-injected -->\s*/g, "");
 
-    // 3.5 密码保护 — 弹自定义模态框（带"生成密码"按钮）
-    const sharePassword = await new Promise((resolve) => {
+    // 3.5 选择分享方式 + 密码设置 — 弹自定义模态框
+    const SHARE_SERVER = "http://21.6.56.139:8080"; // 分享服务地址
+    const shareChoice = await new Promise((resolve) => {
       const overlay = document.createElement("div");
       overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483647;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;";
       const genPwd = () => {
@@ -3184,36 +3185,79 @@
         for (let i = 0; i < 12; i++) p += chars[Math.floor(Math.random() * chars.length)];
         return p;
       };
-      overlay.innerHTML = '<div style="background:#1a2028;padding:32px 36px;border-radius:12px;border:1px solid #2d3845;min-width:380px;color:#e8eef5;font:14px -apple-system,sans-serif;">'
-        + '<h3 style="margin:0 0 4px;">🔒 分享密码</h3>'
-        + '<p style="margin:0 0 16px;color:#6b7a8c;font-size:12px;">对方打开 HTML 需输入密码才能查看。留空则无密码保护。</p>'
+      overlay.innerHTML = '<div style="background:#1a2028;padding:32px 36px;border-radius:12px;border:1px solid #2d3845;min-width:400px;color:#e8eef5;font:14px -apple-system,sans-serif;">'
+        + '<h3 style="margin:0 0 4px;">📦 分享</h3>'
+        + '<p style="margin:0 0 16px;color:#6b7a8c;font-size:12px;">选择分享方式</p>'
+        // 分享方式
         + '<div style="display:flex;gap:8px;margin-bottom:16px;">'
-        + '<input type="text" id="_share_pwd" placeholder="密码" style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid #2d3845;background:#0f1419;color:#e8eef5;font-size:13px;">'
-        + '<button id="_gen_pwd" style="padding:8px 14px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#4a9eff;cursor:pointer;font-size:12px;white-space:nowrap;">🎲 生成密码</button>'
+        + '<button id="_mode_file" style="flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:#4a9eff;color:#fff;cursor:pointer;font-size:13px;">📄 离线文件</button>'
+        + '<button id="_mode_link" style="flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;font-size:13px;">🔗 在线链接</button>'
         + '</div>'
+        // 密码
+        + '<div style="margin-bottom:16px;">'
+        + '<label style="display:block;margin-bottom:4px;color:#6b7a8c;font-size:12px;">密码保护（可选）</label>'
+        + '<div style="display:flex;gap:8px;">'
+        + '<input type="text" id="_share_pwd" placeholder="留空则无密码" style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid #2d3845;background:#0f1419;color:#e8eef5;font-size:13px;">'
+        + '<button id="_gen_pwd" style="padding:8px 14px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#4a9eff;cursor:pointer;font-size:12px;white-space:nowrap;">🎲 生成</button>'
+        + '</div></div>'
+        // 按钮
         + '<div style="display:flex;gap:8px;justify-content:flex-end;">'
         + '<button id="_cancel" style="padding:8px 18px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;">取消</button>'
-        + '<button id="_ok" style="padding:8px 18px;border-radius:6px;border:none;background:#4a9eff;color:#fff;cursor:pointer;">确认</button>'
+        + '<button id="_ok" style="padding:8px 18px;border-radius:6px;border:none;background:#4a9eff;color:#fff;cursor:pointer;">确认分享</button>'
         + '</div></div>';
       document.body.appendChild(overlay);
+      let mode = "file";
       const input = overlay.querySelector("#_share_pwd");
       const ok = overlay.querySelector("#_ok");
       const cancel = overlay.querySelector("#_cancel");
       const gen = overlay.querySelector("#_gen_pwd");
+      const btnFile = overlay.querySelector("#_mode_file");
+      const btnLink = overlay.querySelector("#_mode_link");
+      btnFile.onclick = () => { mode = "file"; btnFile.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:#4a9eff;color:#fff;cursor:pointer;font-size:13px;"; btnLink.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;font-size:13px;"; };
+      btnLink.onclick = () => { mode = "link"; btnLink.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:#4a9eff;color:#fff;cursor:pointer;font-size:13px;"; btnFile.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;font-size:13px;"; };
       input.focus();
-      ok.onclick = () => { const v = input.value; overlay.remove(); resolve(v); };
+      ok.onclick = () => { const v = input.value; overlay.remove(); resolve({ mode, password: v }); };
       cancel.onclick = () => { overlay.remove(); resolve(null); };
       gen.onclick = () => { input.value = genPwd(); input.select(); };
       input.onkeydown = (e) => { if (e.key === "Enter") ok.click(); if (e.key === "Escape") cancel.click(); };
     });
-    if (sharePassword === null) { setStatus("已保存", ""); toast("已取消分享", "info"); return; }
-    if (sharePassword) {
-      // hash
-      let hash = 0;
-      for (let i = 0; i < sharePassword.length; i++) {
-        hash = ((hash << 5) - hash + sharePassword.charCodeAt(i)) | 0;
+    if (!shareChoice) { setStatus("已保存", ""); toast("已取消分享", "info"); return; }
+
+    // 3.6 如果选了在线链接 — 上传到分享服务
+    if (shareChoice.mode === "link") {
+      setStatus("正在上传到分享服务…", "dirty");
+      toast("📤 正在生成在线链接…");
+      try {
+        const resp = await fetch(SHARE_SERVER + "/api/share", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ html: html, password: shareChoice.password }),
+        });
+        const d = await resp.json();
+        if (d.ok) {
+          // 复制到剪贴板
+          try { await navigator.clipboard.writeText(d.url); } catch (_) {}
+          setStatus("已保存", "");
+          const pwdHint = shareChoice.password ? "（含密码保护）" : "";
+          const copyHint = "链接已复制到剪贴板";
+          toast(`✅ 在线链接已生成${pwdHint}\n${d.url}\n${copyHint} · ${d.expires_in}后过期`, "success", 10000);
+          return;
+        } else {
+          throw new Error(d.error || "上传失败");
+        }
+      } catch (e) {
+        setStatus("已保存", "");
+        toast("⚠️ 在线链接生成失败，改为下载离线文件", "warning", e.message);
+        // 降级到离线文件
       }
-      // 外置验证函数 — 避免 HTML 属性内联 onclick 的转义陷阱
+    }
+
+    // 3.7 离线文件 — 密码保护（注入 JS 拦截）
+    if (shareChoice.password) {
+      let hash = 0;
+      for (let i = 0; i < shareChoice.password.length; i++) {
+        hash = ((hash << 5) - hash + shareChoice.password.charCodeAt(i)) | 0;
+      }
       const authScript = '<script>(function(){var _h=' + hash + ';var _body=document.body.innerHTML;'
         + 'document.body.innerHTML="<div style=\\"display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;margin:0;background:#0f1419;font-family:-apple-system,sans-serif;\\"><div style=\\"background:#1a2028;padding:36px 40px;border-radius:12px;border:1px solid #2d3845;min-width:300px;text-align:center;\\"><h2 style=\\"color:#e8eef5;margin:0 0 8px;\\">🔒 受保护内容</h2><p style=\\"color:#6b7a8c;font-size:13px;margin:0 0 16px;\\">请输入密码</p><input type=\\"password\\" id=\\"_pk\\" autofocus style=\\"width:100%;padding:10px 12px;border-radius:6px;border:1px solid #2d3845;background:#0f1419;color:#e8eef5;font-size:14px;margin-bottom:12px;box-sizing:border-box;\\"><button id=\\"_pkb\\" style=\\"width:100%;padding:10px;border-radius:6px;border:none;background:#4a9eff;color:#fff;font-size:14px;cursor:pointer;\\">进入</button></div></div>";'
         + 'window._checkPwd=function(){var v=document.getElementById("_pk").value;var h=0;for(var i=0;i<v.length;i++){h=((h<<5)-h+v.charCodeAt(i))|0;}if(h===_h){document.body.innerHTML=_body;}else{document.getElementById("_pk").value="";document.getElementById("_pk").placeholder="密码错误，重新输入";}};'
