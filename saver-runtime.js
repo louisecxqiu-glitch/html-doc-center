@@ -3174,6 +3174,28 @@
     let html = "<!DOCTYPE html>\n" + clone.outerHTML;
     html = html.replace(/<!-- html-doc-center:saver-injected -->\s*/g, "");
 
+    // 3.5 密码保护 — 询问用户是否设密码
+    const sharePassword = prompt("设置分享密码（留空则无密码保护，任何人都能打开）：");
+    if (sharePassword === null) { setStatus("已保存", ""); toast("已取消分享", "info"); return; }
+    if (sharePassword) {
+      // 用简单 hash 生成 token，嵌入 HTML 的拦截脚本
+      // 注：这是前端级保护（防止随便打开查看），非加密级安全
+      let hash = 0;
+      for (let i = 0; i < sharePassword.length; i++) {
+        hash = ((hash << 5) - hash + sharePassword.charCodeAt(i)) | 0;
+      }
+      const authScript = `<script>
+(function(){
+  var _h=${hash};
+  var _body=document.body.innerHTML;
+  document.body.innerHTML='<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;margin:0;background:#0f1419;font-family:-apple-system,sans-serif;"><div style="background:#1a2028;padding:36px 40px;border-radius:12px;border:1px solid #2d3845;min-width:300px;text-align:center;"><h2 style="color:#e8eef5;margin:0 0 8px;">🔒 受保护内容</h2><p style="color:#6b7a8c;font-size:13px;margin:0 0 16px;">请输入密码</p><input type="password" id="_pk" autofocus style="width:100%;padding:10px 12px;border-radius:6px;border:1px solid #2d3845;background:#0f1419;color:#e8eef5;font-size:14px;margin-bottom:12px;box-sizing:border-box;"><button onclick="var v=document.getElementById(\\x27_pk\\x27).value;var h=0;for(var i=0;i<v.length;i++){h=((h<<5)-h+v.charCodeAt(i))|0;}if(h===_h){document.body.innerHTML=_body;}else{document.getElementById(\\x27_pk\\x27).value=\\x27\\x27;document.getElementById(\\x27_pk\\x27).placeholder=\\x27密码错误，重新输入\\x27;}" style="width:100%;padding:10px;border-radius:6px;border:none;background:#4a9eff;color:#fff;font-size:14px;cursor:pointer;">进入</button></div></div>';
+  document.getElementById('_pk').addEventListener('keydown',function(e){if(e.key==='Enter'){e.target.nextElementSibling.click();}});
+})();
+</script>`;
+      // 注入到 </body> 前
+      html = html.replace("</body>", authScript + "\n</body>");
+    }
+
     // 4. 通过后端 API 保存到 Downloads（知道确切路径），失败降级浏览器下载
     const origName = (CTX.filePath || "document").split(/[\/\\]/).pop().replace(/\.\w+$/, "");
     const failedHint = failed > 0 ? `（${failed} 个跨域资源保留原链接）` : "";
