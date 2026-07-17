@@ -624,6 +624,118 @@ async def handle_browse(request):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# v1.19: _dropbox/ 拖入副本管理
+# ─────────────────────────────────────────────────────────────────────────────
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
+ALLOWED_UPLOAD_EXT = {".html", ".htm", ".md"}
+DROPBOX_MAX_AGE_DAYS = 7
+
+
+def get_dropbox_dir() -> Path:
+    """Return _dropbox/ directory path under server CWD. Create if not exists."""
+    dropbox = Path.cwd() / "_dropbox"
+    dropbox.mkdir(exist_ok=True)
+    return dropbox
+
+
+def cleanup_dropbox():
+    """Clean up _dropbox/ files older than DROPBOX_MAX_AGE_DAYS. Non-fatal on errors."""
+    try:
+        dropbox = get_dropbox_dir()
+        cutoff = time.time() - DROPBOX_MAX_AGE_DAYS * 86400
+        for entry in dropbox.iterdir():
+            try:
+                if entry.is_file() and entry.stat().st_mtime < cutoff:
+                    entry.unlink()
+            except Exception as e:
+                _log(f"⚠️ _dropbox/ cleanup: failed to delete {entry}: {e}")
+    except Exception as e:
+        _log(f"⚠️ _dropbox/ cleanup failed (non-fatal): {e}")
+
+
+async def handle_drag_upload(request):
+    """POST /api/drag-upload - 接收拖入的文件，写到 _dropbox/，返回 abs_path。"""
+    try:
+        reader = await request.multipart()
+        file_content = None
+        file_filename = None
+        filename_field = None
+        async for field in reader:
+            if field.name == "file":
+                # 在遍历时立即读内容，避免 field 被消费后无法读取
+                file_content = await field.read(decode=False)
+                file_filename = field.filename
+            elif field.name == "filename":
+                filename_field = (await field.text()).strip()
+
+        if file_content is None:
+            return web.json_response({"ok": False, "error": "missing file field"}, status=400)
+        if not filename_field:
+            filename_field = file_filename or "unnamed.html"
+
+        ext = Path(filename_field).suffix.lower()
+        if ext not in ALLOWED_UPLOAD_EXT:
+            return web.json_response(
+                {"ok": False, "error": f"unsupported file type: {ext}, only .html/.htm/.md allowed"},
+                status=400,
+            )
+
+        if len(file_content) > MAX_UPLOAD_SIZE:
+            return web.json_response(
+                {"ok": False, "error": f"file too large ({len(file_content)} bytes > {MAX_UPLOAD_SIZE} bytes)"},
+                status=413,
+            )
+
+        dropbox = get_dropbox_dir()
+        dest = dropbox / filename_field
+        if dest.exists():
+            stem = Path(filename_field).stem
+            timestamp = time.strftime("%Y%m%d-%H%M%S")
+            dest = dropbox / f"{stem}-{timestamp}{ext}"
+        dest.write_bytes(file_content)
+
+        return web.json_response({
+            "ok": True,
+            "abs_path": str(dest),
+            "name": dest.name,
+            "type": "md" if ext == ".md" else "html",
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_save_as(request):
+    """POST /api/save-as - 复制文件到新位置（拖入副本另存为）。"""
+    try:
+        body = await request.json()
+        src_path = body.get("src_path", "")
+        dest_path = body.get("dest_path", "")
+        overwrite = body.get("overwrite", False)
+        if not src_path or not dest_path:
+            return web.json_response({"ok": False, "error": "missing src_path or dest_path"}, status=400)
+
+        src = Path(src_path).expanduser().resolve()
+        dest = Path(dest_path).expanduser().resolve()
+
+        if not src.exists():
+            return web.json_response({"ok": False, "error": "source_not_found"}, status=404)
+        if dest.exists() and not overwrite:
+            return web.json_response({"ok": False, "error": "target_exists"}, status=409)
+        if dest.exists() and overwrite:
+            dest.unlink()
+
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            shutil.copy2(src, dest)  # copy2 保留 mtime
+        except PermissionError:
+            return web.json_response({"ok": False, "error": "permission_denied"}, status=403)
+
+        return web.json_response({"ok": True, "dest_path": str(dest)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_config_get(request):
     """GET /api/config"""
     cfg = request.app["config"]
@@ -1744,6 +1856,8 @@ async def handle_sparsify_snapshots(request):
 def create_app() -> web.Application:
     app = web.Application(client_max_size=100 * 1024 * 1024)  # 允许 100MB 的 HTML POST
     app["config"] = load_config()
+    # v1.19: 启动时清理 _dropbox/ 旧文件（7 天前）
+    cleanup_dropbox()
 
     app.router.add_get("/", handle_index)
     app.router.add_get("/static/{fname:.+}", handle_static)
@@ -1768,6 +1882,9 @@ def create_app() -> web.Application:
     app.router.add_post("/api/reveal", handle_reveal)
     app.router.add_get("/changelog", handle_changelog)
     app.router.add_get("/api/changelog-raw", handle_changelog_raw)  # v1.7.3
+    # v1.19: 拖入副本 + 另存为
+    app.router.add_post("/api/drag-upload", handle_drag_upload)
+    app.router.add_post("/api/save-as", handle_save_as)
     # v1.6 新增：收藏
     app.router.add_get("/api/favorites", handle_favorites_get)
     app.router.add_post("/api/favorites", handle_favorites_post)
