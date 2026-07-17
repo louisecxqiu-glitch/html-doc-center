@@ -8,6 +8,29 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## v1.18.4 — i18n Hotfix · 英文翻译加载修复
+
+*2026-07-17 · v1.18.4*
+
+**EN**
+- 🐛 **English locale SyntaxError hotfix** — `en.js` line 91 `preview.temporary` had an unescaped apostrophe in `won't`, which closed the outer single-quote string early and threw a JS SyntaxError. As a result `window.LOCALE_EN` was never assigned, the i18n fallback chain (`cur[key] || fb[key] || key`) ended up returning the raw key string, and the whole UI showed literal keys like `header.label.files` / `sidebar.search.placeholder` / `sidebar.tab.tree` instead of translations.
+  - **Root cause**: unescaped apostrophe in `won't` inside a single-quoted JS string.
+  - **Fix**: escape as `won\'t`; also bump cache-bust query `?v=1.18.2 → ?v=1.18.4` on `index.html` (5 static assets) so browsers bypass stale cache.
+  - **Verification**: `node --check en.js` parses cleanly; vm-simulated `window.LOCALE_EN` returns 326 keys, and the 4 keys highlighted in the bug report (`header.label.files` / `sidebar.search.placeholder` / `sidebar.tab.tree` / `sidebar.tab.favorites` / `sidebar.tab.recent`) all resolve to their English values.
+
+**中文**
+- 🐛 **英文 locale 语法错误热修** — `en.js` 第 91 行 `preview.temporary` 字符串里的英文撇号 `won't` 没转义，提前关闭了外层单引号字符串并抛 JS SyntaxError。导致 `window.LOCALE_EN` 未赋值，i18n fallback chain (`cur[key] || fb[key] || key`) 最终返回 key 字符串本身，整个界面显示原文 key（如 `header.label.files` / `sidebar.search.placeholder` / `sidebar.tab.tree`），所有英文翻译失效。
+  - **根因**：单引号字符串里的 `won't` 撇号未转义。
+  - **解法**：转义为 `won\'t`；并把 `index.html` 5 个静态资源的 cache-bust query 从 `?v=1.18.2` bump 到 `?v=1.18.4`，强制浏览器绕过旧缓存。
+  - **验证**：`node --check en.js` 通过；vm 模拟 `window.LOCALE_EN` 返回 326 个 key，截图红圈里的 4 个 key 全部能取到正确英文值。
+
+**👤 用户故事**
+- 场景：在英文模式下打开 DocCenter，发现顶部、搜索框、侧栏 Tab 全是 `header.label.files` / `sidebar.search.placeholder` 这种原文 key。
+- 之前：i18n 整个废掉，UI 完全不可读。
+- 现在：英文翻译恢复正常，切换 EN ↔ 中文也都正常工作。
+
+---
+
 ## v1.18.3 — Windows Compatibility Hardening · Windows 兼容性加固
 
 *2026-07-16 · v1.18.3*
