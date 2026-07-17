@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HotPage 产品路线图 · AI时代的HTML产物管理 · 2026-07-17</title>
+<style>
+  :root{
+    --bg:#0f1419; --card:#1a2028; --card2:#222b36; --border:#2d3845;
+    --text:#e8eef5; --text2:#a8b5c4; --text3:#6b7a8c;
+    --blue:#4a9eff; --green:#34d399; --red:#f87171; --orange:#fb923c; --yellow:#fbbf24; --purple:#a78bfa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.8;font-size:15px}
+  .wrap{max-width:1100px;margin:0 auto;padding:48px 32px 80px}
+  h1{font-size:32px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px}
+  h2{font-size:22px;font-weight:700;margin:48px 0 16px;padding-bottom:10px;border-bottom:2px solid var(--orange);color:var(--text)}
+  h3{font-size:17px;font-weight:700;margin:28px 0 12px;color:var(--orange)}
+  h4{font-size:15px;font-weight:700;margin:20px 0 8px;color:var(--text2)}
+  p{margin:10px 0;color:var(--text2)}
+  .meta{color:var(--text3);font-size:13px;margin-bottom:32px}
+  .meta span{margin-right:16px}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+  th{background:var(--card2);color:var(--text);font-weight:600;text-align:left;padding:10px 12px;border:1px solid var(--border)}
+  td{padding:9px 12px;border:1px solid var(--border);color:var(--text2);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:16px 0}
+  .card.orange{border-left:3px solid var(--orange)}
+  .card.blue{border-left:3px solid var(--blue)}
+  .card.green{border-left:3px solid var(--green)}
+  .card.red{border-left:3px solid var(--red)}
+  .card.purple{border-left:3px solid var(--purple)}
+  .pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+  .pill-p0{background:rgba(248,113,113,0.18);color:var(--red)}
+  .pill-p1{background:rgba(251,191,36,0.18);color:var(--yellow)}
+  .pill-p2{background:rgba(74,158,255,0.18);color:var(--blue)}
+  .pill-p3{background:rgba(52,211,153,0.18);color:var(--green)}
+  .pill-free{background:rgba(52,211,153,0.15);color:var(--green)}
+  .pill-pro{background:rgba(74,158,255,0.15);color:var(--blue)}
+  .pill-team{background:rgba(251,146,60,0.15);color:var(--orange)}
+  .pill-enter{background:rgba(248,113,113,0.15);color:var(--red)}
+  ul,ol{margin:10px 0 10px 22px;color:var(--text2)}
+  li{margin:5px 0}
+  strong{color:var(--text)}
+  code{background:var(--card2);padding:1px 6px;border-radius:4px;font-size:13px;color:var(--orange);font-family:"SF Mono",Menlo,monospace}
+  .quote{border-left:3px solid var(--yellow);padding:10px 18px;margin:16px 0;background:rgba(251,191,36,0.05);color:var(--text2);font-style:italic}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:16px 0}
+  .toc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 28px;margin:24px 0}
+  .toc a{color:var(--orange);text-decoration:none;display:block;padding:3px 0;font-size:14px}
+  .toc a:hover{text-decoration:underline}
+  .foot{color:var(--text3);font-size:12px;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+  .warn{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13px;color:var(--text2)}
+  .ok{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.3);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13px;color:var(--text2)}
+  .master{font-size:12px;color:var(--purple);font-weight:600}
+  .task-num{display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;background:var(--orange);color:#0f1419;font-weight:800;font-size:13px;margin-right:8px}
+  @media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}.wrap{padding:32px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>HotPage 产品路线图</h1>
+<div class="meta">
+  <span>📅 2026-07-17</span>
+  <span>👤 路易乔布斯（产品经理）</span>
+  <span>🧠 蒸馏大师团：Christensen(JTBD) · Musk(第一性原理) · Krug(别让我思考) · Moore(跨越鸿沟) · Andreessen(PMF)</span>
+  <span>📋 从用户需求出发 → 倒推功能 → 排序 → 商业化</span>
+</div>
+
+<div class="card orange">
+  <strong>起点转变</strong>：不从"HotPage是什么"出发，而从<strong>"AI时代的用户需要什么"</strong>出发。<br><br>
+  产品经理的灵魂拷问：用户为什么要用你的产品？不是因为你的产品有什么功能，而是因为你的产品能帮他<strong>完成什么任务</strong>。AI时代的内容生产链路已经断裂——AI工具生成HTML产物后，用户在"查看→微调→版本管理→分享→协作"这一段没有顺手的工具。HotPage的机会在这里。
+</div>
+
+<div class="toc">
+  <strong>目录</strong>
+  <a href="#s1">1. AI时代用户的8个真实任务（JTBD）</a>
+  <a href="#s2">2. 第一性原理：内容生产链路的断裂</a>
+  <a href="#s3">3. 竞品空白矩阵：用户任务 × 现有方案</a>
+  <a href="#s4">4. 功能清单：从用户任务倒推（10个功能）</a>
+  <a href="#s5">5. 优先级排序：价值/成本矩阵</a>
+  <a href="#s6">6. 商业化路径：免费→Pro→Team→Enterprise</a>
+  <a href="#s7">7. 路线图：Phase 1/2/3</a>
+  <a href="#s8">8. 立即执行清单</a>
+</div>
+
+<!-- ============ 1. JTBD ============ -->
+<h2 id="s1">1. AI时代用户的8个真实任务</h2>
+<p><span class="master">👓 Christensen · Jobs-to-be-Done</span> — 用户不"买"产品，用户"雇佣"产品来完成任务。</p>
+
+<p>AI时代的内容生产链路：<code>人 → AI工具 → 生成HTML产物 → ??? → 最终交付</code>。问号这段是断裂的——用户有8个任务没人帮他完成：</p>
+
+<table>
+  <tbody><tr><th width="6%">#</th><th width="22%">任务（用户内心独白）</th><th width="22%">当前怎么解决</th><th width="14%">痛点强度</th><th>谁在受苦</th></tr>
+  <tr><td><span class="task-num">1</span></td><td>"AI生成了一份报告，我要先看看它做得怎么样"</td><td>双击HTML文件，一个个打开</td><td><span class="pill pill-p1">中</span></td><td>所有AI工具用户</td></tr>
+  <tr><td><span class="task-num">2</span></td><td>"报告里有几个错字和数据要改，不想再让AI重新生成等半天"</td><td>回AI重新生成（等5分钟），或自己改源码（不会）</td><td><span class="pill pill-p0">高</span></td><td>非技术用户尤其痛苦</td></tr>
+  <tr><td><span class="task-num">3</span></td><td>"AI生成了5个版本，我想对比哪个最好"</td><td>手动重命名+逐个打开对比，靠脑子记差异</td><td><span class="pill pill-p0">高</span></td><td>频繁用AI生成的人</td></tr>
+  <tr><td><span class="task-num">4</span></td><td>"我要把报告发给老板/客户看"</td><td>导出PDF发微信，或发HTML对方打不开</td><td><span class="pill pill-p0">高</span></td><td>所有需要交付的人</td></tr>
+  <tr><td><span class="task-num">5</span></td><td>"团队要一起审阅这份AI报告"</td><td>微信群里截图讨论</td><td><span class="pill pill-p2">低</span></td><td>团队协作场景</td></tr>
+  <tr><td><span class="task-num">6</span></td><td>"我在公司电脑做的，想回家继续改"</td><td>U盘拷贝/发自己微信</td><td><span class="pill pill-p1">中</span></td><td>多设备用户</td></tr>
+  <tr><td><span class="task-num">7</span></td><td>"我不会编程，不想装Python敲命令行"</td><td>找技术同事帮忙装，或直接放弃</td><td><span class="pill pill-p0">高</span></td><td>非技术用户（主流市场）</td></tr>
+  <tr><td><span class="task-num">8</span></td><td>"这是公司数据，不想传到陌生服务器上"</td><td>只能本地操作，不敢用云工具</td><td><span class="pill pill-p1">中</span></td><td>企业/合规敏感用户</td></tr>
+</tbody></table>
+
+<!-- ============ 2. 第一性原理 ============ -->
+<h2 id="s2">2. 第一性原理：内容生产链路的断裂</h2>
+<p><span class="master">⚡ Musk · 第一性原理</span> — 从基本事实出发重新推导，质疑所有"理所当然"的假设。</p>
+
+<div class="card purple">
+  <h4>传统时代 vs AI时代的内容生产</h4>
+  <p><strong>传统时代</strong>：<code>人 → 工具 → 内容</code>（人用工具从零创造内容）</p>
+  <p><strong>AI时代</strong>：<code>人 → AI → 内容 → 人 → 精修 → 最终内容</code>（AI生成初稿，人审阅+精修）</p>
+  <p><strong>关键变化</strong>：内容的"初稿"由AI生成，人的角色从<strong>"创造者"变成"审阅者+精修者"</strong>。</p>
+</div>
+
+<h4>三个推论</h4>
+<div class="grid3">
+  <div class="card blue">
+    <strong>推论1</strong><br>
+    不需要强大的"从零创作"能力。StackEdit的MD写作路径是上个时代的——AI时代用户不从空白页开始。
+  </div>
+  <div class="card green">
+    <strong>推论2</strong><br>
+    需要"快速查看+轻量修改+版本管理+分享"的完整链路。这是AI产物的生命周期管理。
+  </div>
+  <div class="card orange">
+    <strong>推论3</strong><br>
+    AI会反复生成，版本管理是<strong>核心需求而非feature</strong>。这是HotPage与所有竞品的根本差异——drawio/StackEdit都没有。
+  </div>
+</div>
+
+<div class="quote">
+  <strong>洞察</strong>：HotPage不是"HTML编辑器"，是"AI产物生命周期管理工具"。编辑只是其中一个环节。定位的转变决定了功能优先级——版本管理和分享比编辑器增强更重要。
+</div>
+
+<!-- ============ 3. 竞品空白矩阵 ============ -->
+<h2 id="s3">3. 竞品空白矩阵：用户任务 × 现有方案</h2>
+<p><span class="master">🎯 Andreessen · Product-Market Fit</span> — 什么功能组合能击中市场需求？看竞品留白在哪。</p>
+
+<table>
+  <tbody><tr><th width="8%">用户任务</th><th width="16%">浏览器(双击文件)</th><th width="16%">drawio</th><th width="16%">StackEdit</th><th width="16%">HotPage当前</th><th>空白机会</th></tr>
+  <tr><td>T1 查看</td><td>✅ 能看</td><td>❌ 不看HTML</td><td>❌ 不看HTML</td><td>✅ 目录树浏览</td><td>已满足</td></tr>
+  <tr><td>T2 微调</td><td>❌ 不能改</td><td>❌ 不编辑HTML</td><td>⚠️ 只改MD不改HTML</td><td>✅ contentEditable</td><td>已满足</td></tr>
+  <tr><td>T3 版本对比</td><td>❌</td><td>❌</td><td>❌</td><td>✅ 快照+diff</td><td><strong>HotPage独占</strong></td></tr>
+  <tr><td>T4 分享</td><td>⚠️ 对方打不开</td><td>✅ 在线链接</td><td>✅ 发布到博客</td><td>⚠️ 只有PDF</td><td><strong>空白！</strong></td></tr>
+  <tr><td>T5 协作</td><td>❌</td><td>✅ 实时协作</td><td>✅ 冲突合并</td><td>⚠️ 单人批注</td><td>空白</td></tr>
+  <tr><td>T6 跨设备</td><td>❌</td><td>✅ 云端</td><td>✅ 多云同步</td><td>❌ 纯本地</td><td>空白</td></tr>
+  <tr><td>T7 零门槛</td><td>✅ 双击即用</td><td>✅ 打开网址</td><td>✅ 打开网址</td><td>❌ 需Python</td><td><strong>空白！</strong></td></tr>
+  <tr><td>T8 隐私</td><td>✅ 本地</td><td>⚠️ 数据上云</td><td>⚠️ 数据上云</td><td>✅ 本地优先</td><td>HotPage独占</td></tr>
+</tbody></table>
+
+<div class="ok">
+  <strong>PMF信号</strong>：T3（版本对比）和T8（隐私）是HotPage独占的——这两个任务是竞品完全不覆盖的。<strong>但T4（分享）和T7（零门槛）是空白且高频</strong>——这是获客瓶颈，也是增长杠杆。
+</div>
+
+<!-- ============ 4. 功能清单 ============ -->
+<h2 id="s4">4. 功能清单：从用户任务倒推</h2>
+<p><span class="master">🧱 Krug · Don't Make Me Think</span> + <span class="master">🌊 Moore · Crossing the Chasm</span> — 获客层（让用户用起来）→ 留存层（让用户留下来）→ 商业化层（让用户付费）。</p>
+
+<h3>第一层：获客层 — 让用户能用起来</h3>
+<div class="card red">
+  <p><strong>解决任务T7（零门槛）+ T4（分享）</strong>。没有这一层，非技术用户根本进不来。</p>
+  <table>
+    <tbody><tr><th width="6%">#</th><th width="20%">功能</th><th width="14%">解决任务</th><th>理由</th></tr>
+    <tr><td>F1</td><td><strong>单文件可执行版</strong>（PyInstaller打包）</td><td>T7 零门槛</td><td>当前获客第一瓶颈是"需Python+命令行"。PyInstaller把server.py打包成.app/.exe，双击即用。改动最小（server.py几乎不改），见效最快。drawio的桌面版就是这个逻辑。</td></tr>
+    <tr><td>F2</td><td><strong>单文件离线分享</strong>（HTML+依赖base64内嵌）</td><td>T4 分享</td><td>当前"发HTML对方打不开"是高频痛点。把HTML+CSS+JS+图片全部base64内嵌成一个自包含文件，对方双击即看。HotPage已有base64图片能力，扩展到全资源即可。</td></tr>
+    <tr><td>F3</td><td><strong>PWA在线版</strong>（公开网址零安装）</td><td>T7 零门槛 + T4 分享</td><td>终极获客入口——打开网址即用，无需安装。用File System Access API替代Python后端。这是drawio最大的获客渠道（app.diagrams.net打开即用）。成本高但杠杆最大。</td></tr>
+  </tbody></table>
+</div>
+
+<h3>第二层：留存层 — 让用户留下来</h3>
+<div class="card orange">
+  <p><strong>解决任务T3（版本对比进阶）+ T2（微调进阶）+ T4（分享进阶）</strong>。用户用起来后，这些功能让他不舍得走。</p>
+  <table>
+    <tbody><tr><th width="6%">#</th><th width="20%">功能</th><th width="14%">解决任务</th><th>理由</th></tr>
+    <tr><td>F4</td><td><strong>版本对比视图</strong>（并排diff+高亮变化）</td><td>T3 版本对比</td><td>HotPage已有行级diff数据（difflib），但只在时间线里显示文本diff。加一个<strong>视觉对比</strong>——左右并排渲染两个版本，高亮变化区域。这是HotPage独占能力的可视化升级，让"AI反复生成"的用户能直观看到差异。</td></tr>
+    <tr><td>F5</td><td><strong>AI辅助编辑</strong>（选中段落→AI重写/美化/翻译）</td><td>T2 微调进阶</td><td>当前微调是手动改字。加"选中段落→右键→AI重写/翻译/润色"——把AI能力从"外部生成"延伸到"内部精修"。这是HotPage从"编辑器"升级为"AI原生工作台"的关键。差异化于drawio/StackEdit（它们没有AI）。</td></tr>
+    <tr><td>F6</td><td><strong>在线分享服务</strong>（短链分享，接收方无需安装）</td><td>T4 分享进阶</td><td>F2是离线分享（发文件），F6是在线分享（发链接）。部署share.hotpage.app/{id}，上传HTML生成短链，对方打开即看。类似Carbon的分享模式。这是从"本地工具"到"有网络效应的产品"的关键一步。</td></tr>
+  </tbody></table>
+</div>
+
+<h3>第三层：商业化层 — 让用户付费</h3>
+<div class="card blue">
+  <p><strong>解决任务T5（协作）+ T6（跨设备）+ T8（企业隐私）</strong>。这些是企业/团队才会付费的。</p>
+  <table>
+    <tbody><tr><th width="6%">#</th><th width="20%">功能</th><th width="14%">解决任务</th><th>理由</th></tr>
+    <tr><td>F7</td><td><strong>跨设备同步</strong>（可选云同步）</td><td>T6 跨设备</td><td>本地优先是HotPage的隐私优势，但跨设备是真实需求。解法：<strong>可选</strong>开启云同步（用户主动选择），数据加密后同步。免费用户不同步，Pro用户可同步。借鉴StackEdit的多云策略但不强制。</td></tr>
+    <tr><td>F8</td><td><strong>团队协作</strong>（多人批注+冲突检测）</td><td>T5 协作</td><td>当前只有单人划词批注。升级为：多人可加批注+@提及+批注状态（待处理/已解决）。不做实时协作（工程量太大且偏离定位），做<strong>异步审阅协作</strong>——更贴合"AI报告审阅"场景。</td></tr>
+    <tr><td>F9</td><td><strong>企业自托管版</strong></td><td>T8 企业隐私</td><td>企业版：自托管部署+SSO+审计日志+权限管理。面向有合规要求的企业。drawio的自托管模式证明这个市场存在。这是营收天花板最高的功能。</td></tr>
+    <tr><td>F10</td><td><strong>模板/提示词市场</strong></td><td>新需求</td><td>AI生成HTML需要好的提示词/模板。社区贡献模板（如"季度报告模板""数据仪表盘模板"），用户一键使用。这是生态功能，有网络效应。长期可成为第二增长曲线。</td></tr>
+  </tbody></table>
+</div>
+
+<!-- ============ 5. 优先级排序 ============ -->
+<h2 id="s5">5. 优先级排序：价值/成本矩阵</h2>
+<p><span class="master">📊 Andreessen · PMF</span> — 用"用户价值 × 实现成本"排序，优先做高价值低成本的。</p>
+
+<table>
+  <tbody><tr><th width="6%">#</th><th width="18%">功能</th><th width="10%">用户价值</th><th width="10%">实现成本</th><th width="8%">优先级</th><th width="10%">估时</th><th>排序理由</th></tr>
+  <tr><td>F1</td><td>单文件可执行版</td><td>★★★★★</td><td>★★☆☆☆</td><td><span class="pill pill-p0">P0</span></td><td>1周</td><td>获客第一瓶颈，PyInstaller改动最小见效最快</td></tr>
+  <tr><td>F2</td><td>单文件离线分享</td><td>★★★★★</td><td>★★☆☆☆</td><td><span class="pill pill-p0">P0</span></td><td>3天</td><td>高频痛点，base64内嵌已有基础，成本极低</td></tr>
+  <tr><td>F4</td><td>版本对比视图</td><td>★★★★☆</td><td>★★☆☆☆</td><td><span class="pill pill-p0">P0</span></td><td>1周</td><td>已有diff数据，只需UI层，强化独占优势</td></tr>
+  <tr><td>F5</td><td>AI辅助编辑</td><td>★★★★☆</td><td>★★★☆☆</td><td><span class="pill pill-p1">P1</span></td><td>2周</td><td>差异化升级，需API集成但杠杆大</td></tr>
+  <tr><td>F6</td><td>在线分享服务</td><td>★★★☆☆</td><td>★★★☆☆</td><td><span class="pill pill-p1">P1</span></td><td>2周</td><td>网络效应起点，需后端服务</td></tr>
+  <tr><td>F3</td><td>PWA在线版</td><td>★★★★★</td><td>★★★★☆</td><td><span class="pill pill-p1">P1</span></td><td>3周</td><td>终极获客入口但成本高，需重写前端脱离Python</td></tr>
+  <tr><td>F7</td><td>跨设备同步</td><td>★★☆☆☆</td><td>★★★★☆</td><td><span class="pill pill-p2">P2</span></td><td>3周</td><td>需云后端，偏离本地定位，Pro付费功能</td></tr>
+  <tr><td>F8</td><td>团队协作</td><td>★★☆☆☆</td><td>★★★★★</td><td><span class="pill pill-p2">P2</span></td><td>4周</td><td>工程量大，做异步审阅不做实时协作</td></tr>
+  <tr><td>F9</td><td>企业自托管</td><td>★★☆☆☆</td><td>★★★★☆</td><td><span class="pill pill-p3">P3</span></td><td>3周</td><td>营收天花板最高但需销售团队，后期</td></tr>
+  <tr><td>F10</td><td>模板/提示词市场</td><td>★★☆☆☆</td><td>★★★★☆</td><td><span class="pill pill-p3">P3</span></td><td>4周</td><td>生态功能，有网络效应，长期第二曲线</td></tr>
+</tbody></table>
+
+<div class="quote">
+  <strong>排序核心逻辑</strong>：P0三件事（F1+F2+F4）共2周，解决获客瓶颈(T7)+分享痛点(T4)+强化独占优势(T3)。做完这三件，HotPage从"开发者工具"变成"可交付给非技术用户的产品"。P1三件事（F5+F6+F3）共7周，建立差异化(AI辅助)+网络效应(在线分享)+终极获客(在线版)。做完P1，HotPage具备商业化基础。
+</div>
+
+<!-- ============ 6. 商业化路径 ============ -->
+<h2 id="s6">6. 商业化路径：免费→Pro→Team→Enterprise</h2>
+<p><span class="master">🌊 Moore · Crossing the Chasm</span> — 免费版获客，Pro版留存变现，Team/Enterprise版规模化营收。</p>
+
+<div class="grid2">
+  <div class="card green">
+    <span class="pill pill-free">Free · 获客层</span>
+    <h4>$0/月</h4>
+    <ul>
+      <li>单文件可执行版（桌面）</li>
+      <li>基础编辑+版本管理（限20个快照）</li>
+      <li>单文件离线分享</li>
+      <li>本地文件管理（无限文件）</li>
+    </ul>
+    <p><strong>目标</strong>：降低门槛到零，让非技术用户也能用。这是引流入口。</p>
+  </div>
+  <div class="card blue">
+    <span class="pill pill-pro">Pro · 留存变现</span>
+    <h4>$9.9/月</h4>
+    <ul>
+      <li>无限版本快照+版本对比视图</li>
+      <li>AI辅助编辑（每月500次）</li>
+      <li>在线分享服务（无限短链）</li>
+      <li>跨设备云同步</li>
+      <li>PWA在线版</li>
+    </ul>
+    <p><strong>目标</strong>：个人用户付费。核心卖点是"AI辅助+版本对比+跨设备"。</p>
+  </div>
+  <div class="card orange">
+    <span class="pill pill-team">Team · 团队变现</span>
+    <h4>$19.9/人/月</h4>
+    <ul>
+      <li>Pro全部功能</li>
+      <li>团队协作（多人批注+@提及）</li>
+      <li>共享工作空间</li>
+      <li>权限管理</li>
+      <li>团队模板库</li>
+    </ul>
+    <p><strong>目标</strong>：小团队AI报告审阅协作。异步审阅模式，不做实时协作。</p>
+  </div>
+  <div class="card red">
+    <span class="pill pill-enter">Enterprise · 企业</span>
+    <h4>询价</h4>
+    <ul>
+      <li>Team全部功能</li>
+      <li>自托管部署</li>
+      <li>SSO+SAML</li>
+      <li>审计日志+合规报告</li>
+      <li>专属支持+SLA</li>
+    </ul>
+    <p><strong>目标</strong>：有合规要求的企业。营收天花板最高。</p>
+  </div>
+</div>
+
+<div class="ok">
+  <strong>商业化关键洞察</strong>：免费版必须足够好（能浏览+编辑+版本管理+离线分享），让用户用起来；Pro版用"AI辅助+版本对比+跨设备"让个人用户付费；Team版用"协作审阅"让团队付费。免费→Pro的转化钩子是<strong>"版本快照超限"</strong>和<strong>"AI辅助编辑次数用完"</strong>。
+</div>
+
+<!-- ============ 7. 路线图 ============ -->
+<h2 id="s7">7. 路线图：Phase 1/2/3</h2>
+
+<table>
+  <tbody><tr><th width="12%">Phase</th><th width="14%">时间</th><th width="20%">功能</th><th width="14%">里程碑</th><th>成功指标</th></tr>
+  <tr>
+    <td><strong>Phase 1</strong><br>可交付</td>
+    <td>2周</td>
+    <td>F1 单文件可执行<br>F2 单文件离线分享<br>F4 版本对比视图</td>
+    <td>非技术用户能用了</td>
+    <td>1个非技术用户独立安装+使用+分享成功</td>
+  </tr>
+  <tr>
+    <td><strong>Phase 2</strong><br>可售卖</td>
+    <td>7周</td>
+    <td>F5 AI辅助编辑<br>F6 在线分享服务<br>F3 PWA在线版</td>
+    <td>有Pro付费价值了</td>
+    <td>10个Pro付费用户</td>
+  </tr>
+  <tr>
+    <td><strong>Phase 3</strong><br>可规模化</td>
+    <td>11周</td>
+    <td>F7 跨设备同步<br>F8 团队协作<br>F9 企业自托管</td>
+    <td>有Team/Enterprise营收了</td>
+    <td>3个Team客户 + 1个Enterprise线索</td>
+  </tr>
+  <tr>
+    <td><strong>Phase 4</strong><br>生态化</td>
+    <td>后期</td>
+    <td>F10 模板/提示词市场</td>
+    <td>有网络效应了</td>
+    <td>100个社区模板</td>
+  </tr>
+</tbody></table>
+
+<!-- ============ 8. 立即执行清单 ============ -->
+<h2 id="s8">8. 立即执行清单</h2>
+
+<div class="card red">
+  <strong>Phase 1 立即执行（2周内完成）</strong>
+  <ol>
+    <li><strong>F1: PyInstaller 单文件可执行</strong>（1周）
+      <ul>
+        <li>写 build.py 打包脚本（PyInstaller --onefile server.py + web/ 资源）</li>
+        <li>Mac 签名+公证（解决"无法验证开发者"）</li>
+        <li>Windows exe 打包</li>
+        <li>GitHub Release 发布 v2.0，提供 .dmg/.exe 下载</li>
+        <li>README 首页改为"下载安装"而非"clone+pip"</li>
+      </ul>
+    </li>
+    <li><strong>F2: 单文件离线分享</strong>（3天）
+      <ul>
+        <li>saver-runtime.js 新增"导出自包含HTML"功能</li>
+        <li>把 HTML 内的 &lt;link&gt; &lt;script&gt; &lt;img&gt; 全部内联/base64</li>
+        <li>工具栏新增"📦 分享"按钮</li>
+        <li>导出后自动复制到剪贴板</li>
+      </ul>
+    </li>
+    <li><strong>F4: 版本对比视图</strong>（1周）
+      <ul>
+        <li>时间线 UI 新增"对比"按钮</li>
+        <li>左右并排 iframe 渲染两个版本</li>
+        <li>高亮变化的 DOM 区域（基于 diff 结果）</li>
+        <li>支持"当前版本 vs 任意历史版本"</li>
+      </ul>
+    </li>
+  </ol>
+</div>
+
+<div class="card orange">
+  <strong>Phase 2 规划（Phase 1 完成后启动）</strong>
+  <ol>
+    <li><strong>F5: AI辅助编辑</strong> — 选中段落→右键→AI重写/翻译/润色。接入 Claude API（用户自带 key 或平台代理）。</li>
+    <li><strong>F6: 在线分享服务</strong> — 部署 share.hotpage.app 后端（存储+短链），前端"分享"按钮上传生成链接。</li>
+    <li><strong>F3: PWA在线版</strong> — 剥离 app.js 对 Python API 的依赖，改用 File System Access API。部署 hotpage.app。</li>
+  </ol>
+</div>
+
+<div class="quote">
+  <strong>产品经理的判断</strong>：Phase 1 的三件事（F1+F2+F4）是"让产品可交付"的最低要求。做完这三件，HotPage才能从"Louis的个人工具"变成"可以给别人用的产品"。在此之前谈商业化都是空中楼阁。<br><br>
+  优先级铁律：<strong>先让用户用起来（F1），再让用户能分享（F2），最后让用户看到独特价值（F4）</strong>。这个顺序不能颠倒——用户如果装不上，后面再多功能都没用。
+</div>
+
+<div class="foot">
+  <p>本规划由路易乔布斯（产品经理）出品，蒸馏大师团提供思维框架：Christensen(JTBD) · Musk(第一性原理) · Krug(别让我思考) · Moore(跨越鸿沟) · Andreessen(PMF)。</p>
+  <p>规划日期：2026-07-17 | 基于drawio+StackEdit竞品分析 + HotPage v1.18.4代码盘点 + 用户批注反馈</p>
+  <p>下一步：用户确认 Phase 1 功能清单和排序后，立即开始实现 F1（PyInstaller打包）。</p>
+</div>
+
+</div>
+</body>
+</html>

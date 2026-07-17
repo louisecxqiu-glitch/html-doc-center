@@ -38,10 +38,15 @@ except ImportError:
 # ─────────────────────────────────────────────────────────────────────────────
 # 常量与配置
 # ─────────────────────────────────────────────────────────────────────────────
-# 动态工作区：取 server.py 所在目录的父目录（即 html-doc-center 的上一级）
-# 这样无论项目放在哪里都能正确解析相对路径
-_INSTALL_DIR = os.path.dirname(os.path.abspath(__file__))
-WORKSPACE = os.path.dirname(_INSTALL_DIR)
+# 资源路径：兼容 PyInstaller 打包（frozen）和源码运行两种模式
+if getattr(sys, 'frozen', False):
+    # PyInstaller onefile 模式：资源打包在 _MEIPASS 临时解压目录
+    _INSTALL_DIR = sys._MEIPASS
+    WORKSPACE = os.path.expanduser("~")  # 打包后默认用用户主目录
+else:
+    # 源码运行：取 server.py 所在目录的父目录
+    _INSTALL_DIR = os.path.dirname(os.path.abspath(__file__))
+    WORKSPACE = os.path.dirname(_INSTALL_DIR)
 CONFIG_DIR = os.path.expanduser("~/.codebuddy/html-doc-center")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 FAVORITES_FILE = os.path.join(CONFIG_DIR, "favorites.json")  # v1.6
@@ -1901,9 +1906,11 @@ def create_app() -> web.Application:
 
 def main():
     import argparse
+    is_frozen = getattr(sys, 'frozen', False)
     parser = argparse.ArgumentParser(description="HotPage — Local HTML workbench")
-    parser.add_argument("--open-browser", action="store_true",
-                        help="Automatically open browser after server starts")
+    parser.add_argument("--open-browser", action=argparse.BooleanOptionalAction,
+                        default=is_frozen,
+                        help="Automatically open browser after server starts (default: True in packaged mode, use --no-open-browser to disable)")
     parser.add_argument("--port", type=int, default=None,
                         help="Port to listen on (overrides config, default: 9901)")
     args = parser.parse_args()

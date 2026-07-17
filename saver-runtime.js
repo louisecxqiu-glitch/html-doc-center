@@ -176,6 +176,8 @@
       <span class="sep"></span>
       <button id="__dc_spacing" title="块间距调整（⌥ + 点击目标块）">📐 间距</button>
       <button id="__dc_annotate">💬 批注</button>
+      <span class="sep"></span>
+      <button id="__dc_share" title="导出自包含HTML（所有资源内嵌，发给别人双击即看）">📦 分享</button>
       <span class="dc-status"><span class="dc-dot" id="__dc_dot"></span><span id="__dc_status_text">已保存</span></span>
     `;
     document.body.insertBefore(bar, document.body.firstChild);
@@ -227,7 +229,7 @@
 
     // ─── 普通按钮也需 mousedown preventDefault（B/I/U/高亮/Undo/Redo/对齐/链接） ───
     bar.querySelectorAll("button").forEach(b => {
-      if (b.id === "__dc_color_btn" || b.id === "__dc_annotate" || b.id === "__dc_spacing") return;
+      if (b.id === "__dc_color_btn" || b.id === "__dc_annotate" || b.id === "__dc_spacing" || b.id === "__dc_share") return;
       b.addEventListener("mousedown", (e) => e.preventDefault());
     });
 
@@ -235,6 +237,7 @@
       const btn = e.target.closest("button");
       if (!btn) return;
       if (btn.id === "__dc_annotate") { startAnnotation(); return; }
+      if (btn.id === "__dc_share") { exportSelfContained(); return; }
       if (btn.id === "__dc_spacing") {
         try { BlockSpacingEditor.enterBlockModeHint(); } catch (_) {}
         return;
@@ -2919,6 +2922,122 @@
     let html = "<!DOCTYPE html>\n" + clone.outerHTML;
     html = html.replace(/<!-- html-doc-center:saver-injected -->\s*/g, "");
     return html;
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // v2.0: 导出自包含 HTML（所有资源内嵌，发给别人双击即看）
+  // ───────────────────────────────────────────────────────────────────────────
+  async function exportSelfContained() {
+    setStatus("正在导出自包含HTML…", "dirty");
+    toast("📦 正在打包资源…");
+
+    // 1. clone document 并清理 DocCenter 注入元素（复用 serializeContent 逻辑）
+    const clone = document.documentElement.cloneNode(true);
+    clone.querySelectorAll(
+      "#__dc_toolbar, #__dc_img_popover, #__dc_color_palette, #__dc_toast, #__dc_pos_popover, #__dc_block_popover, #__dc_rhythm_modal"
+    ).forEach(n => n.remove());
+    clone.querySelectorAll(
+      ".__dc_img_handle, .__dc_img_dropzone_top, .__dc_img_dropzone_bottom, .__dc_spacing_indicator"
+    ).forEach(n => n.remove());
+    clone.querySelectorAll(".__dc_pos_selected").forEach(n => n.classList.remove("__dc_pos_selected"));
+    clone.querySelectorAll(".__dc_block_selected").forEach(n => n.classList.remove("__dc_block_selected"));
+    clone.querySelectorAll("img.__dc_img_selected").forEach(n => n.classList.remove("__dc_img_selected"));
+    clone.querySelectorAll('script[src="/saver-runtime.js"]').forEach(n => n.remove());
+    clone.querySelectorAll("script").forEach(n => {
+      if ((n.textContent || "").includes("__DOC_CENTER__")) n.remove();
+    });
+    clone.querySelectorAll(
+      "style#__dc_img_styles, style#__dc_popIn_kf, style#__dc_anno_styles, style#__dc_block_styles, style#__dc_pos_styles"
+    ).forEach(n => n.remove());
+    const cloneBody = clone.querySelector("body");
+    if (cloneBody && cloneBody.getAttribute("contenteditable") === "true") {
+      cloneBody.removeAttribute("contenteditable");
+    }
+    clone.querySelectorAll("[class]").forEach(n => {
+      const cls = (n.getAttribute("class") || "").split(/\s+/).filter(c => c && !c.startsWith("__dc_"));
+      if (cls.length === 0) n.removeAttribute("class");
+      else n.setAttribute("class", cls.join(" "));
+    });
+
+    // 2. 内联化外部资源
+    let inlined = 0, failed = 0;
+
+    // 2a. <link rel="stylesheet"> → <style>
+    const links = clone.querySelectorAll('link[rel="stylesheet"][href]');
+    for (const link of links) {
+      const href = link.getAttribute("href");
+      if (/^data:/.test(href)) continue;
+      try {
+        const resp = await fetch(href);
+        if (resp.ok) {
+          const cssText = await resp.text();
+          const style = document.createElement("style");
+          style.textContent = cssText;
+          link.replaceWith(style);
+          inlined++;
+        } else { failed++; }
+      } catch (_) { failed++; }
+    }
+
+    // 2b. <script[src]> → 内联
+    const scripts = clone.querySelectorAll('script[src]');
+    for (const script of scripts) {
+      const src = script.getAttribute("src");
+      if (/^data:/.test(src)) continue;
+      try {
+        const resp = await fetch(src);
+        if (resp.ok) {
+          const jsText = await resp.text();
+          const inline = document.createElement("script");
+          inline.textContent = jsText;
+          if (script.type) inline.type = script.type;
+          if (script.defer) inline.defer = true;
+          script.replaceWith(inline);
+          inlined++;
+        } else { failed++; }
+      } catch (_) { failed++; }
+    }
+
+    // 2c. <img[src]> → base64
+    const imgs = clone.querySelectorAll('img[src]');
+    for (const img of imgs) {
+      const src = img.getAttribute("src");
+      if (/^data:/.test(src)) continue;
+      try {
+        const resp = await fetch(src);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          img.setAttribute("src", dataUrl);
+          inlined++;
+        } else { failed++; }
+      } catch (_) { failed++; }
+    }
+
+    // 3. 生成 HTML 字符串
+    let html = "<!DOCTYPE html>\n" + clone.outerHTML;
+    html = html.replace(/<!-- html-doc-center:saver-injected -->\s*/g, "");
+
+    // 4. 下载
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const origName = (CTX.filePath || "document").split(/[\/\\]/).pop().replace(/\.\w+$/, "");
+    const ts = new Date().toISOString().slice(0, 10);
+    a.download = `${origName}-share-${ts}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setStatus("已保存", "");
+    toast(`📦 已导出！内联 ${inlined} 个资源${failed > 0 ? `，${failed} 个跨域资源保留原链接` : ""}`);
   }
 
   async function doSnapshot(force) {

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StackEdit × HotPage 同品类对标报告 · 2026-07-17</title>
+<style>
+  :root{
+    --bg:#0f1419; --card:#1a2028; --card2:#222b36; --border:#2d3845;
+    --text:#e8eef5; --text2:#a8b5c4; --text3:#6b7a8c;
+    --blue:#4a9eff; --green:#34d399; --red:#f87171; --orange:#fb923c; --yellow:#fbbf24; --purple:#a78bfa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.8;font-size:15px}
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 32px 80px}
+  h1{font-size:30px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px}
+  h2{font-size:22px;font-weight:700;margin:48px 0 16px;padding-bottom:10px;border-bottom:2px solid var(--green);color:var(--text)}
+  h3{font-size:17px;font-weight:700;margin:28px 0 12px;color:var(--green)}
+  h4{font-size:15px;font-weight:700;margin:20px 0 8px;color:var(--text2)}
+  p{margin:10px 0;color:var(--text2)}
+  .meta{color:var(--text3);font-size:13px;margin-bottom:32px}
+  .meta span{margin-right:16px}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+  th{background:var(--card2);color:var(--text);font-weight:600;text-align:left;padding:10px 12px;border:1px solid var(--border)}
+  td{padding:9px 12px;border:1px solid var(--border);color:var(--text2);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:16px 0}
+  .card.green{border-left:3px solid var(--green)}
+  .card.blue{border-left:3px solid var(--blue)}
+  .card.red{border-left:3px solid var(--red)}
+  .card.orange{border-left:3px solid var(--orange)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-right:4px}
+  .tag-off{background:rgba(74,158,255,0.15);color:var(--blue)}
+  .tag-media{background:rgba(251,146,60,0.15);color:var(--orange)}
+  .tag-user{background:rgba(52,211,153,0.15);color:var(--green)}
+  .tag-guess{background:rgba(248,113,113,0.15);color:var(--red)}
+  .tag-code{background:rgba(167,139,250,0.15);color:var(--purple)}
+  .pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+  .pill-s{background:rgba(52,211,153,0.15);color:var(--green)}
+  .pill-w{background:rgba(248,113,113,0.15);color:var(--red)}
+  .pill-o{background:rgba(74,158,255,0.15);color:var(--blue)}
+  .pill-t{background:rgba(251,191,36,0.15);color:var(--yellow)}
+  ul,ol{margin:10px 0 10px 22px;color:var(--text2)}
+  li{margin:5px 0}
+  strong{color:var(--text)}
+  code{background:var(--card2);padding:1px 6px;border-radius:4px;font-size:13px;color:var(--orange);font-family:"SF Mono",Menlo,monospace}
+  .quote{border-left:3px solid var(--yellow);padding:8px 16px;margin:16px 0;background:rgba(251,191,36,0.05);color:var(--text2);font-style:italic}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+  .toc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 28px;margin:24px 0}
+  .toc a{color:var(--green);text-decoration:none;display:block;padding:3px 0;font-size:14px}
+  .toc a:hover{text-decoration:underline}
+  .foot{color:var(--text3);font-size:12px;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+  .warn{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13px;color:var(--text2)}
+  .ok{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.3);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13px;color:var(--text2)}
+  .vs{font-weight:800;color:var(--yellow)}
+  @media(max-width:700px){.grid2{grid-template-columns:1fr}.wrap{padding:32px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>StackEdit × HotPage 同品类对标报告</h1>
+<div class="meta">
+  <span>📅 2026-07-17</span>
+  <span>🔧 team-work 竞品分析团队</span>
+  <span>📋 同品类直接对标（浏览器端内容编辑器）</span>
+  <span>🔁 承接 drawio 报告红队建议</span>
+</div>
+
+<div class="card green">
+  <strong>定位声明</strong>：本报告承接 drawio 报告红队建议——"更贴切的参照系应是 StackEdit"。StackEdit（浏览器端 Markdown 编辑器，2013 年起步，Apache 2.0 开源）与 HotPage 同属"浏览器端内容编辑器"品类，是<strong>真正的同品类对标</strong>，对比结论比 drawio 跨品类分析更具操作性。<br><br>
+  <strong>核心结论</strong>：两者<strong>互补非竞品</strong>——StackEdit 服务"人从零创作→多平台发布"，HotPage 服务"AI 产物→本地精修→版本管理"。用户画像几乎不重叠。但 StackEdit 设定了若干"行业基线"（Scroll Sync、可嵌入 SDK、多云同步），是 HotPage 必须对标的体验标杆。
+</div>
+
+<div class="toc">
+  <strong>目录</strong>
+  <a href="#s1">1. 执行摘要</a>
+  <a href="#s2">2. StackEdit 产品概述</a>
+  <a href="#s3">3. StackEdit 功能矩阵（42 功能点）</a>
+  <a href="#s4">4. StackEdit vs HotPage 全维度对比</a>
+  <a href="#s5">5. 核心定位差异：互补非竞品</a>
+  <a href="#s6">6. SWOT 分析</a>
+  <a href="#s7">7. 借鉴清单（按优先级）</a>
+  <a href="#s8">8. 红队审查与战略洞察</a>
+  <a href="#s9">9. 结论与建议</a>
+  <a href="#s10">10. 数据可信度声明</a>
+</div>
+
+<!-- ============ 1. 执行摘要 ============ -->
+<h2 id="s1">1. 执行摘要</h2>
+
+<p>StackEdit 是 2013 年起步的浏览器端 Markdown 编辑器，基于 PageDown（Stack Overflow 同源引擎），Apache 2.0 开源，GitHub 仓库 benweet/stackedit。核心能力：Markdown 源码编辑 + 实时预览 + Scroll Sync + 多云同步（Google Drive/Dropbox/GitHub）+ 多平台发布（Blogger/WordPress/Zendesk）+ 协作（冲突合并+内联评论）+ 完全离线 + 富扩展（LaTeX/UML/乐谱）+ stackedit.js 可嵌入 SDK。</p>
+
+<div class="card blue">
+  <strong>核心发现（经红队修正）</strong>
+  <ol>
+    <li><strong>互补非竞品</strong>——StackEdit 是"创作起点"工具（人写 MD→发布），HotPage 是"AI 产物管理"工具（AI 生 HTML→精修）。输入源、输出目标、用户画像均不重叠。</li>
+    <li><strong>HotPage 必须补齐的行业基线</strong>：Scroll Sync（MD 三视图体验）+ 可嵌入 SDK（saver-runtime.js 产品化）。这两项是 StackEdit 设定的品类标杆。</li>
+    <li><strong>HotPage 的真正护城河</strong>：AI 生态集成（Claude Code Plugin + MCP）+ 本地版本管理链路。前者是赛道选择优势，后者是工程积累优势（与 drawio 报告一致：版本管理是差异化 feature 非护城河，但组合后形成壁垒）。</li>
+    <li><strong>最大威胁不是 StackEdit</strong>——是 AI 工具（Claude Code/Cursor）自带预览编辑能力。HotPage 战略应是把版本管理和多文件管理做到 AI 工具不愿投入的深度。</li>
+    <li><strong>StackEdit 维护停滞信号</strong>——版权止于 2019，维护节奏不明。这既是 HotPage 的机会（用户寻找活跃替代），也是赛道规模存疑的信号（MD 在线编辑市场可能不大）。</li>
+  </ol>
+</div>
+
+<!-- ============ 2. StackEdit 概述 ============ -->
+<h2 id="s2">2. StackEdit 产品概述</h2>
+
+<table>
+  <tr><th width="30%">维度</th><th>内容</th><th width="10%">来源</th></tr>
+  <tr><td>名称</td><td>StackEdit</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>诞生年份</td><td>2013（版权 2013-2019）</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>开源状态</td><td>开源，Apache License 2.0</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>GitHub 仓库</td><td>github.com/benweet/stackedit</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>作者</td><td>Benoit Schweblin</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>技术基础</td><td>PageDown（Stack Overflow WYSIWYG 引擎）+ Handlebars 模板</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>部署形态</td><td>浏览器端 + Chrome App/Extension + stackedit.js 可嵌入</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>定价</td><td>免费开源（推测可能有增值服务）</td><td><span class="tag tag-guess">推测</span></td></tr>
+  <tr><td>维护状态</td><td>版权止 2019，后续节奏不明；2026 仍为在线编辑器三强之一</td><td><span class="tag tag-media">媒体</span></td></tr>
+</table>
+
+<p><strong>定位</strong>：面向 Web 写作者的浏览器端 Markdown 编辑器，强调离线可用、多平台同步与实时预览。</p>
+
+<p><strong>目标用户</strong>：技术博主、内容创作者（发布到 Blogger/WordPress/Zendesk）、学术/技术用户（LaTeX/UML/乐谱）、追求离线写作的桌面型用户、中文开发者社区（码云/Gitea）。</p>
+
+<h4>竞品格局（2026 在线 MD 编辑器三强）</h4>
+<table>
+  <tr><th>维度</th><th>StackEdit</th><th>HedgeDoc</th><th>HackMD</th></tr>
+  <tr><td>部署形态</td><td>浏览器/Chrome/嵌入</td><td>自托管/云</td><td>云服务为主</td></tr>
+  <tr><td>离线能力</td><td>完全离线 <span class="tag tag-off">官方</span></td><td>有限 <span class="tag tag-guess">推测</span></td><td>有限 <span class="tag tag-guess">推测</span></td></tr>
+  <tr><td>协作模式</td><td>同步机制+评论 <span class="tag tag-off">官方</span></td><td>实时协作 <span class="tag tag-guess">推测</span></td><td>实时协作 <span class="tag tag-guess">推测</span></td></tr>
+  <tr><td>同步后端</td><td>Google Drive/Dropbox/GitHub</td><td>自托管</td><td>自有云</td></tr>
+  <tr><td>发布平台</td><td>Blogger/WordPress/Zendesk</td><td>未获取到</td><td>未获取到</td></tr>
+  <tr><td>嵌入能力</td><td>stackedit.js</td><td>未获取到</td><td>未获取到</td></tr>
+  <tr><td>隐私表现</td><td>有用户反馈不足 <span class="tag tag-media">媒体</span></td><td>自托管更优 <span class="tag tag-guess">推测</span></td><td>未获取到</td></tr>
+</table>
+
+<!-- ============ 3. 功能矩阵 ============ -->
+<h2 id="s3">3. StackEdit 功能矩阵（42 功能点）</h2>
+
+<h3>3.1 编辑能力（7）</h3>
+<table>
+  <tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>1</td><td>富 Markdown 编辑器</td><td>PageDown 引擎，语法高亮</td></tr>
+  <tr><td>2</td><td>WYSIWYG 格式化按钮</td><td>PageDown 工具栏按钮 + 快捷键</td></tr>
+  <tr><td>3</td><td>智能布局切换</td><td>写作/审阅/评论三布局</td></tr>
+  <tr><td>4</td><td>LaTeX 数学表达式</td><td>Stack Exchange 风格数学渲染</td></tr>
+  <tr><td>5</td><td>UML 序列图</td><td>简单语法编写</td></tr>
+  <tr><td>6</td><td>UML 流程图</td><td>简单语法编写</td></tr>
+  <tr><td>7</td><td>快捷键体系</td><td>PageDown 内置；具体列表未获取到</td></tr>
+</table>
+
+<h3>3.2 预览与渲染（7）</h3>
+<table>
+  <tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>8</td><td>实时预览</td><td>双面板同步渲染</td></tr>
+  <tr><td>9</td><td>Scroll Sync</td><td>编辑与预览面板滚动条精确绑定</td></tr>
+  <tr><td>10</td><td>GFM 支持</td><td>可单独启用/禁用</td></tr>
+  <tr><td>11</td><td>Markdown Extra</td><td>可单独启用/禁用</td></tr>
+  <tr><td>12</td><td>CommonMark</td><td>可单独启用/禁用</td></tr>
+  <tr><td>13</td><td>ABC 记谱法乐谱</td><td>ABC 语法渲染音乐</td></tr>
+  <tr><td>14</td><td>Emoji 表情</td><td>内置 Emoji 支持</td></tr>
+</table>
+
+<h3>3.3 同步与存储（7）</h3>
+<table>
+  <tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>15</td><td>Google Drive 同步</td><td>OAuth 接入</td></tr>
+  <tr><td>16</td><td>Dropbox 同步</td><td>OAuth 接入</td></tr>
+  <tr><td>17</td><td>GitHub 仓库同步</td><td>OAuth 接入</td></tr>
+  <tr><td>18</td><td>码云(Gitee)同步</td><td>中文版增强</td></tr>
+  <tr><td>19</td><td>GitCode 同步</td><td>中文版增强</td></tr>
+  <tr><td>20</td><td>Gitea 同步</td><td>中文版增强</td></tr>
+  <tr><td>21</td><td>完全离线可用</td><td>本地存储 + 同步队列；具体技术（Service Worker/IndexedDB）未确认</td></tr>
+</table>
+
+<h3>3.4 发布与导出（7）</h3>
+<table>
+  <tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>22</td><td>Blogger 发布</td><td>OAuth 接入 Blogger API</td></tr>
+  <tr><td>23</td><td>WordPress 发布</td><td>OAuth 接入</td></tr>
+  <tr><td>24</td><td>Zendesk 发布</td><td>发布到客服知识库</td></tr>
+  <tr><td>25</td><td>Markdown 导出</td><td>原生格式</td></tr>
+  <tr><td>26</td><td>HTML 导出</td><td>Handlebars 模板格式化</td></tr>
+  <tr><td>27</td><td>PDF 导出</td><td>Handlebars 模板</td></tr>
+  <tr><td>28</td><td>拖拽/粘贴上传图片</td><td>中文版增强</td></tr>
+</table>
+
+<h3>3.5 协作与评论（7）</h3>
+<table>
+  <tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>29</td><td>共享协作工作空间</td><td>通过同步机制实现</td></tr>
+  <tr><td>30</td><td>冲突自动合并</td><td>两人同时编辑自动合并；算法细节未获取到</td></tr>
+  <tr><td>31</td><td>内联评论</td><td>特定行插入评论</td></tr>
+  <tr><td>32</td><td>嵌入讨论</td><td>类 Google Docs 协作讨论线程</td></tr>
+  <tr><td>33</td><td>协作空间共享</td><td>共享粒度未获取到</td></tr>
+  <tr><td>34</td><td>中文版直接发布</td><td>中文平台发布</td></tr>
+  <tr><td>35</td><td>多文件管理</td><td>工作空间文件列表</td></tr>
+</table>
+
+<h3>3.6 扩展与嵌入（7）</h3>
+<table>
+  <tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>36</td><td>stackedit.js 嵌入</td><td>JavaScript SDK，嵌入任何网站</td></tr>
+  <tr><td>37</td><td>Chrome App</td><td>打包应用；Chrome App 已逐步淘汰</td></tr>
+  <tr><td>38</td><td>Chrome Extension</td><td>Chrome 扩展商店</td></tr>
+  <tr><td>39</td><td>Handlebars 模板定制</td><td>自定义导出格式</td></tr>
+  <tr><td>40</td><td>Markdown 扩展单独控制</td><td>每种扩展可独立启用/禁用</td></tr>
+  <tr><td>41</td><td>社区支持</td><td>community.stackedit.io</td></tr>
+  <tr><td>42</td><td>Twitter 动态</td><td>@stackedit</td></tr>
+</table>
+
+<!-- ============ 4. 全维度对比 ============ -->
+<h2 id="s4">4. StackEdit <span class="vs">vs</span> HotPage 全维度对比</h2>
+
+<table>
+  <tr><th width="13%">维度</th><th width="24%">StackEdit</th><th width="24%">HotPage</th><th width="8%">谁优</th><th>关键差异洞察</th></tr>
+  <tr>
+    <td><strong>编辑内核</strong></td>
+    <td>PageDown + Markdown 源码编辑，语法高亮</td>
+    <td>contentEditable 原生 HTML 就地编辑 + 工具栏注入 <span class="tag tag-code">代码</span></td>
+    <td>各有千秋</td>
+    <td>StackEdit 编辑 MD 抽象层；HotPage 直接操作 DOM 渲染结果。前者精确可控，后者所见即所得</td>
+  </tr>
+  <tr>
+    <td><strong>内容格式</strong></td>
+    <td>Markdown 为源，HTML/PDF 是导出产物</td>
+    <td>HTML 为一等公民，MD 是附加能力(v1.13三视图) <span class="tag tag-code">代码</span></td>
+    <td>各有定位</td>
+    <td>根本分歧：StackEdit=MD源HTML果；HotPage=HTML本身就是源（AI生成的HTML直接编辑）</td>
+  </tr>
+  <tr>
+    <td><strong>文件管理</strong></td>
+    <td>Workspace 概念，IndexedDB/云端</td>
+    <td>本地 scan_roots 目录树 + ETag轮询 + 多根 <span class="tag tag-code">代码</span></td>
+    <td><span class="pill pill-s">HotPage</span></td>
+    <td>HotPage 直接映射本地文件夹，零迁移成本；StackEdit workspace 是封闭沙盒</td>
+  </tr>
+  <tr>
+    <td><strong>同步存储</strong></td>
+    <td>Google Drive/Dropbox/GitHub + 中文版码云/Gitea</td>
+    <td>纯本地文件系统，无云同步 <span class="tag tag-code">代码</span></td>
+    <td><span class="pill pill-s">StackEdit</span></td>
+    <td>StackEdit 多云同步是核心卖点；HotPage 刻意本地优先</td>
+  </tr>
+  <tr>
+    <td><strong>协作能力</strong></td>
+    <td>共享空间 + 冲突自动合并 + 内联评论 + 嵌入讨论</td>
+    <td>划词批注系统(v2)，无实时协作 <span class="tag tag-code">代码</span></td>
+    <td><span class="pill pill-s">StackEdit</span></td>
+    <td>StackEdit 有完整多人协作链路；HotPage 批注是单人审阅模式</td>
+  </tr>
+  <tr>
+    <td><strong>版本管理</strong></td>
+    <td>无显式版本管理（依赖云存储版本历史）</td>
+    <td>2s快照+时间线+行级diff+梯度稀释+一键恢复 <span class="tag tag-code">代码</span></td>
+    <td><span class="pill pill-s">HotPage</span></td>
+    <td>HotPage 版本管理远超 StackEdit（差异化 feature，非护城河）</td>
+  </tr>
+  <tr>
+    <td><strong>导出发布</strong></td>
+    <td>MD/HTML/PDF(Handlebars) + Blogger/WordPress/Zendesk 发布</td>
+    <td>仅 PDF（浏览器print + @media print） <span class="tag tag-code">代码</span></td>
+    <td><span class="pill pill-s">StackEdit</span></td>
+    <td>StackEdit 有完整多平台发布链路；HotPage PDF 是最小可行实现</td>
+  </tr>
+  <tr>
+    <td><strong>嵌入扩展</strong></td>
+    <td>stackedit.js 可嵌入任何网站 + Chrome app/extension</td>
+    <td>saver-runtime.js 内部注入，未产品化为可嵌入库 <span class="tag tag-code">代码</span></td>
+    <td><span class="pill pill-s">StackEdit</span></td>
+    <td>stackedit.js 是成熟可嵌入 SDK；HotPage 注入是内部机制</td>
+  </tr>
+  <tr>
+    <td><strong>离线能力</strong></td>
+    <td>完全离线，类桌面应用（纯前端）</td>
+    <td>本地 Python 服务器，无需外网；双击启动 <span class="tag tag-code">代码</span></td>
+    <td>各有千秋</td>
+    <td>StackEdit 纯前端离线；HotPage 需 Python 但功能更强（文件系统访问）</td>
+  </tr>
+  <tr>
+    <td><strong>集成生态</strong></td>
+    <td>浏览器扩展 + 嵌入 SDK + 云存储 API</td>
+    <td>Claude Code Plugin + 4 MCP 工具 + 静态资源代理 <span class="tag tag-code">代码</span></td>
+    <td><span class="pill pill-s">HotPage</span></td>
+    <td>HotPage 抓住 AI 编码工具生态，这是 StackEdit 完全空白的新赛道</td>
+  </tr>
+  <tr>
+    <td><strong>目标用户</strong></td>
+    <td>技术写作者、博主、内容创作者</td>
+    <td>AI 工具用户（Claude Code/Cursor 产物管理）</td>
+    <td>互补</td>
+    <td>用户画像几乎不重叠</td>
+  </tr>
+  <tr>
+    <td><strong>架构依赖</strong></td>
+    <td>npm 全家桶（webpack/Node 构建链），前端 SPA</td>
+    <td>零依赖（仅 aiohttp），无 npm/webpack/build <span class="tag tag-code">代码</span></td>
+    <td><span class="pill pill-s">HotPage</span></td>
+    <td>HotPage 零依赖是工程美学优势，部署极简</td>
+  </tr>
+</table>
+
+<!-- ============ 5. 定位差异 ============ -->
+<h2 id="s5">5. 核心定位差异：互补非竞品</h2>
+
+<div class="grid2">
+  <div class="card green">
+    <span class="pill pill-s">StackEdit 工作流</span>
+    <p><strong>用户手写 Markdown 源码 → 实时预览 → 多平台发布</strong></p>
+    <p>"创作起点"工具——用户从空白页开始，用 MD 语法组织思想，推送到 Blogger/WordPress。核心价值：写作→发布链路打通。</p>
+    <p>输入：<strong>人的键盘</strong><br>输出：<strong>博客平台</strong></p>
+  </div>
+  <div class="card blue">
+    <span class="pill pill-o">HotPage 工作流</span>
+    <p><strong>AI 生成 HTML → 本地浏览/精修/版本管理 → 导出分享</strong></p>
+    <p>"AI 产物管理"工具——用户不是创作者，是 AI 生成内容的管理者和精修者。核心价值：AI 产物→可控交付链路打通。</p>
+    <p>输入：<strong>AI 工具的文件输出</strong><br>输出：<strong>本地文件系统 / PDF</strong></p>
+  </div>
+</div>
+
+<div class="ok">
+  <strong>结论：不竞争，是互补。</strong> 一个 AI 时代的开发者完全可能用 HotPage 管理 Claude Code 生成的 HTML 报告，同时用 StackEdit 写技术博客发布到 WordPress。两者在工具链中的位置不冲突。<br><br>
+  <strong>唯一的重叠区</strong>：Markdown 编辑。HotPage v1.13 的 MD 三视图与 StackEdit 功能交叉。但 HotPage 的 MD 定位是"本地 .md 文件浏览器"非"MD 写作平台"——没有同步、没有发布、没有 LaTeX/UML 扩展。是功能交叉点，非核心竞争点。
+</div>
+
+<!-- ============ 6. SWOT ============ -->
+<h2 id="s6">6. SWOT 分析（HotPage 视角，相对 StackEdit）</h2>
+
+<div class="grid2">
+  <div class="card green">
+    <span class="pill pill-s">Strengths</span>
+    <ol>
+      <li><strong>版本管理远超 StackEdit</strong>——2s快照+时间线+行级diff+梯度稀释+一键恢复（server.py 8个版本管理API）。StackEdit 依赖云存储版本，无本地版本管理</li>
+      <li><strong>本地文件系统原生映射</strong>——scan_roots 多根 + ETag 轮询 + 拖拽移动 + 静态资源代理。文件不进封闭沙盒</li>
+      <li><strong>AI 生态集成</strong>——Claude Code Plugin + 4 MCP 工具，StackEdit 完全空白的新赛道</li>
+      <li><strong>零依赖架构</strong>——仅 aiohttp，无 npm/webpack/build</li>
+      <li><strong>contentEditable 就地编辑</strong>——直接在渲染结果上编辑，非技术用户友好</li>
+    </ol>
+  </div>
+  <div class="card red">
+    <span class="pill pill-w">Weaknesses</span>
+    <ol>
+      <li><strong>无云同步</strong>——纯本地，无 Google Drive/Dropbox/GitHub，跨设备不可能</li>
+      <li><strong>无多平台发布</strong>——只有 PDF，无 Blogger/WordPress/Zendesk</li>
+      <li><strong>无实时协作</strong>——划词批注是单人审阅，无共享空间+冲突合并</li>
+      <li><strong>无扩展生态</strong>——无 LaTeX/UML/乐谱/Emoji 等 MD 扩展</li>
+      <li><strong>无可嵌入 SDK</strong>——saver-runtime.js 是内部机制，非 stackedit.js 式可嵌入库</li>
+      <li><strong>需 Python 运行时</strong>——StackEdit 纯前端浏览器打开即用</li>
+    </ol>
+  </div>
+  <div class="card blue">
+    <span class="pill pill-o">Opportunities</span>
+    <ol>
+      <li><strong>AI 工具产物管理赛道</strong>——Claude Code/Cursor/Copilot 持续生成 HTML，无专门"产物管理工作台"</li>
+      <li><strong>本地 HTML 批量管理</strong>——StackEdit 是单文档编辑器，非文件管理器</li>
+      <li><strong>HTML 精修而非源码编辑</strong>——AI 生成 HTML 复杂度高，用户不想看源码，contentEditable 是对的路径</li>
+      <li><strong>版本管理作为核心功能</strong>——AI 反复生成/修改场景下，版本管理比编辑本身更重要</li>
+      <li><strong>StackEdit 维护停滞</strong>——版权止2019，用户寻找活跃替代</li>
+    </ol>
+  </div>
+  <div class="card orange">
+    <span class="pill pill-t">Threats</span>
+    <ol>
+      <li><strong>StackEdit 增加 HTML 源码编辑</strong>——若支持直接编辑 HTML 而非 MD→HTML，产生直接竞争（但概率低，架构根植 PageDown/MD）</li>
+      <li><strong>StackEdit 增加本地文件访问</strong>——File System Access API 可让浏览器访问本地文件（但当前架构是 IndexedDB/云端，迁移成本高）</li>
+      <li><strong>StackEdit 增加 AI 集成</strong>——若集成"AI 生成 HTML 报告"，直接进入 HotPage 赛道（最大潜在威胁）</li>
+      <li><strong>AI 工具自带预览编辑</strong>——Claude Code/Cursor 内置 HTML 预览+编辑+版本管理（最大威胁，见洞察 #5）</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ============ 7. 借鉴清单 ============ -->
+<h2 id="s7">7. 借鉴清单（按优先级，经红队校准）</h2>
+
+<table>
+  <tr><th width="8%">优先级</th><th width="20%">借鉴项</th><th>说明 + 实施建议</th><th width="14%">红队校准</th></tr>
+  <tr>
+    <td><span class="pill pill-t">P1</span></td>
+    <td>Scroll Sync 滚动同步</td>
+    <td>HotPage MD 三视图(v1.13) Split 模式无滚动同步。StackEdit 的 Scroll Sync 是核心体验。建议：监听编辑器 scroll 事件，按比例映射预览面板 scrollTop，约 30-50 行代码</td>
+    <td>从 P0 降为 P1——MD 三视图是 HotPage 次要功能，HTML contentEditable 才是主线</td>
+  </tr>
+  <tr>
+    <td><span class="pill pill-t">P1</span></td>
+    <td>可嵌入 SDK（saver-runtime.js 产品化）</td>
+    <td>stackedit.js 让任何网站嵌入 StackEdit。若 HotPage 把 saver-runtime.js 打包为 hotpage.js，一行 &lt;script&gt; 即获 contentEditable+工具栏+自动保存+版本管理。建议：剥离对 window.__DOC_CENTER__ 硬依赖，改 init 配置 API</td>
+    <td>保留高优先级——扩展使用场景的关键</td>
+  </tr>
+  <tr>
+    <td><span class="pill pill-o">P2</span></td>
+    <td>冲突检测（非自动合并）</td>
+    <td>StackEdit 有冲突自动合并（OT算法，工程复杂）。HotPage 暂不做协作，但可借快照系统做冲突检测——保存前比较本地版本与服务端版本，不一致时提示</td>
+    <td>降级——协作非当前阶段目标</td>
+  </tr>
+  <tr>
+    <td><span class="pill pill-o">P2</span></td>
+    <td>HTML → Markdown 导出</td>
+    <td>StackEdit 有 MD/HTML/PDF 导出。HotPage 已有 MD 编辑能力，可做"HTML→MD 转换导出"，比 Blogger/WordPress 发布更贴合定位</td>
+    <td>替代多平台发布——更贴合本地工作台定位</td>
+  </tr>
+  <tr>
+    <td><span class="pill pill-s">P3</span></td>
+    <td>LaTeX/UML 扩展（仅 MD 三视图）</td>
+    <td>StackEdit 的 LaTeX/UML/乐谱是 MD 扩展。HotPage 的 HTML 编辑器不需要（AI 可直接生成含 MathJax 的 HTML）。仅在 MD 三视图中考虑</td>
+    <td>低优先级——HTML 编辑器不需要</td>
+  </tr>
+  <tr>
+    <td><span class="pill pill-s">P3</span></td>
+    <td>多平台发布（Blogger/WordPress）</td>
+    <td>StackEdit 的发布链路偏离 HotPage"本地工作台"定位。暂不做，PDF 已覆盖"发给老板"场景</td>
+    <td>不做——偏离定位</td>
+  </tr>
+</table>
+
+<div class="warn">
+  <strong>不应照搬的 StackEdit 做法</strong>：
+  <ul>
+    <li><strong>PageDown 作为核心引擎</strong>——PageDown 较老旧，现代编辑器应考虑 CodeMirror 6/Monaco（但 HotPage 用 contentEditable 是另一条路，不需要）</li>
+    <li><strong>同步机制实现协作</strong>——用户反馈暗示协作稳定性不足，应采用原生实时协作（CRDT/OT），但 HotPage 当前阶段不需要</li>
+    <li><strong>Chrome App 形态</strong>——已被 Google 弃用，不应依赖</li>
+    <li><strong>封闭 workspace 沙盒</strong>——HotPage 的本地文件系统映射是优势，不应退回沙盒</li>
+  </ul>
+</div>
+
+<!-- ============ 8. 红队与战略洞察 ============ -->
+<h2 id="s8">8. 红队审查与战略洞察</h2>
+
+<h3>红队挑战与修正</h3>
+<table>
+  <tr><th width="22%">原结论</th><th width="12%">挑战</th><th>修正后结论</th></tr>
+  <tr>
+    <td>版本管理是 HotPage 护城河</td>
+    <td><span class="pill pill-w">一致性</span></td>
+    <td>与 drawio 报告保持一致：<strong>差异化 feature 非护城河</strong>。但"AI生态集成 + 本地版本管理"的组合形成壁垒</td>
+  </tr>
+  <tr>
+    <td>Scroll Sync 是 P0 必须补齐</td>
+    <td><span class="pill pill-w">优先级</span></td>
+    <td>降为 <strong>P1</strong>——MD 三视图是 HotPage 次要功能（HTML contentEditable 才是主线），Scroll Sync 影响的是 MD Split 体验，非核心路径</td>
+  </tr>
+  <tr>
+    <td>互补非竞品，无竞争</td>
+    <td><span class="pill pill-w">威胁遗漏</span></td>
+    <td>保留"当前互补"判断，但补威胁场景：<strong>若 StackEdit 增加 AI 集成</strong>（AI 生成 HTML），会直接进入 HotPage 赛道</td>
+  </tr>
+  <tr>
+    <td>StackEdit 维护停滞是机会</td>
+    <td><span class="pill pill-w">双面信号</span></td>
+    <td>既是机会（用户找活跃替代），也是<strong>赛道规模存疑</strong>信号——MD 在线编辑市场可能不够大，HotPage 应聚焦 AI 产物管理而非 MD 编辑</td>
+  </tr>
+</table>
+
+<h3>五条战略洞察</h3>
+
+<div class="card green">
+  <strong>洞察 1：互补非竞品是当前态，非终态</strong>
+  <p>StackEdit 和 HotPage 当前服务于不同工作流，但如果 StackEdit 增加 AI 集成（AI 生成 HTML 报告），或 HotPage 增加多平台发布，两者会正面碰撞。HotPage 应抢先占住"AI 产物管理"心智，在 StackEdit 反应过来前建立版本管理+多文件管理的深度壁垒。</p>
+</div>
+
+<div class="card blue">
+  <strong>洞察 2：HotPage 护城河是"AI 产物管理 + 本地版本管理"的组合</strong>
+  <p>单看编辑器，StackEdit 更成熟；单看版本管理，是 feature 非壁垒。但"Claude Code Plugin + MCP + 2s快照+diff+梯度稀释+一键恢复"的组合，是 StackEdit 无法复刻的——前者是赛道选择优势，后者是工程积累优势。组合即壁垒。</p>
+</div>
+
+<div class="card orange">
+  <strong>洞察 3：必须补齐的行业基线是 Scroll Sync + 可嵌入 SDK</strong>
+  <p>StackEdit 设定的品类基线：(1) 编辑器-预览滚动同步；(2) 可嵌入 SDK。HotPage 的 MD 三视图无 Scroll Sync 会体验劣化；saver-runtime.js 不产品化为可嵌入库，影响力局限于 Claude Code 生态内。这两项是"品类入场券"。</p>
+</div>
+
+<div class="card green">
+  <strong>洞察 4：contentEditable 路径是正确的差异化</strong>
+  <p>StackEdit 走 MD 源码编辑（用户需理解 MD 语法），HotPage 走 contentEditable 就地编辑（直接在渲染结果上改）。对 AI 产物管理场景，后者更合理——用户不想看 HTML 源码，只想改渲染结果里的错别字或调颜色。saver-runtime.js 工具栏已覆盖非技术用户常见需求。</p>
+</div>
+
+<div class="card red">
+  <strong>洞察 5：最大威胁不是 StackEdit，是 AI 工具自带预览能力</strong>
+  <p>如果 Claude Code/Cursor 未来内置 HTML 预览+编辑+版本管理（而非依赖外部插件），HotPage 价值会被直接吞掉。<strong>战略应对</strong>：把版本管理和多文件管理做到 AI 工具不愿投入的深度——AI 工具核心是代码生成，不会在文档管理上投入足够精力。这是 HotPage 的安全边界。</p>
+</div>
+
+<!-- ============ 9. 结论 ============ -->
+<h2 id="s9">9. 结论与建议</h2>
+
+<h3>核心结论</h3>
+<ol>
+  <li><strong>StackEdit 与 HotPage 是互补工具链非直接竞品</strong>——输入源（人 vs AI）、输出目标（博客平台 vs 本地文件）、用户画像（写作者 vs AI产物管理者）均不重叠。但当前互补不等于永远不竞争。</li>
+  <li><strong>StackEdit 设定的品类基线必须补齐</strong>——Scroll Sync（MD 三视图体验）+ 可嵌入 SDK（saver-runtime.js 产品化）是"浏览器端内容编辑器"的入场券。</li>
+  <li><strong>HotPage 的差异化在 contentEditable + AI 生态 + 本地版本管理的组合</strong>——单点都不算护城河，组合形成壁垒。</li>
+  <li><strong>最大威胁是 AI 工具自带预览编辑</strong>——HotPage 安全边界是把文档管理做到 AI 工具不愿投入的深度。</li>
+  <li><strong>StackEdit 维护停滞是双面信号</strong>——机会（用户找替代）+ 赛道存疑（MD 在线编辑市场可能不大，聚焦 AI 产物管理而非 MD 编辑）。</li>
+</ol>
+
+<h3>行动建议（与 drawio 报告合并视图）</h3>
+<table>
+  <tr><th width="8%">优先级</th><th width="22%">建议</th><th>来源</th><th width="20%">与 drawio 报告关系</th></tr>
+  <tr><td><span class="pill pill-w">P0</span></td><td>DNS 重绑定防护 + postMessage origin 限制</td><td>drawio 报告红队</td><td>—</td></tr>
+  <tr><td><span class="pill pill-t">P1</span></td><td>Scroll Sync（MD 三视图）</td><td>StackEdit 对标</td><td>新增</td></tr>
+  <tr><td><span class="pill pill-t">P1</span></td><td>可嵌入 SDK（saver-runtime.js 产品化）</td><td>StackEdit 对标</td><td>与 drawio 报告 embed 模式呼应</td></tr>
+  <tr><td><span class="pill pill-t">P1</span></td><td>产品文档体系 + 插件 manifest</td><td>drawio 对标</td><td>—</td></tr>
+  <tr><td><span class="pill pill-o">P2</span></td><td>冲突检测（基于快照系统）</td><td>StackEdit 对标</td><td>新增</td></tr>
+  <tr><td><span class="pill pill-o">P2</span></td><td>HTML → Markdown 导出</td><td>StackEdit 对标（改良）</td><td>新增</td></tr>
+  <tr><td><span class="pill pill-o">P2</span></td><td>属性面板用户验证 / Mermaid 集成 / 内生 AI</td><td>drawio 对标</td><td>—</td></tr>
+  <tr><td><span class="pill pill-s">P3</span></td><td>execCommand 渐进替换 / 赛道数据锚点</td><td>drawio 对标</td><td>—</td></tr>
+  <tr><td><span class="pill pill-s">P3</span></td><td>LaTeX/UML 扩展（仅 MD 三视图）</td><td>StackEdit 对标</td><td>新增，低优先级</td></tr>
+</table>
+
+<h3>跟踪建议</h3>
+<ul>
+  <li>关注 StackEdit 是否增加 AI 集成——这是从"互补"变"竞品"的拐点信号</li>
+  <li>关注 Claude Code/Cursor 是否内置 HTML 预览编辑——这是最大威胁的触发信号</li>
+  <li>关注 File System Access API 进化——若浏览器原生支持本地文件，StackEdit 类工具可绕过本地服务器</li>
+  <li>关注 StackEdit 维护状态——若正式归档，用户流入替代品市场</li>
+</ul>
+
+<!-- ============ 10. 数据可信度 ============ -->
+<h2 id="s10">10. 数据可信度声明</h2>
+
+<table>
+  <tr><th>数据项</th><th>来源等级</th><th>可信度</th><th>备注</th></tr>
+  <tr><td>StackEdit 功能（编辑/预览/同步/发布/协作/扩展）</td><td><span class="tag tag-off">官方</span></td><td>高</td><td>web_fetch stackedit.io 实采</td></tr>
+  <tr><td>StackEdit 开源信息（Apache 2.0/GitHub/作者）</td><td><span class="tag tag-off">官方</span></td><td>高</td><td>官网明确标注</td></tr>
+  <tr><td>StackEdit 中文版（码云/Gitea/拖拽图片）</td><td><span class="tag tag-media">媒体</span></td><td>中</td><td>stackedit.cn 搜索摘要</td></tr>
+  <tr><td>StackEdit 技术架构（PageDown/Handlebars）</td><td><span class="tag tag-off">官方</span></td><td>高</td><td>官网确认</td></tr>
+  <tr><td>StackEdit 离线技术实现（Service Worker/IndexedDB）</td><td>—</td><td><strong>未确认</strong></td><td>官网仅说"完全离线"，具体技术未获取到</td></tr>
+  <tr><td>StackEdit GitHub Stars 具体数字</td><td>—</td><td><strong>未获取到</strong></td><td>搜索未返回具体数字</td></tr>
+  <tr><td>StackEdit 维护状态（2019后节奏）</td><td><span class="tag tag-off">官方</span></td><td>中</td><td>版权止2019，但2026仍为三强之一</td></tr>
+  <tr><td>StackEdit 用户反馈（隐私/速度）</td><td><span class="tag tag-media">媒体</span></td><td>中低</td><td>来自竞品文章间接暗示，缺Reddit/G2实采</td></tr>
+  <tr><td>StackEdit vs HedgeDoc/HackMD 对比</td><td><span class="tag tag-guess">推测</span></td><td>低</td><td>HedgeDoc/HackMD 详细数据严重不足</td></tr>
+  <tr><td>HotPage 功能点</td><td><span class="tag tag-code">代码验证</span></td><td>高</td><td>server.py/app.js/saver-runtime.js 全代码核实</td></tr>
+</table>
+
+<div class="foot">
+  <p>本报告由 team-work 竞品分析团队生成（行业研究员 × 深度分析师），项目经理综合定稿 + 主线程红队校准。</p>
+  <p>数据采集时间：2026-07-17 | 方法论：DeepSearch 多轮追问 + 同品类直接对标 | 承接 drawio 报告红队建议</p>
+  <p>免责声明：StackEdit 离线技术实现、GitHub Stars、2019后维护节奏、独立用户评价平台数据存在缺口。竞品 HedgeDoc/HackMD 对比数据不足，标注为推测。HotPage 功能均经代码验证。</p>
+</div>
+
+</div>
+</body>
+</html>

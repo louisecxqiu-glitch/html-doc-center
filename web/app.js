@@ -2019,8 +2019,10 @@
     const list = $("#browse-list");
     list.innerHTML = window.i18n.t("browse.loading_html") || "Loading…";
     try {
-      const modeParam = _browseMode === "file" ? "&mode=file" : "";
-      const r = await fetch(API.browse(path) + modeParam);
+      // 用 URL + searchParams 拼 query，避免 path 为空时 "&mode=file" 裸接缺 "?" → /api/browse&mode=file → 404 纯文本 → r.json() 报 "Unexpected non-whitespace character after JSON"
+      const url = new URL(API.browse(path), location.origin);
+      if (_browseMode === "file") url.searchParams.set("mode", "file");
+      const r = await fetch(url);
       const d = await r.json();
       if (!d.ok) { list.innerHTML = `<div class="browse-empty">❌ ${d.error}</div>`; return; }
       renderBrowseBreadcrumb(d.current, d.is_root);
@@ -2411,6 +2413,7 @@
           </div>
           <div class="history-item-actions">
             <button data-action="preview">${escapeHtml(window.i18n.t("history.item.preview"))}</button>
+            <button data-action="compare">📋 对比</button>
             <button data-action="restore" class="btn-restore">${escapeHtml(window.i18n.t("history.item.restore"))}</button>
           </div>
         </div>`;
@@ -2420,6 +2423,8 @@
         const snap = el.dataset.snap;
         const name = el.dataset.name;
         el.querySelector('[data-action="preview"]').addEventListener("click", () => preview(snap, name));
+        const cmpBtn = el.querySelector('[data-action="compare"]');
+        if (cmpBtn) cmpBtn.addEventListener("click", () => compare(snap, name));
         el.querySelector('[data-action="restore"]').addEventListener("click", () => restore(snap, name));
         // v1.10.3: 异步拉行级 diff
         loadDiff(el, snap);
@@ -2480,6 +2485,90 @@
       $("#history-preview-dialog").style.display = "none";
       $("#history-preview-iframe").srcdoc = "";
       pending = null;
+    }
+
+    // v2.0: 版本对比视图 — 左右并排渲染当前版本 vs 历史快照
+    async function compare(snapPath, name) {
+      if (!state.currentFile) {
+        toast("请先打开一个文件", "error");
+        return;
+      }
+      // 移除已有的对比 overlay
+      const old = document.getElementById("__dc_compare_overlay");
+      if (old) old.remove();
+
+      // 创建全屏 overlay
+      const overlay = document.createElement("div");
+      overlay.id = "__dc_compare_overlay";
+      overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483647;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;";
+
+      // 顶部栏
+      const header = document.createElement("div");
+      header.style.cssText = "padding:10px 20px;background:#1a1d23;color:#fff;display:flex;align-items:center;gap:16px;font:13px/1 -apple-system,'PingFang SC',sans-serif;border-bottom:1px solid rgba(201,169,97,0.25);";
+      header.innerHTML = `
+        <span style="color:#C9A961;font-weight:600;font-size:14px;">📋 版本对比</span>
+        <span style="color:#9CA3AF;">当前版本 <span style="color:#666;">vs</span> ${escapeHtml(name)}</span>
+        <span style="color:#666;font-size:11px;margin-left:8px;">（左侧=当前，右侧=历史快照）</span>
+        <button id="__dc_compare_close" style="margin-left:auto;background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:5px 14px;cursor:pointer;font-size:12px;">✕ 关闭 (Esc)</button>
+      `;
+      overlay.appendChild(header);
+
+      // 左右分栏
+      const body = document.createElement("div");
+      body.style.cssText = "flex:1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#333;overflow:hidden;";
+
+      // 左侧：当前版本
+      const left = document.createElement("div");
+      left.style.cssText = "display:flex;flex-direction:column;background:#fff;overflow:hidden;";
+      const leftLabel = document.createElement("div");
+      leftLabel.style.cssText = "padding:6px 12px;background:#2D3139;color:#C9A961;font-size:11px;font-weight:600;";
+      leftLabel.textContent = "📌 当前版本";
+      left.appendChild(leftLabel);
+      const leftFrame = document.createElement("iframe");
+      leftFrame.style.cssText = "flex:1;border:none;width:100%;";
+      leftFrame.src = "/api/file?path=" + encodeURIComponent(state.currentFile.absPath) + "&bust=1";
+      left.appendChild(leftFrame);
+
+      // 右侧：历史快照
+      const right = document.createElement("div");
+      right.style.cssText = "display:flex;flex-direction:column;background:#fff;overflow:hidden;";
+      const rightLabel = document.createElement("div");
+      rightLabel.style.cssText = "padding:6px 12px;background:#2D3139;color:#9CA3AF;font-size:11px;font-weight:600;";
+      rightLabel.textContent = "📦 " + name;
+      right.appendChild(rightLabel);
+      const rightFrame = document.createElement("iframe");
+      rightFrame.style.cssText = "flex:1;border:none;width:100%;";
+      rightFrame.srcdoc = '<div style="padding:40px;color:#999;text-align:center;font:14px sans-serif;">加载中…</div>';
+      right.appendChild(rightFrame);
+
+      body.appendChild(left);
+      body.appendChild(right);
+      overlay.appendChild(body);
+      document.body.appendChild(overlay);
+
+      // 异步加载快照内容
+      try {
+        const r = await fetch("/api/history/content?path=" + encodeURIComponent(snapPath));
+        const d = await r.json();
+        if (d.ok) {
+          rightFrame.srcdoc = d.content;
+        } else {
+          rightFrame.srcdoc = '<div style="padding:40px;color:#f87171;text-align:center;font:14px sans-serif;">加载失败: ' + escapeHtml(d.error || "未知错误") + '</div>';
+        }
+      } catch (e) {
+        rightFrame.srcdoc = '<div style="padding:40px;color:#f87171;text-align:center;font:14px sans-serif;">加载失败: ' + escapeHtml(e.message) + '</div>';
+      }
+
+      // 关闭事件
+      const closeOverlay = () => overlay.remove();
+      overlay.querySelector("#__dc_compare_close").addEventListener("click", closeOverlay);
+      const escHandler = (e) => {
+        if (e.key === "Escape") {
+          closeOverlay();
+          document.removeEventListener("keydown", escHandler);
+        }
+      };
+      document.addEventListener("keydown", escHandler);
     }
 
     async function restore(snapPath, name) {

@@ -44,3 +44,8 @@ CODEBUDDY.md
 docs/superpowers/plans/*.internal.md
 HotPage.app/
 .mcp.json
+
+# ─── PyInstaller 构建产物 ───
+build/
+dist/
+*.spec

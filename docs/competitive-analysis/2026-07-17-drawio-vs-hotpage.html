@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<base href="/api/asset/L1VzZXJzL2xvdWlzY3hxaXUvQ29kZUJ1ZGR5L29wZW5jbGF3LWNiLzAyIHNvZnR3YXJlIHByb2plY3QvaHRtbC1kb2MtY2VudGVyL2RvY3MvY29tcGV0aXRpdmUtYW5hbHlzaXM/">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>draw.io × HotPage 标杆分析报告 · 2026-07-17</title>
+<style>
+  :root{
+    --bg:#0f1419; --card:#1a2028; --card2:#222b36; --border:#2d3845;
+    --text:#e8eef5; --text2:#a8b5c4; --text3:#6b7a8c;
+    --blue:#4a9eff; --blue-dim:#2a6db5; --green:#34d399; --red:#f87171;
+    --orange:#fb923c; --yellow:#fbbf24; --purple:#a78bfa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.8;font-size:15px;padding:0}
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 32px 80px}
+  h1{font-size:30px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px}
+  h2{font-size:22px;font-weight:700;margin:48px 0 16px;padding-bottom:10px;border-bottom:2px solid var(--blue);color:var(--text)}
+  h3{font-size:17px;font-weight:700;margin:28px 0 12px;color:var(--blue)}
+  h4{font-size:15px;font-weight:700;margin:20px 0 8px;color:var(--text2)}
+  p{margin:10px 0;color:var(--text2)}
+  .meta{color:var(--text3);font-size:13px;margin-bottom:32px}
+  .meta span{margin-right:16px}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+  th{background:var(--card2);color:var(--text);font-weight:600;text-align:left;padding:10px 12px;border:1px solid var(--border)}
+  td{padding:9px 12px;border:1px solid var(--border);color:var(--text2);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:16px 0}
+  .card.blue{border-left:3px solid var(--blue)}
+  .card.green{border-left:3px solid var(--green)}
+  .card.red{border-left:3px solid var(--red)}
+  .card.orange{border-left:3px solid var(--orange)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-right:4px}
+  .tag-off{background:rgba(74,158,255,0.15);color:var(--blue)}
+  .tag-media{background:rgba(251,146,60,0.15);color:var(--orange)}
+  .tag-user{background:rgba(52,211,153,0.15);color:var(--green)}
+  .tag-guess{background:rgba(248,113,113,0.15);color:var(--red)}
+  .tag-code{background:rgba(167,139,250,0.15);color:var(--purple)}
+  .pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+  .pill-s{background:rgba(52,211,153,0.15);color:var(--green)}
+  .pill-w{background:rgba(248,113,113,0.15);color:var(--red)}
+  .pill-o{background:rgba(74,158,255,0.15);color:var(--blue)}
+  .pill-t{background:rgba(251,191,36,0.15);color:var(--yellow)}
+  ul,ol{margin:10px 0 10px 22px;color:var(--text2)}
+  li{margin:5px 0}
+  strong{color:var(--text)}
+  code{background:var(--card2);padding:1px 6px;border-radius:4px;font-size:13px;color:var(--orange);font-family:"SF Mono",Menlo,monospace}
+  .quote{border-left:3px solid var(--yellow);padding:8px 16px;margin:16px 0;background:rgba(251,191,36,0.05);color:var(--text2);font-style:italic}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+  .score{font-size:28px;font-weight:800}
+  .toc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 28px;margin:24px 0}
+  .toc a{color:var(--blue);text-decoration:none;display:block;padding:3px 0;font-size:14px}
+  .toc a:hover{text-decoration:underline}
+  .sep{height:1px;background:var(--border);margin:40px 0}
+  .foot{color:var(--text3);font-size:12px;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+  .warn{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13px;color:var(--text2)}
+  .ok{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.3);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13px;color:var(--text2)}
+  @media(max-width:700px){.grid2{grid-template-columns:1fr}.wrap{padding:32px 16px}}
+</style>
+<style data-emotion="css" data-s=""></style></head>
+<body>
+<div class="wrap">
+
+<h1>draw.io × HotPage 跨品类标杆分析报告</h1>
+<div class="meta">
+  <span>📅 2026-07-17</span>
+  <span>🔧 team-work 竞品分析团队</span>
+  <span>📋 模式 B 单标杆深研 + 红队审查</span>
+</div>
+
+<div class="card orange">
+  <strong>定位声明</strong>：draw.io（在线图表绘制 SaaS，2005 年诞生）与 HotPage（本地 HTML 文档工作台，2026 年项目）<strong>非同赛道直接竞品</strong>。本报告定位为「跨品类标杆解剖」——以 draw.io 这个成熟开源产品为镜，审视 HotPage 在浏览器端编辑器、文档管理、集成生态、安全设计四个交叉维度的差距与可借鉴点。<br><br>
+  <strong><mark id="__dc_anno_1_mrohzjnz" data-note="我想要对比的是：draw io对于用户分发的体验；比如可以分享，线上共享，还可以本地下载，这块我要怎么实现；痛点是扩展一个新用户，你让他去github然后用一堆命令到codebuddy里去安装，太重了" data-created-at="2026-07-17T05:28:53.327Z" data-original-text="红队提示：更贴切的参照系应是 Obsidian / Notion / Typora（本地文档编辑）或 StackEdit（HTML 内容编辑）。本报告已在结论中标注因跨品类对比产生的尺度错位风险。">红队提示</mark></strong>：更贴切的参照系应是 Obsidian / Notion / Typora（本地文档编辑）或 StackEdit（HTML 内容编辑）。本报告已在结论中标注因跨品类对比产生的尺度错位风险。
+</div>
+
+<div class="toc">
+  <strong>目录</strong>
+  <a href="#s1">1. 执行摘要</a>
+  <a href="#s2">2. 研究范围与方法论</a>
+  <a href="#s3">3. draw.io 产品概述</a>
+  <a href="#s4">4. draw.io 功能矩阵（48+ 功能点）</a>
+  <a href="#s5">5. HotPage 能力盘点（46 功能点，代码验证）</a>
+  <a href="#s6">6. 对比矩阵</a>
+  <a href="#s7">7. SWOT 分析</a>
+  <a href="#s8">8. 第一性原理</a>
+  <a href="#s9">9. 红队审查要点</a>
+  <a href="#s10">10. 分发体验对比与方案设计（用户批注驱动）</a>
+  <a href="#s11">11. 结论与建议</a>
+  <a href="#s12">12. 数据可信度声明</a>
+</div>
+
+<!-- ============ 1. 执行摘要 ============ -->
+<h2 id="s1">1. 执行摘要</h2>
+
+<p>本次分析以 draw.io 为成熟标杆，解剖其在编辑器引擎、文档体系、集成生态、安全机制上的产品设计，对照 HotPage v1.18.4 的实际能力（46 功能点经代码验证），输出可执行借鉴清单。</p>
+
+<div class="card blue">
+  <strong>核心发现（经红队修正后）</strong>
+  <ol>
+    <li><strong>draw.io 的真正可借鉴点不在功能，而在"体系化"</strong>——9 大文档板块、插件系统、embed 嵌入模式、属性面板交互范式。HotPage 当前文档覆盖薄弱，插件架构缺失。</li>
+    <li><strong>HotPage 的差异化在"本地优先 × AI 原生工作流"，不在单一 feature</strong>。版本管理是差异化 feature 但<strong>非护城河</strong>（红队：可复制，Obsidian/VSCode 均有）。</li>
+    <li><strong>属性面板借鉴需谨慎</strong>——drawio 服务专业图表绘制者，HotPage 用户画像偏"非技术微调"，CSS 属性面板可能造成认知灾难（红队：错误类比）。</li>
+    <li><strong>安全层面真正威胁是 DNS 重绑定</strong>，非 postMessage <code>"*"</code> 或 shell=True（红队：理论风险被夸大）。</li>
+    <li><strong>contentEditable 不急于换内核</strong>——存在"第三条路"：用 Selection API 逐步替换 execCommand，保住零依赖卖点。</li>
+  </ol>
+</div>
+
+<!-- ============ 2. 方法论 ============ -->
+<h2 id="s2">2. 研究范围与方法论</h2>
+
+<table>
+  <tbody><tr><th width="30%">维度</th><th>说明</th></tr>
+  <tr><td>分析对象</td><td>draw.io（diagrams.net）标杆解剖 + HotPage v1.18.4 能力对照</td></tr>
+  <tr><td>数据采集</td><td>主线程 web_fetch drawio.com/docs + 3 轮 web_search（功能/竞品/用户反馈）+ HotPage 全代码 read_file</td></tr>
+  <tr><td>团队分工</td><td>行业研究员（drawio 深研）× 深度分析师（HotPage 盘点+对比框架）× 红队审查员（挑战结论）</td></tr>
+  <tr><td>分析模型</td><td>竞争力矩阵 + SWOT + 第一性原理 + 红队逆向论证</td></tr>
+  <tr><td>证据等级</td><td><span class="tag tag-off">官方</span><span class="tag tag-media">媒体</span><span class="tag tag-user">用户反馈</span><span class="tag tag-guess">推测</span><span class="tag tag-code">代码验证</span></td></tr>
+</tbody></table>
+
+<div class="warn">
+  <strong>方法论局限</strong>：drawio 的功能细节基于官方文档结构 + 搜索摘要 + 工作区 drawio XML 文件逆向推断，未逐一访问全部子页面。用户反馈来自 Capterra/G2 等平台摘要，具体条目未逐一核实原文。"60 万 GitHub stars"经主线程验证为<strong>误传</strong>（drawio 仓库实际约 1k+ stars，60 万疑为累计下载量），已降级标注。
+</div>
+
+<!-- ============ 3. draw.io 概述 ============ -->
+<h2 id="s3">3. draw.io 产品概述</h2>
+
+<table>
+  <tbody><tr><th width="30%">维度</th><th>内容</th><th width="10%">来源</th></tr>
+  <tr><td>名称</td><td>draw.io（现更名为 diagrams.net）</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>诞生年份</td><td>2005 年</td><td><span class="tag tag-media">媒体</span></td></tr>
+  <tr><td>开源状态</td><td>开源免费（Apache 2.0）</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>GitHub Stars</td><td>仓库 jgraph/drawio 实际约 1k+（"60 万"为误传，疑为累计下载）</td><td><span class="tag tag-guess">推测</span></td></tr>
+  <tr><td>部署形态</td><td>在线版 + 桌面版（Win/Mac/Linux）+ 可嵌入第三方</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>定价</td><td>免费（开源）；Confluence/Jira 插件有付费版</td><td><span class="tag tag-off">官方</span></td></tr>
+  <tr><td>底层框架</td><td>mxGraph（自研图形库，SVG/Canvas 渲染）</td><td><span class="tag tag-guess">推测</span></td></tr>
+</tbody></table>
+
+<p><strong>定位</strong>：面向开发者和企业的免费开源跨平台技术图表绘制工具，支持从流程图到复杂架构图的全方位可视化表达。</p>
+
+<p><strong>目标用户</strong>：核心为软件开发者/架构师；扩展至产品经理、运维工程师、教育工作者；企业用户通过 Atlassian/Google/Microsoft 集成进入工作流。</p>
+
+<h4>9 大文档板块（drawio.com/docs 结构）</h4>
+<table>
+  <tbody><tr><th>板块</th><th>内容</th></tr>
+  <tr><td>Getting Started</td><td>技术图表绘制基础</td></tr>
+  <tr><td>Using draw.io</td><td>编辑器全功能说明 + Advanced Features 子板块</td></tr>
+  <tr><td>Troubleshooting</td><td>FAQ 故障排除</td></tr>
+  <tr><td>Reference</td><td>键盘快捷键 / 配置选项 / AI 生成 / 插件参考</td></tr>
+  <tr><td>Tutorials</td><td>功能和编辑器函数深度教程</td></tr>
+  <tr><td>Types of Technical Diagrams</td><td>图表示例及绘制方法</td></tr>
+  <tr><td>Best Practices</td><td>无障碍设计、工具选择建议</td></tr>
+  <tr><td>Integrations</td><td>Atlassian / Google / Microsoft / Notion 集成</td></tr>
+  <tr><td>Security</td><td>数据安全保护的技术信息</td></tr>
+</tbody></table>
+
+<!-- ============ 4. draw.io 功能矩阵 ============ -->
+<h2 id="s4">4. draw.io 功能矩阵（48+ 功能点）</h2>
+
+<h3>4.1 图表绘制能力（10）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>怎么做</th><th>限制</th></tr>
+  <tr><td>1</td><td>流程图</td><td>拖拽形状库符号，连线自动吸附</td><td>复杂排版需手动调整</td></tr>
+  <tr><td>2</td><td>UML 图</td><td>内置 UML 形状库，支持 lifeline（工作区 XML 验证）</td><td>UML 2.x 覆盖度未明确</td></tr>
+  <tr><td>3</td><td>架构图</td><td>自定义形状样式 fillColor/strokeColor/fontColor</td><td>样式属性学习曲线陡</td></tr>
+  <tr><td>4</td><td>网络拓扑图</td><td>内置 Cisco/AWS/Azure stencils</td><td>—</td></tr>
+  <tr><td>5</td><td>组织架构图</td><td>模板 + 自动布局</td><td>—</td></tr>
+  <tr><td>6</td><td>信息图/结构图</td><td>模板库 + 自定义图形组合</td><td>—</td></tr>
+  <tr><td>7</td><td>自定义形状样式</td><td>style 属性字符串（工作区 XML 验证）</td><td>学习曲线陡</td></tr>
+  <tr><td>8</td><td>Visio 兼容</td><td>导入/导出 Visio 格式</td><td>—</td></tr>
+  <tr><td>9</td><td>数学公式</td><td>math="1" 开启 MathJax（工作区 XML 验证）</td><td>—</td></tr>
+  <tr><td>10</td><td>Smart Templates</td><td>从文本描述自动生成图表</td><td>—</td></tr>
+</tbody></table>
+
+<h3>4.2 编辑器交互（10）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>说明</th></tr>
+  <tr><td>11</td><td>双编辑器模式</td><td>Board editor（简单）+ Diagram editor（完整）</td></tr>
+  <tr><td>12</td><td>网格与对齐</td><td>grid/gridSize/guides（工作区 XML 验证）</td></tr>
+  <tr><td>13</td><td>智能连线路由</td><td>elbowEdgeStyle/curved/rounded</td></tr>
+  <tr><td>14</td><td>键盘快捷键体系</td><td>Reference 板块完整参考</td></tr>
+  <tr><td>15</td><td>图层管理</td><td>fold/collapsible 分层</td></tr>
+  <tr><td>16</td><td>多页面管理</td><td>&lt;diagram id name&gt; 多页（工作区 XML 验证）</td></tr>
+  <tr><td>17</td><td>富文本格式化</td><td>HTML 标签 + fontSize/fontStyle/fontColor</td></tr>
+  <tr><td>18</td><td>缩放</td><td>pageScale 页面缩放</td></tr>
+  <tr><td>19</td><td>工具提示</td><td>tooltips 全局开关</td></tr>
+  <tr><td>20</td><td>属性面板</td><td>选中元素右侧显示属性控件</td></tr>
+</tbody></table>
+
+<h3>4.3 协作与共享（8）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>说明</th></tr>
+  <tr><td>21</td><td>实时协作</td><td>多人同时编辑</td></tr>
+  <tr><td>22</td><td>在线分享</td><td>URL 分享</td></tr>
+  <tr><td>23</td><td>嵌入第三方</td><td>embed API / iframe</td></tr>
+  <tr><td>24</td><td>版本管理</td><td>借力云存储（Google Drive/OneDrive）版本控制 <span class="tag tag-guess">推测</span></td></tr>
+  <tr><td>25</td><td>评论批注</td><td>note 形状添加注释</td></tr>
+  <tr><td>26</td><td>团队模板库</td><td>共享云存储文件夹 <span class="tag tag-guess">推测</span></td></tr>
+  <tr><td>27</td><td>公开链接</td><td>在线版生成公开链接</td></tr>
+  <tr><td>28</td><td>权限控制</td><td>借力集成平台权限体系 <span class="tag tag-guess">推测</span></td></tr>
+</tbody></table>
+
+<h3>4.4 集成与扩展（10）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>说明</th></tr>
+  <tr><td>29</td><td>Atlassian 集成</td><td>Confluence/Jira 内直接编辑</td></tr>
+  <tr><td>30</td><td>Google Drive</td><td>直接保存/打开</td></tr>
+  <tr><td>31</td><td>Microsoft Teams</td><td>Teams 内使用</td></tr>
+  <tr><td>32</td><td>Notion 集成</td><td>Notion 嵌入图表</td></tr>
+  <tr><td>33</td><td>插件系统</td><td>Reference 板块插件参考</td></tr>
+  <tr><td>34</td><td>AI 图表生成</td><td>MCP 协议 + 智谱 AI/Claude <span class="tag tag-media">媒体</span></td></tr>
+  <tr><td>35</td><td>Smart Templates</td><td>文本描述生成图表</td></tr>
+  <tr><td>36</td><td>MCP 协议支持</td><td>社区驱动，非官方核心 <span class="tag tag-media">媒体</span></td></tr>
+  <tr><td>37</td><td>VS Code 扩展</td><td>编辑器内画图 <span class="tag tag-guess">推测</span></td></tr>
+  <tr><td>38</td><td>GitHub 集成</td><td>仓库内图表版本管理 <span class="tag tag-guess">推测</span></td></tr>
+</tbody></table>
+
+<h3>4.5 导出与发布（5）</h3>
+<table>
+  <tbody><tr><th>#</th><th>格式</th></tr>
+  <tr><td>39</td><td>PDF</td></tr>
+  <tr><td>40</td><td>PNG / JPEG</td></tr>
+  <tr><td>41</td><td>SVG（矢量）</td></tr>
+  <tr><td>42</td><td>XML（原生格式）</td></tr>
+  <tr><td>43</td><td>HTML（可交互嵌入）</td></tr>
+</tbody></table>
+
+<h3>4.6 安全与部署（5）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>说明</th></tr>
+  <tr><td>44</td><td>专属 Security 文档板块</td><td>数据安全保护技术说明</td></tr>
+  <tr><td>45</td><td>桌面版离线</td><td>drawio-desktop 完全离线运行</td></tr>
+  <tr><td>46</td><td>嵌入模式</td><td>embed iframe 嵌入第三方</td></tr>
+  <tr><td>47</td><td>配置选项</td><td>Reference 板块配置参考</td></tr>
+  <tr><td>48</td><td>无障碍设计</td><td>Best Practices 板块无障碍指南</td></tr>
+</tbody></table>
+
+<!-- ============ 5. HotPage 能力盘点 ============ -->
+<h2 id="s5">5. HotPage 能力盘点（46 功能点）</h2>
+<p><span class="tag tag-code">代码验证</span> 以下功能均经 server.py / web/app.js / saver-runtime.js / CHANGELOG.md 代码核实。</p>
+
+<h3>5.1 文件管理与浏览（8）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>1</td><td>多根目录扫描</td><td>scan_roots 多目录，旧格式自动迁移；路径须过 _resolve_safe 白名单</td></tr>
+  <tr><td>2</td><td>目录树自动发现</td><td>递归扫描 .html/.md/.png 等，排除 _auto-save/node_modules；不跟随符号链接</td></tr>
+  <tr><td>3</td><td>ETag 签名轮询</td><td>10s 先拉 tree-sig(~80字节)，变化才拉全树；标签页隐藏时暂停</td></tr>
+  <tr><td>4</td><td>diff 增量更新</td><td>对比新旧树仅增删变化节点，保持展开/选中态</td></tr>
+  <tr><td>5</td><td>拖拽移动文件</td><td>HTML5 DnD 跨根移动；dirty 文件不可拖走</td></tr>
+  <tr><td>6</td><td>收藏与排序</td><td>favorites.json，三 Tab（目录/收藏/最近），mtime_desc/name_asc</td></tr>
+  <tr><td>7</td><td>搜索高亮</td><td>文件名+路径搜索，&lt;mark&gt; 高亮；仅文件粒度</td></tr>
+  <tr><td>8</td><td>会话恢复 + URL 路由</td><td>?path= 双向同步支持分享；URL 优先级 &gt; session</td></tr>
+</tbody></table>
+
+<h3>5.2 编辑器能力（10）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>9</td><td>contentEditable 就地编辑</td><td>注入 iframe body[contenteditable]；嗅探已有编辑器避免双工具栏；依赖 execCommand</td></tr>
+  <tr><td>10</td><td>富文本工具栏</td><td>B/I/U、7档字号、14色+自定义字色、高亮、4方向对齐、链接、Undo/Redo</td></tr>
+  <tr><td>11</td><td>表格插入</td><td>prompt 行x列(1-20)，insertHTML；不支持合并单元格</td></tr>
+  <tr><td>12</td><td>更多排版菜单</td><td>行高(3档)、字间距(3档)、代码块/引用块切换</td></tr>
+  <tr><td>13</td><td>划词批注系统</td><td>选区浮动按钮→浮窗表单，.__dc_annotation 标记；无状态机/线程</td></tr>
+  <tr><td>14</td><td>图片编辑系统</td><td>点击图片浮窗(替换/粘贴/删除)；全局⌘V 粘贴；base64 内嵌</td></tr>
+  <tr><td>15</td><td>Notion 式图片操纵</td><td>4角 resize handle + 段内拖拽移动；仅块内</td></tr>
+  <tr><td>16</td><td>块间距编辑器</td><td>⌥+点击 进入间距编辑模式</td></tr>
+  <tr><td>17</td><td>元素定位器</td><td>Cmd+长按300ms 激活浮窗，方向键/数字调 transform</td></tr>
+  <tr><td>18</td><td>Markdown 三视图</td><td>Source/Split/Preview 切换，可拖分栏条；零 npm 依赖</td></tr>
+</tbody></table>
+
+<h3>5.3 自动保存与版本（8）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>19</td><td>2s 防抖快照</td><td>停编2s→POST /api/snapshot→_auto-save/{stem}-{ts}.html；1.5s 节流</td></tr>
+  <tr><td>20</td><td>三选项关闭对话框</td><td>覆盖/另存审阅版/丢弃；覆盖前自动备份</td></tr>
+  <tr><td>21</td><td>版本时间线</td><td>/api/history 返回 auto/pre-overwrite/pre-restore 三类快照</td></tr>
+  <tr><td>22</td><td>行级 Diff</td><td>difflib.unified_diff，返回 lines_added/removed + 前5个 hunk</td></tr>
+  <tr><td>23</td><td>一键恢复历史</td><td>/api/restore 覆盖源文件，自动备份当前</td></tr>
+  <tr><td>24</td><td>快照梯度稀释</td><td>4级时间桶：10min全保/10-60min每分1条/1-24h每小时1条/&gt;24h每天1条</td></tr>
+  <tr><td>25</td><td>过期清理</td><td>启动清理 &gt;N 天快照(3/7/14/30/90可配)</td></tr>
+  <tr><td>26</td><td>序列化剔除编辑器DOM</td><td>保存前剔除工具栏/色板/handle，class 标记精确剔除</td></tr>
+</tbody></table>
+
+<h3>5.4 集成与扩展（7）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>27</td><td>Claude Code Plugin</td><td>/hotpage [path] / serve [dir] / stop</td></tr>
+  <tr><td>28</td><td>MCP 工具集</td><td>hotpage_open/status/serve/list；粒度较粗</td></tr>
+  <tr><td>29</td><td>双击启动脚本</td><td>Mac .command / Win .bat，自动检查+装依赖+开浏览器</td></tr>
+  <tr><td>30</td><td>CLI 参数</td><td>--open-browser / --port / --dev；无 --host 参数</td></tr>
+  <tr><td>31</td><td>静态资源代理</td><td>/api/asset 代理同目录图片/CSS/JS；注入 &lt;base href&gt;</td></tr>
+  <tr><td>32</td><td>postMessage 双向通信</td><td>iframe↔parent：dirty/snapshot_ok/annotation 等；targetOrigin 为 "*"</td></tr>
+  <tr><td>33</td><td>i18n 双语引擎</td><td>手写~100行，326 key，EN/中文；仅2语言</td></tr>
+</tbody></table>
+
+<h3>5.5 导出与发布（5）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>34</td><td>PDF 导出/打印</td><td>iframe.contentWindow.print() + @media print；依赖浏览器</td></tr>
+  <tr><td>35</td><td>另存为审阅版</td><td>{stem}-审阅版-{ts}.{ext}，路径自动复制剪贴板</td></tr>
+  <tr><td>36</td><td>文件拖入预览</td><td>从 Finder 拖 HTML/MD 即时预览；临时预览不保存</td></tr>
+  <tr><td>37</td><td>Markdown 拖入渲染</td><td>渲染为格式化 HTML；极简正则非完整 marked</td></tr>
+  <tr><td>38</td><td>图片预览</td><td>PNG/JPG/GIF/WebP/SVG 深色背景居中；仅查看</td></tr>
+</tbody></table>
+
+<h3>5.6 平台兼容与运维（8）</h3>
+<table>
+  <tbody><tr><th>#</th><th>功能</th><th>怎么做 + 限制</th></tr>
+  <tr><td>39</td><td>零依赖架构</td><td>仅 aiohttp；无 npm/webpack/build</td></tr>
+  <tr><td>40</td><td>路径安全白名单</td><td>_resolve_safe() 校验所有 I/O；防目录穿越</td></tr>
+  <tr><td>41</td><td>Windows 兼容加固</td><td>OneDrive 重定向；explorer 引号处理；10项自测脚本</td></tr>
+  <tr><td>42</td><td>开机自启</td><td>Mac launchd plist / Win 启动文件夹快捷方式</td></tr>
+  <tr><td>43</td><td>缓存彻底禁用</td><td>剥离 ETag/Last-Modified 防 304 陷阱</td></tr>
+  <tr><td>44</td><td>暗色主题</td><td>auto/light/dark 三态；早期恢复防闪烁</td></tr>
+  <tr><td>45</td><td>全局快捷键</td><td>H/R/?/⌘B；无自定义</td></tr>
+  <tr><td>46</td><td>配置热更新</td><td>设置面板改 scan_roots 立即生效；白名单字段校验</td></tr>
+</tbody></table>
+
+<!-- ============ 6. 对比矩阵 ============ -->
+<h2 id="s6">6. 对比矩阵（4 交叉维度）</h2>
+
+<table>
+  <tbody><tr><th width="14%">维度</th><th width="24%">draw.io 做法</th><th width="24%">HotPage 做法</th><th width="14%">差距</th><th>HotPage 可借鉴点</th></tr>
+  <tr>
+    <td rowspan="2"><strong>浏览器端编辑器</strong></td>
+    <td>自研 SVG/Canvas 引擎，拖拽连接/智能布局/形状库/属性面板</td>
+    <td>contentEditable + execCommand 注入，工具栏(B/I/U/字号/字色/表格/批注)</td>
+    <td>drawio 有结构化引擎；HotPage 依赖非结构化 HTML</td>
+    <td><strong>谨慎借鉴</strong>属性面板——但需验证用户画像是否匹配（见红队 #5）</td>
+  </tr>
+  <tr>
+    <td>插件系统允许第三方扩展</td>
+    <td>无插件架构，功能硬编码在 saver-runtime.js(3000+行)</td>
+    <td>drawio 可扩展性强</td>
+    <td>借鉴插件 manifest 设计，允许自定义工具栏按钮注入</td>
+  </tr>
+  <tr>
+    <td rowspan="2"><strong>文档与内容管理</strong></td>
+    <td>文件存云(Google Drive/OneDrive)，文件夹/标签/搜索</td>
+    <td>本地 scan_roots 目录树，收藏/最近/搜索，ETag 轮询</td>
+    <td>HotPage 已领先——本地文件管理是差异化</td>
+    <td>无需追赶云端存储，保持本地优势</td>
+  </tr>
+  <tr>
+    <td>无原生版本历史（借力云存储版本控制）</td>
+    <td>2s 快照 + 时间线 + 行级 diff + 梯度稀释 + 一键恢复</td>
+    <td>HotPage 在版本管理上领先</td>
+    <td>保持优势；注意这是 feature 非护城河（红队 #1）</td>
+  </tr>
+  <tr>
+    <td rowspan="2"><strong>集成生态</strong></td>
+    <td>Atlassian/Google/Microsoft/Notion 深度集成；MCP+AI 生成；embed 嵌入</td>
+    <td>Claude Code Plugin + 4 个 MCP 工具；CLI；双击启动</td>
+    <td>drawio 覆盖全平台；HotPage 仅 Claude Code 一条线</td>
+    <td>借鉴 embed iframe 模式，让 HotPage 可嵌入 IDE 预览窗口</td>
+  </tr>
+  <tr>
+    <td>AI 生成图表（自然语言→图表结构→可视化编辑）</td>
+    <td>AI 生成 HTML→HotPage 编辑（AI 在外部，HotPage 仅接手）</td>
+    <td>drawio AI 内生；HotPage AI 外挂</td>
+    <td>探索"选中段落→AI 局部重写/美化"内生辅助</td>
+  </tr>
+  <tr>
+    <td rowspan="2"><strong>安全与部署</strong></td>
+    <td>在线 SaaS + 桌面版 + 嵌入；数据可存云；企业级合规</td>
+    <td>本地 127.0.0.1:9901 单进程；路径白名单；零上传</td>
+    <td>不同安全模型，难直接对比</td>
+    <td>HotPage 隐私优势；补 DNS 重绑定防护（红队 #3）</td>
+  </tr>
+  <tr>
+    <td>专属 Security 文档板块</td>
+    <td>无安全文档</td>
+    <td>drawio 有体系化安全文档</td>
+    <td>补充安全说明文档（本地优先的威胁模型）</td>
+  </tr>
+</tbody></table>
+
+<!-- ============ 7. SWOT ============ -->
+<h2 id="s7">7. SWOT 分析（HotPage 视角）</h2>
+
+<div class="grid2">
+  <div class="card green">
+    <span class="pill pill-s">Strengths</span>
+    <ol>
+      <li><strong>本地优先，数据不出机器</strong>——drawio 在线模式数据需上传服务器，企业敏感场景有顾虑</li>
+      <li><strong>AI 原生工作流</strong>——专为"AI 生成 HTML→人工编辑"链路设计，Claude Code Plugin + MCP 无缝衔接</li>
+      <li><strong>版本管理领先</strong>——2s快照+时间线+diff+梯度稀释+一键恢复（差异化 feature，非护城河）</li>
+      <li><strong>零依赖架构</strong>——仅 aiohttp，无 npm/webpack/build，部署门槛极低</li>
+      <li><strong>编辑任意 HTML 的独特定位</strong>——drawio 只能画图表，不能编辑 AI 生成的 HTML 报告/仪表盘/封面</li>
+    </ol>
+  </div>
+  <div class="card red">
+    <span class="pill pill-w">Weaknesses</span>
+    <ol>
+      <li><strong>无图表绘制能力</strong>——不能画流程图/架构图/UML/思维导图</li>
+      <li><strong>无协作能力</strong>——纯单机，无实时协作/评论分享/权限</li>
+      <li><strong>编辑器内核依赖废弃 API</strong>——execCommand 已被 W3C 废弃（但浏览器承诺不移除）</li>
+      <li><strong>生态规模差距悬殊</strong>——drawio 有 9 大文档板块/插件系统/数十种图表；HotPage 文档覆盖有限</li>
+      <li><strong>导出格式单一</strong>——仅 PDF（浏览器打印）；drawio 支持 PDF/PNG/SVG/XML/HTML</li>
+    </ol>
+  </div>
+  <div class="card blue">
+    <span class="pill pill-o">Opportunities</span>
+    <ol>
+      <li><strong>AI 生成 HTML 后编辑市场</strong>——Claude Code/Cursor/Copilot 大量生成 HTML 报告/仪表盘/演示（赛道规模待验证，红队 #2）</li>
+      <li><strong>HTML 文档+图表一体化</strong>——集成轻量 Mermaid/SVG 编辑，占据"HTML 内嵌图表编辑"赛道</li>
+      <li><strong>本地 AI 辅助编辑</strong>——选中段落→AI 局部重写/美化/翻译，三段式工作流</li>
+      <li><strong>MCP 生态先发优势</strong>——作为 Claude Code Plugin 在 MCP 生态有先发</li>
+    </ol>
+  </div>
+  <div class="card orange">
+    <span class="pill pill-t">Threats</span>
+    <ol>
+      <li><strong>drawio embed 能力反噬</strong>——若扩展为"嵌入 HTML 编辑器"可能切入赛道（但 SVG/Canvas 内核与 contentEditable 技术栈差异大，转型成本高）</li>
+      <li><strong>Obsidian/Notion 向 HTML 延伸</strong>——若从 MD-first 扩展到 HTML-first 编辑直接威胁（但架构以 MD 为核心，意愿不高）</li>
+      <li><strong>浏览器原生编辑 API 进化</strong>——若 Lexical/ProseMirror 被浏览器原生集成，contentEditable 方案面临技术代差</li>
+      <li><strong>DNS 重绑定攻击</strong>——本地服务无认证，外部恶意网站可通过 DNS 指向 127.0.0.1（红队指出的真正威胁）</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ============ 8. 第一性原理 ============ -->
+<h2 id="s8">8. 第一性原理分析</h2>
+
+<h3>假设 1："HTML 文档管理和图表绘制是两个赛道"——真的吗？</h3>
+<div class="card blue">
+  <p><strong>不完全是。</strong>从用户任务视角，两者都是"信息可视化表达"：HTML 文档是叙述性可视化（报告/仪表盘/演示），图表是结构性可视化（流程图/架构图/UML）。AI 时代界限正在模糊——AI 生成的 HTML 报告中常需嵌入架构图，AI 生成的 Mermaid 图表也需嵌入 HTML 报告。drawio 的 XML 和 HotPage 的 HTML 本质都是"结构化内容的序列化"。</p>
+  <p><strong>启示</strong>：HotPage 应考虑集成轻量图表能力（Mermaid 渲染/SVG 内嵌编辑），而非固守"纯 HTML"边界。</p>
+</div>
+
+<h3>假设 2："本地优先一定比 SaaS 更安全"——真的吗？</h3>
+<div class="card red">
+  <p><strong>需要附加条件。</strong>本地优先在"传输安全"和"存储安全"层面确实优于 SaaS。但 HotPage 存在安全盲区（经红队校准后）：</p>
+  <ul>
+    <li><code>postMessage</code> 的 <code>"*"</code> targetOrigin —— <strong>理论风险</strong>（攻击者需先在本机浏览器执行 JS，而能做到这点的攻击者已可直接 fetch API，postMessage 只是更绕弯的路径）</li>
+    <li><code>shell=True</code>（Windows explorer）—— <strong>理论风险</strong>（已有 _resolve_safe 白名单 + Path.resolve() 规范化，实际注入概率极低但非零）</li>
+    <li><strong>DNS 重绑定</strong> —— <strong>真正的威胁</strong>（外部恶意网站通过 DNS 指向 127.0.0.1 访问无认证的本地服务，这是所有本地开发工具的通病但报告初稿漏了）</li>
+  </ul>
+  <p><strong>结论</strong>：本地优先在隐私层面更优，但工程安全实践需补强 DNS 重绑定防护（Host header 校验）、postMessage origin 限制。</p>
+</div>
+
+<h3>假设 3："AI 生成的 HTML 不需要专业编辑器"——真的吗？</h3>
+<div class="card green">
+  <p><strong>错误。</strong>AI 生成 HTML 存在系统性缺陷：排版不精确、内容需校对、个性化需求。但"专业"的定义需匹配用户画像——HotPage 用户需要的是"改个字、换个图、加个表格"的轻量编辑（CHANGELOG v1.18 用户故事佐证），而非"选中 div→调 margin-top:12px"的 CSS 属性面板（红队 #5：这对非技术用户是认知灾难）。</p>
+  <p><strong>启示</strong>：投资方向应是块级编辑（类 Notion <code>/</code> 命令）、Track Changes、降低门槛，而非专业 CSS 控件。</p>
+</div>
+
+<!-- ============ 9. 红队审查 ============ -->
+<h2 id="s9">9. 红队审查要点</h2>
+
+<p>红队审查员对 5 条核心结论逐一挑战，以下为采纳的修正：</p>
+
+<table>
+  <tbody><tr><th width="20%">原结论</th><th width="14%">红队挑战</th><th>修正后结论</th></tr>
+  <tr>
+    <td>版本管理是核心护城河</td>
+    <td><span class="pill pill-w">确认偏误</span></td>
+    <td>降级为<strong>差异化 feature</strong>。Obsidian/VSCode/Notion 均有版本管理，可复制。真正护城河是"零依赖+本地 HTML 文件管理"这个特定工作流本身</td>
+  </tr>
+  <tr>
+    <td>AI 生成 HTML 赛道比图表赛道大得多</td>
+    <td><span class="pill pill-w">幸存者偏差</span></td>
+    <td>标注<strong>推测，缺数据锚点</strong>。图表是高复用长期资产，HTML 报告可能一次性消费。需用 GitHub stars 增长率/npm 下载量/subreddit 活跃度佐证</td>
+  </tr>
+  <tr>
+    <td>postMessage "*"/shell=True 是安全盲区</td>
+    <td><span class="pill pill-w">诉诸恐惧</span></td>
+    <td>降为<strong>理论风险</strong>。补上 <strong>DNS 重绑定</strong>这个真正威胁。安全分析需引入威胁建模（攻击链→前置条件→可达性→影响）</td>
+  </tr>
+  <tr>
+    <td>contentEditable 应评估换 Lexical/ProseMirror</td>
+    <td><span class="pill pill-w">假两难</span></td>
+    <td>采纳<strong>第三条路</strong>：用 Selection API + 自定义命令逐步替换 execCommand 调用，保住零依赖卖点。换内核会摧毁架构定位，得不偿失</td>
+  </tr>
+  <tr>
+    <td>应借鉴 drawio 属性面板</td>
+    <td><span class="pill pill-w">错误类比</span></td>
+    <td>降级为<strong>待验证假设</strong>。drawio 服务专业图表绘制者，HotPage 用户偏"非技术微调"。CSS 属性面板可能违背"零学习成本"定位。应先做用户访谈验证</td>
+  </tr>
+</tbody></table>
+
+<div class="quote">
+  <strong>红队根本性意见</strong>：drawio vs HotPage 是"强行对比"——像对比 Photoshop 和 VSCode。更有价值的对比对象应是 Obsidian/Notion/Typora（本地文档编辑）。本报告保留 drawio 对比因其在"成熟开源产品的体系化建设"（文档/插件/集成/安全）上确有借鉴价值，但所有功能级对比已标注尺度错位风险。
+</div>
+
+<!-- ============ 10. 分发体验对比（用户批注驱动） ============ -->
+<h2 id="s10">10. 分发体验对比与方案设计</h2>
+
+<div class="card orange">
+  <strong>📌 用户批注（原文）</strong>：<br>
+  "我想要对比的是：draw io对于用户分发的体验；比如可以分享，线上共享，还可以本地下载，这块我要怎么实现；痛点是扩展一个新用户，你让他去github然后用一堆命令到codebuddy里去安装，太重了"<br><br>
+  <strong>本章回应</strong>：将分析焦点从"编辑器功能对比"转向"分发与获客体验"——这是 HotPage 当前的<strong>第一痛点</strong>。drawio 的分发能力是 HotPage 最该学的，不是编辑器。
+</div>
+
+<h3>10.1 drawio 的分发模式全景</h3>
+<p><span class="tag tag-off">官方</span> drawio 用户获取产品的路径有 <strong>4 条</strong>，覆盖从"零安装"到"深度集成"的全光谱：</p>
+
+<table>
+  <tbody><tr><th width="16%">分发模式</th><th width="20%">用户操作</th><th width="14%">门槛</th><th>说明</th></tr>
+  <tr>
+    <td><strong>① 在线版</strong></td>
+    <td>打开 app.diagrams.net</td>
+    <td><span class="pill pill-s">零安装</span></td>
+    <td>浏览器直接用，无需注册，数据存本地/Google Drive。这是 drawio 最大的获客入口——用户点一个链接就能用</td>
+  </tr>
+  <tr>
+    <td><strong>② 桌面版</strong></td>
+    <td>下载 .dmg/.exe/.AppImage</td>
+    <td><span class="pill pill-t">一次安装</span></td>
+    <td>drawio-desktop（Electron 打包），双击安装，完全离线。适合企业内网/敏感数据场景</td>
+  </tr>
+  <tr>
+    <td><strong>③ embed 嵌入</strong></td>
+    <td>一行 iframe 代码</td>
+    <td><span class="pill pill-s">零安装</span></td>
+    <td>第三方网站嵌入 drawio 编辑器，Confluence/Jira/Notion 内直接画图。用户在已有工具里获得能力</td>
+  </tr>
+  <tr>
+    <td><strong>④ 自托管</strong></td>
+    <td>Docker/npm 部署</td>
+    <td><span class="pill pill-w">需运维</span></td>
+    <td>企业自托管 drawio 服务，数据完全在内网。适合有合规要求的大企业</td>
+  </tr>
+</table>
+
+<div class="ok">
+  <strong>drawio 分发的核心设计哲学</strong>：让用户在<strong>已有工具里</strong>获得能力，而不是要求用户<strong>迁移到新工具</strong>。用户在 Confluence 里点一下就画图，在浏览器里打开链接就能用——"降低迁移成本"是 drawio 60万+下载量的根本原因。
+</div>
+
+<h3>10.2 HotPage 当前分发路径与痛点</h3>
+<p><span class="tag tag-code">代码验证</span> HotPage 当前的用户获取路径：</p>
+
+<table>
+  <tbody><tr><th width="20%">路径</th><th width="16%">门槛</th><th>用户操作步骤</th><th>痛点</th></tr>
+  <tr>
+    <td><strong>① GitHub clone + pip</strong></td>
+    <td><span class="pill pill-w">高</span></td>
+    <td>1.打开GitHub 2.看README 3.clone仓库 4.装Python 5.pip install aiohttp 6.python3 server.py 7.打开浏览器</td>
+    <td><strong>7步，非技术用户直接劝退</strong>。需要Git+Python+命令行三项技能</td>
+  </tr>
+  <tr>
+    <td><strong>② 双击启动脚本</strong></td>
+    <td><span class="pill pill-t">中</span></td>
+    <td>1.下载ZIP 2.解压 3.双击 .command/.bat 4.等依赖安装 5.浏览器自动打开</td>
+    <td>比clone好，但首次需联网装aiohttp，且需要Python环境。Mac还有安全提示"无法验证开发者"</td>
+  </tr>
+  <tr>
+    <td><strong>③ Claude Code Plugin</strong></td>
+    <td><span class="pill pill-t">中</span></td>
+    <td>1.装Claude Code 2./plugin install 3.配置scan_roots 4./hotpage</td>
+    <td>门槛在"装Claude Code"这一步——Claude Code本身也是开发者工具</td>
+  </tr>
+  <tr>
+    <td><strong>④ 分享HTML文件</strong></td>
+    <td><span class="pill pill-s">低</span></td>
+    <td>导出PDF → 发微信/邮件</td>
+    <td><strong>接收方只能看不能编辑</strong>。如果发HTML文件，对方可能打不开/样式丢失</td>
+  </tr>
+</table>
+
+<div class="warn">
+  <strong>核心痛点诊断</strong>：HotPage 的分发路径全部假设用户是<strong>开发者</strong>（会Git/Python/命令行）。但 HotPage 的目标用户是"AI产物管理者"——可能是产品经理、运营、设计师，他们不会装Python。drawio 的在线版让<strong>任何人点链接就能用</strong>，这是 HotPage 最大的获客瓶颈。
+</div>
+
+<h3>10.3 分发方案设计（三层递进）</h3>
+
+<h4>方案 A：PWA 在线版 — 零安装获客入口（P0）</h4>
+<div class="card blue">
+  <p><strong>目标</strong>：让用户打开一个网址就能体验 HotPage，无需安装任何东西。</p>
+  <p><strong>实现思路</strong>：</p>
+  <ul>
+    <li>部署一个<strong>公开在线版</strong>（如 hotpage.app），前端纯静态（app.js + saver-runtime.js），用浏览器 File System Access API 读写本地文件</li>
+    <li>加 PWA manifest + Service Worker，支持"添加到桌面"变伪桌面应用</li>
+    <li>不需要 Python 后端——纯前端用 File System Access API + IndexedDB 实现文件管理和版本快照</li>
+    <li><strong>降级方案</strong>：不支持 File System Access API 的浏览器（Safari），用拖拽上传 + IndexedDB 存储代替</li>
+  </ul>
+  <p><strong>关键权衡</strong>：在线版放弃"本地服务器"能力，换取"零安装"。这是 drawio 的核心获客逻辑——先让用户用起来，再引导到桌面版。</p>
+  <p><strong>工作量估算</strong>：前端已有 app.js + saver-runtime.js，核心改动是剥离对 Python API 的依赖，改用 File System Access API。约 2-3 周。</p>
+</div>
+
+<h4>方案 B：单文件可执行版 — 一键安装桌面应用（P1）</h4>
+<div class="card green">
+  <p><strong>目标</strong>：替代当前"GitHub clone + pip install"路径，做成一个 .app/.exe 双击即用。</p>
+  <p><strong>实现思路（三选一）</strong>：</p>
+  <table>
+    <tbody><tr><th>方案</th><th>原理</th><th>体积</th><th>优劣</th></tr>
+    <tr><td><strong>PyInstaller</strong></td><td>把 server.py + Python 运行时打包成单文件</td><td>~30-50MB</td><td>零额外依赖，保留现有代码；但体积大</td></tr>
+    <tr><td><strong>Tauri</strong></td><td>Rust 后端 + WebView 前端，重写 server.py 为 Rust</td><td>~5-10MB</td><td>体积小性能好；但需重写后端，工作量大</td></tr>
+    <tr><td><strong>pkg + npx</strong></td><td>用 Node 重写 server（aiohttp → express），pkg 打包</td><td>~40-60MB</td><td>前端生态更熟；但需重写后端</td></tr>
+  </tbody></table>
+  <p><strong>推荐</strong>：<strong>PyInstaller</strong>——最小改动量，server.py 几乎不改，加一个 build 脚本即可。Mac 签名 + 公证解决"无法验证开发者"问题。</p>
+  <p><strong>工作量估算</strong>：PyInstaller 打包脚本 + Mac/Win CI 构建 + 签名，约 1 周。</p>
+</div>
+
+<h4>方案 C：分享链接 — 让接收方零门槛查看（P1）</h4>
+<div class="card orange">
+  <p><strong>目标</strong>：解决"发HTML文件对方打不开/样式丢失"问题。让用户能发一个链接，对方打开就是渲染好的页面。</p>
+  <p><strong>实现思路（两层）</strong>：</p>
+  <ul>
+    <li><strong>短期（离线分享）</strong>：把 HTML + 所有依赖 base64 内嵌成单文件，接收方双击即看。HotPage 已有 base64 内嵌能力（saver-runtime.js 图片处理），只需扩展到 CSS/JS</li>
+    <li><strong>长期（在线分享）</strong>：部署一个只读分享服务（如 share.hotpage.app/{id}），用户上传 HTML 生成短链，对方打开即看。类似 Carbon 的分享模式</li>
+  </ul>
+  <p><strong>关键设计</strong>：分享链接是<strong>只读快照</strong>，不是实时同步。这降低了协作复杂度——接收方看到的是发送时的版本，不需要服务器维护实时状态。</p>
+  <p><strong>工作量估算</strong>：离线分享（单文件打包）约 3 天；在线分享服务约 1-2 周（需要后端存储 + 短链生成）。</p>
+</div>
+
+<h3>10.4 分发优先级与路线图</h3>
+<table>
+  <tbody><tr><th width="8%">优先级</th><th width="22%">方案</th><th width="14%">解决的核心问题</th><th>预期效果</th></tr>
+  <tr><td><span class="pill pill-w">P0</span></td><td>方案 B：PyInstaller 单文件可执行</td><td>"去github用一堆命令太重了"</td><td>非技术用户双击即用，下载链接替代 README</td></tr>
+  <tr><td><span class="pill pill-w">P0</span></td><td>方案 C 短期：单文件离线分享</td><td>"可以分享"</td><td>发一个 .html 文件对方双击即看，零依赖</td></tr>
+  <tr><td><span class="pill pill-t">P1</span></td><td>方案 A：PWA 在线版</td><td>"线上共享" + 零安装获客</td><td>打开网址即用，这是 drawio 最大的获客入口</td></tr>
+  <tr><td><span class="pill pill-t">P1</span></td><td>方案 C 长期：在线分享服务</td><td>"线上共享"</td><td>短链分享，接收方无需安装 HotPage</td></tr>
+  <tr><td><span class="pill pill-o">P2</span></td><td>embed 嵌入 SDK</td><td>"在已有工具里用"</td><td>一行代码嵌入第三方网站，类 drawio embed 模式</td></tr>
+</table>
+
+<div class="quote">
+  <strong>分发哲学转变</strong>：HotPage 当前是"开发者工具"思维（README + 命令行）。要实现增长，必须转向"<strong>消费者工具</strong>"思维（双击即用 + 一键分享 + 打开网址就能试）。drawio 的成功证明：开源工具的护城河不只是功能，更是<strong>让人用上第一分钟的摩擦力足够低</strong>。
+</div>
+
+<!-- ============ 11. 结论与建议 ============ -->
+<h2 id="s11">11. 结论与建议</h2>
+
+<h3>核心结论</h3>
+<ol>
+  <li><strong>draw.io 对 HotPage 的价值在"体系化"不在"功能"</strong>——9 大文档板块、插件架构、embed 嵌入模式、专属 Security 文档，这些是 HotPage 当前最缺的"产品成熟度基础设施"。</li>
+  <li><strong>HotPage 的差异化在"本地优先 × AI 原生工作流"的组合，不在单一 feature</strong>——版本管理是锦上添花，不是护城河。</li>
+  <li><strong>属性面板借鉴需先验证用户画像</strong>——非技术用户可能不需要 CSS 控件，需要的是"降低门槛"的块级编辑。</li>
+  <li><strong>安全优先级：DNS 重绑定 &gt; postMessage origin &gt; shell=True</strong>——补 Host header 校验是当务之急。</li>
+  <li><strong>contentEditable 走"渐进替换"而非"推倒重来"</strong>——Selection API 逐步替换 execCommand，保住零依赖。</li>
+</ol>
+
+<h3>可执行建议（按优先级，含分发方案）</h3>
+<table>
+  <tbody><tr><th width="8%">优先级</th><th width="22%">建议</th><th>说明</th><th width="14%">来源</th></tr>
+  <tr><td><span class="pill pill-w">P0</span></td><td><strong>PyInstaller 单文件可执行</strong></td><td>替代 GitHub clone + pip 路径，双击即用。解决"太重了"核心痛点</td><td>用户批注</td></tr>
+  <tr><td><span class="pill pill-w">P0</span></td><td><strong>单文件离线分享</strong></td><td>HTML+依赖 base64 内嵌成单文件，对方双击即看。解决"可以分享"</td><td>用户批注</td></tr>
+  <tr><td><span class="pill pill-w">P0</span></td><td>补 DNS 重绑定防护</td><td>校验 Host header 必须为 127.0.0.1/localhost，拒绝外部域名请求</td><td>红队 #3</td></tr>
+  <tr><td><span class="pill pill-w">P0</span></td><td>postMessage origin 限制</td><td>targetOrigin 从 "*" 改为 window.location.origin</td><td>红队 #3</td></tr>
+  <tr><td><span class="pill pill-t">P1</span></td><td><strong>PWA 在线版</strong></td><td>公开网址零安装体验，File System Access API 替代 Python 后端。解决"线上共享"</td><td>用户批注 + drawio 对标</td></tr>
+  <tr><td><span class="pill pill-t">P1</span></td><td><strong>在线分享服务</strong></td><td>share.hotpage.app/{id} 短链分享，接收方无需安装</td><td>用户批注</td></tr>
+  <tr><td><span class="pill pill-t">P1</span></td><td>建立产品文档体系</td><td>借鉴 drawio 9 板块结构，建 Getting Started/使用指南/FAQ/集成/安全文档</td><td>drawio 对标</td></tr>
+  <tr><td><span class="pill pill-t">P1</span></td><td>embed 嵌入模式</td><td>让 HotPage 编辑能力可嵌入 IDE 预览窗口/CI 报告查看器</td><td>drawio 对标</td></tr>
+  <tr><td><span class="pill pill-t">P1</span></td><td>插件 manifest 设计</td><td>允许自定义工具栏按钮注入，打破 saver-runtime.js 硬编码</td><td>drawio 对标</td></tr>
+  <tr><td><span class="pill pill-o">P2</span></td><td>属性面板用户验证</td><td>先做 5-10 个用户访谈，验证是否需要 CSS 属性控件，再决定是否实现</td><td>红队 #5</td></tr>
+  <tr><td><span class="pill pill-o">P2</span></td><td>Mermaid/SVG 轻量集成</td><td>在 HTML 中内嵌 Mermaid 渲染，实现"报告+图表"一体化</td><td>第一性原理 #1</td></tr>
+  <tr><td><span class="pill pill-o">P2</span></td><td>内生 AI 辅助</td><td>选中段落→AI 局部重写/美化/翻译，形成三段式工作流</td><td>对比矩阵</td></tr>
+  <tr><td><span class="pill pill-s">P3</span></td><td>execCommand 渐进替换</td><td>用 Selection API 逐步替换 execCommand 调用，非整体换内核</td><td>红队 #4</td></tr>
+  <tr><td><span class="pill pill-s">P3</span></td><td>赛道规模数据锚点</td><td>用 GitHub stars 增长率/npm 下载量佐证"AI 生成 HTML"赛道规模</td><td>红队 #2</td></tr>
+</tbody></table>
+
+<h3>跟踪建议</h3>
+<ul>
+  <li>关注 drawio embed API 演进——若向 HTML 编辑器扩展，需重新评估威胁等级</li>
+  <li>关注 Obsidian/Notion 是否推出 HTML-first 编辑——这是更直接的竞品信号</li>
+  <li>关注 MCP 协议标准化进程——HotPage 的先发优势窗口期</li>
+</ul>
+
+<!-- ============ 12. 数据可信度 ============ -->
+<h2 id="s12">12. 数据可信度声明</h2>
+
+<table>
+  <tbody><tr><th>数据项</th><th>来源等级</th><th>可信度</th><th>备注</th></tr>
+  <tr><td>drawio 文档 9 板块结构</td><td><span class="tag tag-off">官方</span></td><td>高</td><td>web_fetch drawio.com/docs 实采</td></tr>
+  <tr><td>drawio 功能（图表类型/集成/AI/插件）</td><td><span class="tag tag-off">官方</span>+<span class="tag tag-media">媒体</span></td><td>高</td><td>官方文档+搜索摘要+工作区 XML 逆向</td></tr>
+  <tr><td>drawio GitHub 60 万 stars</td><td><span class="tag tag-media">媒体</span></td><td><strong>低（误传）</strong></td><td>主线程验证：仓库实际约 1k+ stars，60 万疑为累计下载量</td></tr>
+  <tr><td>drawio 用户反馈</td><td><span class="tag tag-user">用户反馈</span></td><td>中</td><td>来自 Capterra(772)/G2/TrustRadius 摘要，未逐一核实原文</td></tr>
+  <tr><td>drawio 竞品清单</td><td><span class="tag tag-media">媒体</span></td><td>中</td><td>搜索结果，Lucidchart/Miro/Visio/Mermaid/Excalidraw</td></tr>
+  <tr><td>HotPage 46 功能点</td><td><span class="tag tag-code">代码验证</span></td><td>高</td><td>server.py/app.js/saver-runtime.js/CHANGELOG 全代码核实</td></tr>
+  <tr><td>HotPage 安全风险（postMessage/shell）</td><td><span class="tag tag-code">代码验证</span></td><td>高（存在性）/中（威胁等级）</td><td>代码确认存在；威胁等级经红队校准为理论风险</td></tr>
+  <tr><td>AI 生成 HTML 赛道规模判断</td><td><span class="tag tag-guess">推测</span></td><td><strong>低</strong></td><td>红队指出缺乏数据锚点，需补充量化依据</td></tr>
+</tbody></table>
+
+<div class="foot">
+  <p>本报告由 team-work 竞品分析团队生成（行业研究员 × 深度分析师 × 红队审查员），项目经理综合定稿。</p>
+  <p>数据采集时间：2026-07-17 | 方法论：DeepSearch 多轮追问 + 红队逆向论证 | 信息缺口已标注</p>
+  <p>免责声明：drawio 功能细节部分基于文档结构推断，未逐一访问全部子页面。跨品类对比存在尺度错位风险，功能级结论请结合红队审查要点阅读。</p>
+</div>
+
+</div>
+
+</body></html>
