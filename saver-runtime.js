@@ -135,6 +135,49 @@
           height: 3px; border-radius: 2px;
         }
         body { padding-top: 46px !important; }
+        /* v1.19.3: 对齐按钮用 CSS 画横线（Word/PPT 风格） */
+        #__dc_toolbar .dc-align {
+          position: relative;
+          min-width: 30px;
+        }
+        #__dc_toolbar .dc-align::before,
+        #__dc_toolbar .dc-align::after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          background: currentColor;
+          border-radius: 1px;
+        }
+        /* 用 2 条横线（top + bottom） + background 渐变做第三条线 */
+        #__dc_toolbar .dc-align::before {
+          top: 7px;  width: 14px; height: 1.5px; transform: translateX(-50%);
+        }
+        #__dc_toolbar .dc-align::after {
+          top: 18px; width: 14px; height: 1.5px; transform: translateX(-50%);
+        }
+        /* 中间第三条线：用 background 渐变（线性渐变绘制一条线） */
+        #__dc_toolbar .dc-align {
+          background-image: linear-gradient(currentColor, currentColor);
+          background-size: 14px 1.5px;
+          background-position: 50% 12.5px;
+          background-repeat: no-repeat;
+        }
+        /* 左对齐：所有线左对齐 */
+        #__dc_toolbar .dc-align-left::before { left: 25%; transform: translateX(-50%); }
+        #__dc_toolbar .dc-align-left::after  { left: 25%; transform: translateX(-50%); }
+        #__dc_toolbar .dc-align-left         { background-position: 25% 12.5px; }
+        /* 居中：所有线居中 */
+        #__dc_toolbar .dc-align-center::before { left: 50%; transform: translateX(-50%); }
+        #__dc_toolbar .dc-align-center::after  { left: 50%; transform: translateX(-50%); }
+        #__dc_toolbar .dc-align-center         { background-position: 50% 12.5px; }
+        /* 右对齐：所有线右对齐 */
+        #__dc_toolbar .dc-align-right::before { left: 75%; transform: translateX(-50%); }
+        #__dc_toolbar .dc-align-right::after  { left: 75%; transform: translateX(-50%); }
+        #__dc_toolbar .dc-align-right         { background-position: 75% 12.5px; }
+        /* 两端对齐：第 1/3 条短、中间长，模拟段落两端对齐 */
+        #__dc_toolbar .dc-align-justify::before { left: 25%; transform: translateX(-50%); width: 10px; }
+        #__dc_toolbar .dc-align-justify         { background-position: 50% 12.5px; background-size: 14px 1.5px; }
+        #__dc_toolbar .dc-align-justify::after  { left: 75%; transform: translateX(-50%); width: 10px; }
       </style>
       <span class="sep"></span>
       <button data-cmd="bold" title="加粗 ⌘B"><b>B</b></button>
@@ -156,16 +199,16 @@
       <div class="__dc_color_wrap" id="__dc_color_wrap" title="字色（点击选预设色或取色器）">
         <button id="__dc_color_btn" style="color:#DC2626;" title="字色：当前红色。点击弹出色板选其他颜色。"><b>A</b><span class="__dc_color_bar" style="background:#DC2626;"></span></button>
       </div>
-      <!-- v1.19.2: 高亮色改成色板（之前只有一个黄色硬编码） -->
+      <!-- v1.19.2: 高亮色改成色板；v1.19.3 用 Word 风格 "ab" + 背景色块 -->
       <div class="__dc_color_wrap" id="__dc_hilite_wrap" title="高亮背景色（点击选预设浅色或取色器）">
-        <button id="__dc_hilite_btn" style="color:#CA8A04;" title="高亮背景色：当前浅黄。点击弹出色板选其他颜色或清除。"><b>🖊</b><span class="__dc_color_bar" style="background:#FDE68A;"></span></button>
+        <button id="__dc_hilite_btn" style="background:#FDE68A;color:#1A1D23;" title="高亮背景色：当前浅黄。点击弹出色板选其他颜色或清除。"><b>ab</b></button>
       </div>
       <span class="sep"></span>
-      <!-- v1.11.1 新增：对齐 4 按钮 -->
-      <button data-cmd="justifyLeft" title="左对齐">⬅</button>
-      <button data-cmd="justifyCenter" title="居中">⬆</button>
-      <button data-cmd="justifyRight" title="右对齐">➡</button>
-      <button data-cmd="justifyFull" title="两端对齐">☰</button>
+      <!-- v1.19.3: 对齐图标改成 Word/PPT 主流风格（用 ::before/::after 伪元素画 4 种横线对齐方式）-->
+      <button data-cmd="justifyLeft" title="左对齐" class="dc-align dc-align-left"></button>
+      <button data-cmd="justifyCenter" title="居中" class="dc-align dc-align-center"></button>
+      <button data-cmd="justifyRight" title="右对齐" class="dc-align dc-align-right"></button>
+      <button data-cmd="justifyFull" title="两端对齐" class="dc-align dc-align-justify"></button>
       <span class="sep"></span>
       <!-- v1.11.1 新增：链接 -->
       <button id="__dc_link" title="插入/编辑链接（选中文字后点击；空选区可插入 URL）">🔗 链接</button>
@@ -696,13 +739,20 @@
     const rect = anchor.getBoundingClientRect();
     const palette = document.createElement("div");
     palette.id = "__dc_color_palette";
+    // v1.19.3: 智能定位 — 默认在 anchor 下方左对齐；若右边超出则右对齐到 viewport 边缘
+    const paletteWidth = 200;  // 缩小宽度（之前 232px 太宽）
+    let leftPos = rect.left;
+    if (leftPos + paletteWidth > window.innerWidth - 8) {
+      // 右边超出：右对齐到 viewport
+      leftPos = Math.max(8, window.innerWidth - paletteWidth - 8);
+    }
     palette.style.cssText = `
       position: fixed; z-index: 2147483640;
-      top: ${rect.bottom + 6}px; left: ${rect.left}px;
-      padding: 12px; background: #1A1D23;
+      top: ${rect.bottom + 6}px; left: ${leftPos}px;
+      padding: 10px; background: #1A1D23;
       border: 1px solid rgba(201,169,97,0.3);
       border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.45);
-      width: 232px;
+      width: ${paletteWidth}px;
       animation: __dc_popIn .15s ease-out;
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
     `;
