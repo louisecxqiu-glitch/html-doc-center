@@ -102,13 +102,19 @@
           color: #fff; font: 12px/1 -apple-system,"PingFang SC",sans-serif;
           border-bottom: 1px solid rgba(201,169,97,0.25);
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          /* v1.20.2: 150% 缩放 / 窄屏兜底——横滚而非压缩按钮到 CJK 竖排 */
+          overflow-x: auto; overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
         }
-        #__dc_toolbar .dc-title { color:#C9A961; font-weight:600; letter-spacing:.3px; }
+        #__dc_toolbar::-webkit-scrollbar { height: 0; } /* 隐藏横滚条 */
+        #__dc_toolbar .dc-title { color:#C9A961; font-weight:600; letter-spacing:.3px; flex-shrink: 0; }
         #__dc_toolbar button {
           background: transparent; color: #E5E7EB;
           border: 1px solid rgba(255,255,255,0.14);
           border-radius: 4px; height: 26px; padding: 0 10px;
           cursor: pointer; font-size: 12px; transition: all .15s;
+          /* v1.20.2: 禁止 flex 压缩按钮到 min-content（避免 1 字宽竖排） */
+          flex-shrink: 0; white-space: nowrap;
         }
         #__dc_toolbar button:hover { background: rgba(201,169,97,0.15); color:#C9A961; border-color:#C9A961; }
         /* v1.19.6: 模式类按钮激活态（间距/批注进入模式时） */
@@ -123,8 +129,8 @@
           0%, 100% { box-shadow: 0 0 0 2px rgba(201,169,97,0.25), inset 0 0 8px rgba(201,169,97,0.18); }
           50%      { box-shadow: 0 0 0 3px rgba(201,169,97,0.45), inset 0 0 12px rgba(201,169,97,0.32); }
         }
-        #__dc_toolbar .sep { width:1px; height:18px; background: rgba(255,255,255,0.14); margin: 0 4px; }
-        #__dc_toolbar .dc-status { margin-left:auto; color:#9CA3AF; font-size:11px; }
+        #__dc_toolbar .sep { width:1px; height:18px; background: rgba(255,255,255,0.14); margin: 0 4px; flex-shrink: 0; }
+        #__dc_toolbar .dc-status { margin-left:auto; color:#9CA3AF; font-size:11px; flex-shrink: 0; white-space: nowrap; }
         #__dc_toolbar .dc-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; background:#10B981; transition:background .3s; }
         #__dc_toolbar .dc-dot.dirty { background:#F59E0B; animation: dc-pulse 1.2s infinite; }
         @keyframes dc-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
@@ -134,6 +140,8 @@
           background: transparent; color:#E5E7EB;
           border: 1px solid rgba(255,255,255,0.14); border-radius: 4px;
           font-size: 12px; cursor: pointer;
+          /* v1.20.2: 缩放下也不被压缩 */
+          flex-shrink: 0; white-space: nowrap;
         }
         #__dc_toolbar select#__dc_fontsize:hover { border-color:#C9A961; color:#C9A961; }
         #__dc_toolbar select#__dc_fontsize option { background:#1A1D23; color:#E5E7EB; }
@@ -3175,84 +3183,411 @@
     html = html.replace(/<!-- html-doc-center:saver-injected -->\s*/g, "");
 
     // 3.5 选择分享方式 + 密码设置 — 弹自定义模态框
-    const SHARE_SERVER = (CTX.shareServer || "").trim(); // 从 config 读取分享服务地址
+    // v1.20.x 重构：和编辑器设计统一（金色高亮 #C9A961 / 主文字 #E5E7EB / 字体 12px -apple-system）；
+    // 密码区改成"开关+展示"——卡片整体只读，点开关启用后展示生成的密码，禁止手输。
+    const SHARE_SERVER = (CTX.shareServer || "").trim();
     const shareChoice = await new Promise((resolve) => {
       const overlay = document.createElement("div");
-      overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483647;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;";
+      overlay.id = "__dc_share_overlay";
+      overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483647;background:rgba(0,0,0,0.78);display:flex;justify-content:center;align-items:center;font-family:-apple-system,'PingFang SC',sans-serif;";
       const genPwd = () => {
         const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
         let p = "";
         for (let i = 0; i < 12; i++) p += chars[Math.floor(Math.random() * chars.length)];
         return p;
       };
-      overlay.innerHTML = '<div style="background:#1a2028;padding:32px 36px;border-radius:12px;border:1px solid #2d3845;min-width:400px;color:#e8eef5;font:14px -apple-system,sans-serif;">'
-        + '<h3 style="margin:0 0 4px;">📦 分享</h3>'
-        + '<p style="margin:0 0 16px;color:#6b7a8c;font-size:12px;">选择分享方式</p>'
-        // 分享方式
-        + '<div style="display:flex;gap:8px;margin-bottom:16px;">'
-        + '<button id="_mode_file" style="flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:#4a9eff;color:#fff;cursor:pointer;font-size:13px;">📄 离线文件</button>'
-        + '<button id="_mode_link" style="flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;font-size:13px;">🔗 在线链接</button>'
-        + '</div>'
-        // 密码
-        + '<div style="margin-bottom:16px;">'
-        + '<label style="display:block;margin-bottom:4px;color:#6b7a8c;font-size:12px;">密码保护（可选）</label>'
-        + '<div style="display:flex;gap:8px;">'
-        + '<input type="text" id="_share_pwd" placeholder="留空则无密码" style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid #2d3845;background:#0f1419;color:#e8eef5;font-size:13px;">'
-        + '<button id="_gen_pwd" style="padding:8px 14px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#4a9eff;cursor:pointer;font-size:12px;white-space:nowrap;">🎲 生成</button>'
-        + '</div></div>'
-        // 按钮
-        + '<div style="display:flex;gap:8px;justify-content:flex-end;">'
-        + '<button id="_cancel" style="padding:8px 18px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;">取消</button>'
-        + '<button id="_ok" style="padding:8px 18px;border-radius:6px;border:none;background:#4a9eff;color:#fff;cursor:pointer;">确认分享</button>'
-        + '</div></div>';
+      overlay.innerHTML = `
+<style>
+  #__dc_share_overlay .dc-share-modal {
+    background: linear-gradient(180deg, #1A1D23 0%, #232830 100%);
+    padding: 26px 30px 22px; border-radius: 12px;
+    border: 1px solid rgba(201,169,97,0.28);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    min-width: 440px; max-width: 520px;
+    color: #E5E7EB; font-size: 12px; line-height: 1.5;
+    /* v1.20.3: 弹窗整体不可选中（标题/描述/标签），仅 input/button/密码区允许 */
+    user-select: none; -webkit-user-select: none;
+  }
+  #__dc_share_overlay .dc-share-title { margin: 0 0 2px; font-size: 15px; font-weight: 600; color: #C9A961; display: flex; align-items: center; gap: 8px; }
+  #__dc_share_overlay .dc-share-sub { margin: 0 0 18px; color: #9CA3AF; font-size: 12px; }
+
+  #__dc_share_overlay .dc-modes { display: flex; gap: 8px; margin-bottom: 16px; }
+  #__dc_share_overlay .dc-mode {
+    flex: 1; padding: 9px 10px; border-radius: 6px;
+    background: transparent; color: #E5E7EB;
+    border: 1px solid rgba(255,255,255,0.14);
+    cursor: pointer; font-size: 12px; font-family: inherit;
+    transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  #__dc_share_overlay .dc-mode:hover { background: rgba(201,169,97,0.12); color: #C9A961; border-color: rgba(201,169,97,0.5); }
+  #__dc_share_overlay .dc-mode.active {
+    background: rgba(201,169,97,0.20); color: #C9A961;
+    border-color: #C9A961; font-weight: 600;
+  }
+  #__dc_share_overlay .dc-mode .dc-mode-icon { font-size: 14px; }
+
+  #__dc_share_overlay .dc-pwd-card {
+    background: rgba(0,0,0,0.22);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; padding: 12px 14px; margin-bottom: 18px;
+  }
+  #__dc_share_overlay .dc-pwd-row { display: flex; align-items: center; justify-content: space-between; }
+  #__dc_share_overlay .dc-pwd-label { color: #9CA3AF; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  #__dc_share_overlay .dc-pwd-label .ico { color: #C9A961; }
+  #__dc_share_overlay .dc-pwd-hint { color: #6B7280; font-size: 11px; margin-top: 6px; }
+
+  #__dc_share_overlay .dc-pwd-display {
+    flex: 1; padding: 8px 10px; border-radius: 4px;
+    background: #0F1419; color: #C9A961;
+    font: 12px/1.4 "SF Mono","Monaco","Menlo","Consolas",monospace;
+    border: 1px solid rgba(201,169,97,0.25);
+    letter-spacing: 0.4px; user-select: all; -webkit-user-select: all;
+    text-align: center; overflow-x: auto; white-space: nowrap;
+    cursor: text;
+  }
+  #__dc_share_overlay .dc-pwd-empty {
+    flex: 1; padding: 8px 10px; border-radius: 4px;
+    background: #0F1419; color: #6B7280; font-style: italic;
+    border: 1px dashed rgba(255,255,255,0.10);
+    text-align: center;
+  }
+  #__dc_share_overlay .dc-pwd-body { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+  #__dc_share_overlay .dc-icon-btn {
+    padding: 0; width: 30px; height: 30px; border-radius: 4px;
+    background: transparent; color: #C9A961;
+    border: 1px solid rgba(201,169,97,0.4);
+    cursor: pointer; font-size: 13px; font-family: inherit;
+    transition: all .15s; display: inline-flex; align-items: center; justify-content: center;
+  }
+  #__dc_share_overlay .dc-icon-btn:hover { background: rgba(201,169,97,0.18); border-color: #C9A961; }
+
+  /* iOS 风格开关 */
+  #__dc_share_overlay .dc-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+  #__dc_share_overlay .dc-switch input { opacity: 0; width: 0; height: 0; }
+  #__dc_share_overlay .dc-switch-slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background: #4B5563; transition: .2s; border-radius: 20px;
+  }
+  #__dc_share_overlay .dc-switch-slider:before {
+    position: absolute; content: ""; height: 14px; width: 14px;
+    left: 3px; bottom: 3px; background: #fff; transition: .2s; border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  #__dc_share_overlay .dc-switch input:checked + .dc-switch-slider { background: #C9A961; }
+  #__dc_share_overlay .dc-switch input:checked + .dc-switch-slider:before { transform: translateX(16px); }
+
+  #__dc_share_overlay .dc-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  #__dc_share_overlay .dc-btn {
+    padding: 8px 20px; border-radius: 4px;
+    cursor: pointer; font-size: 12px; font-family: inherit;
+    transition: all .15s; min-width: 72px;
+  }
+  #__dc_share_overlay .dc-btn-cancel {
+    background: transparent; color: #9CA3AF;
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+  #__dc_share_overlay .dc-btn-cancel:hover { color: #E5E7EB; border-color: rgba(255,255,255,0.3); }
+  #__dc_share_overlay .dc-btn-ok {
+    background: #4A9EFF; color: #fff; border: none; font-weight: 500;
+  }
+  #__dc_share_overlay .dc-btn-ok:hover { background: #3B8FE8; }
+  #__dc_share_overlay .dc-btn-ok:disabled { background: #4B5563; color: #6B7280; cursor: not-allowed; }
+</style>
+<div class="dc-share-modal">
+  <h3 class="dc-share-title"><span>📦</span><span>分享</span></h3>
+  <p class="dc-share-sub">选择分享方式，生成可发给任何人的文件或链接</p>
+  <div class="dc-modes">
+    <button class="dc-mode active" data-mode="file"><span class="dc-mode-icon">📄</span><span>离线文件</span></button>
+    <button class="dc-mode" data-mode="link"><span class="dc-mode-icon">🔗</span><span>在线链接</span></button>
+  </div>
+  <div class="dc-pwd-card">
+    <div class="dc-pwd-row">
+      <span class="dc-pwd-label"><span class="ico">🔒</span><span>密码保护</span><span style="color:#6B7280;">（可选）</span></span>
+      <label class="dc-switch"><input type="checkbox" id="_pwd_enable"><span class="dc-switch-slider"></span></label>
+    </div>
+    <div class="dc-pwd-body" id="_pwd_body" style="display:none;">
+      <div class="dc-pwd-empty" id="_pwd_empty">点击 🎲 生成 12 位强密码</div>
+      <div class="dc-pwd-display" id="_pwd_display" style="display:none;"></div>
+      <button class="dc-icon-btn" id="_gen_pwd" title="生成新密码">🎲</button>
+      <button class="dc-icon-btn" id="_copy_pwd" title="复制密码" style="display:none;">📋</button>
+    </div>
+    <div class="dc-pwd-hint" id="_pwd_hint" style="display:none;">接收方打开时需输入此密码</div>
+  </div>
+  <div class="dc-actions">
+    <button class="dc-btn dc-btn-cancel" id="_cancel">取消</button>
+    <button class="dc-btn dc-btn-ok" id="_ok">确认分享</button>
+  </div>
+</div>`;
       document.body.appendChild(overlay);
       let mode = "file";
-      const input = overlay.querySelector("#_share_pwd");
-      const ok = overlay.querySelector("#_ok");
-      const cancel = overlay.querySelector("#_cancel");
-      const gen = overlay.querySelector("#_gen_pwd");
-      const btnFile = overlay.querySelector("#_mode_file");
-      const btnLink = overlay.querySelector("#_mode_link");
-      btnFile.onclick = () => { mode = "file"; btnFile.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:#4a9eff;color:#fff;cursor:pointer;font-size:13px;"; btnLink.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;font-size:13px;"; };
-      btnLink.onclick = () => { 
-        if (!SHARE_SERVER) { toast("⚠️ 未配置分享服务，请联系管理员设置 config.json 的 share_server", "warning", null, 4000); return; }
-        mode = "link"; btnLink.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:#4a9eff;color:#fff;cursor:pointer;font-size:13px;"; btnFile.style.cssText = "flex:1;padding:10px;border-radius:6px;border:1px solid #2d3845;background:transparent;color:#e8eef5;cursor:pointer;font-size:13px;"; 
+      let password = "";
+      const $ = (s) => overlay.querySelector(s);
+      const btnFile = $(".dc-mode[data-mode='file']");
+      const btnLink = $(".dc-mode[data-mode='link']");
+      const pwdEnable = $("#_pwd_enable");
+      const pwdBody = $("#_pwd_body");
+      const pwdEmpty = $("#_pwd_empty");
+      const pwdDisplay = $("#_pwd_display");
+      const pwdHint = $("#_pwd_hint");
+      const ok = $("#_ok");
+      const cancel = $("#_cancel");
+      const gen = $("#_gen_pwd");
+      const copy = $("#_copy_pwd");
+
+      const refreshPwdUI = () => {
+        if (pwdEnable.checked) {
+          pwdBody.style.display = "flex";
+          pwdHint.style.display = "block";
+          if (password) {
+            pwdDisplay.style.display = "block"; pwdDisplay.textContent = password;
+            pwdEmpty.style.display = "none";
+            copy.style.display = "inline-flex";
+          } else {
+            pwdDisplay.style.display = "none"; pwdEmpty.style.display = "block";
+            copy.style.display = "none";
+          }
+        } else {
+          pwdBody.style.display = "none"; pwdHint.style.display = "none";
+        }
       };
-      input.focus();
-      ok.onclick = () => { const v = input.value; overlay.remove(); resolve({ mode, password: v }); };
+
+      btnFile.onclick = () => {
+        mode = "file";
+        btnFile.classList.add("active"); btnLink.classList.remove("active");
+      };
+      btnLink.onclick = () => {
+        if (!SHARE_SERVER) { toast("⚠️ 未配置分享服务，请联系管理员设置 config.json 的 share_server", "warning", null, 4000); return; }
+        mode = "link";
+        btnLink.classList.add("active"); btnFile.classList.remove("active");
+      };
+      pwdEnable.onchange = () => {
+        if (pwdEnable.checked && !password) password = genPwd(); // 首次开启自动生成
+        if (!pwdEnable.checked) password = ""; // 关闭清空
+        refreshPwdUI();
+      };
+      gen.onclick = () => { password = genPwd(); refreshPwdUI(); };
+      copy.onclick = async () => {
+        try { await navigator.clipboard.writeText(password); toast("📋 密码已复制", "success", null, 1500); }
+        catch (_) { toast("复制失败，请手动选中", "warning", null, 2000); }
+      };
+      ok.onclick = () => { overlay.remove(); resolve({ mode, password }); };
       cancel.onclick = () => { overlay.remove(); resolve(null); };
-      gen.onclick = () => { input.value = genPwd(); input.select(); };
-      input.onkeydown = (e) => { if (e.key === "Enter") ok.click(); if (e.key === "Escape") cancel.click(); };
+      overlay.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") cancel.click();
+        if (e.key === "Enter" && e.target.tagName !== "INPUT") ok.click();
+      });
+      setTimeout(() => ok.focus(), 0);
     });
     if (!shareChoice) { setStatus("已保存", ""); toast("已取消分享", "info"); return; }
 
-    // 3.6 如果选了在线链接 — 上传到分享服务
-    if (shareChoice.mode === "link") {
-      setStatus("正在上传到分享服务…", "dirty");
-      toast("📤 正在生成在线链接…");
-      try {
-        const resp = await fetch(SHARE_SERVER + "/api/share", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ html: html, password: shareChoice.password }),
+    // 3.5.b 在线链接模式：弹窗内联完成"生成中 → 成功/失败"三阶段，不关闭弹窗
+    // 原因：toast 容易忽略、用户要看到链接 + 复制按钮才算交付；改用弹窗承接完整流程
+    if (shareChoice.mode === "link" && SHARE_SERVER) {
+      const linkResult = await new Promise((resolve) => {
+        const linkOverlay = document.createElement("div");
+        linkOverlay.id = "__dc_share_link";
+        linkOverlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483648;background:rgba(0,0,0,0.78);display:flex;justify-content:center;align-items:center;font-family:-apple-system,'PingFang SC',sans-serif;";
+
+        // 把分享弹窗的 overlay 移到 linkOverlay 之下，避免双层遮罩叠加
+        const shareOverlay = document.getElementById("__dc_share_overlay");
+        if (shareOverlay) shareOverlay.style.display = "none";
+
+        linkOverlay.innerHTML = `
+<style>
+  #__dc_share_link .dc-link-modal {
+    background: linear-gradient(180deg, #1A1D23 0%, #232830 100%);
+    padding: 28px 30px 24px; border-radius: 12px;
+    border: 1px solid rgba(201,169,97,0.28);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    min-width: 480px; max-width: 560px;
+    color: #E5E7EB; font-size: 12px; line-height: 1.5;
+    user-select: none; -webkit-user-select: none;
+  }
+  #__dc_share_link .dc-link-title { margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #C9A961; display: flex; align-items: center; gap: 8px; }
+  #__dc_share_link .dc-link-sub { margin: 0 0 20px; color: #9CA3AF; font-size: 12px; }
+  #__dc_share_link .dc-link-stage { min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 0; }
+  /* 阶段 1：生成中 */
+  #__dc_share_link .dc-spinner {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 3px solid rgba(201,169,97,0.20);
+    border-top-color: #C9A961;
+    animation: __dc_link_spin 0.8s linear infinite;
+  }
+  @keyframes __dc_link_spin { to { transform: rotate(360deg); } }
+  #__dc_share_link .dc-loading-text { margin-top: 14px; color: #C9A961; font-size: 13px; }
+  #__dc_share_link .dc-loading-sub { margin-top: 4px; color: #6B7280; font-size: 11px; }
+  /* 阶段 2：成功 */
+  #__dc_share_link .dc-link-success-icon { font-size: 32px; margin-bottom: 6px; }
+  #__dc_share_link .dc-link-url-box {
+    width: 100%; padding: 10px 12px; border-radius: 6px;
+    background: #0F1419; border: 1px solid rgba(201,169,97,0.25);
+    color: #C9A961; font: 11.5px/1.4 "SF Mono","Monaco","Menlo","Consolas",monospace;
+    word-break: break-all; user-select: all; -webkit-user-select: all;
+    margin: 12px 0 14px; max-height: 60px; overflow-y: auto;
+    cursor: text;
+  }
+  #__dc_share_link .dc-link-meta { color: #6B7280; font-size: 11px; margin-bottom: 14px; text-align: center; }
+  #__dc_share_link .dc-link-meta .pwd-tag {
+    display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 3px;
+    background: rgba(201,169,97,0.15); color: #C9A961; font-size: 10px;
+  }
+  #__dc_share_link .dc-link-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
+  #__dc_share_link .dc-link-icon-btn {
+    padding: 0 14px; height: 32px; border-radius: 4px;
+    background: transparent; color: #C9A961;
+    border: 1px solid rgba(201,169,97,0.4);
+    cursor: pointer; font-size: 12px; font-family: inherit;
+    transition: all .15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  #__dc_share_link .dc-link-icon-btn:hover { background: rgba(201,169,97,0.18); border-color: #C9A961; }
+  #__dc_share_link .dc-link-icon-btn.primary {
+    background: #C9A961; color: #1A1D23; border-color: #C9A961; font-weight: 600;
+  }
+  #__dc_share_link .dc-link-icon-btn.primary:hover { background: #D4B574; border-color: #D4B574; }
+  /* 阶段 3：失败 */
+  #__dc_share_link .dc-link-err-icon { font-size: 32px; margin-bottom: 6px; }
+  #__dc_share_link .dc-link-err-msg {
+    color: #FCA5A5; font-size: 12px; text-align: center;
+    background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.30);
+    border-radius: 4px; padding: 8px 10px; margin: 6px 0 12px; max-width: 100%;
+    word-break: break-all; user-select: text; -webkit-user-select: text;
+  }
+  #__dc_share_link .dc-link-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+  #__dc_share_link .dc-link-btn {
+    padding: 8px 20px; border-radius: 4px;
+    cursor: pointer; font-size: 12px; font-family: inherit;
+    transition: all .15s; min-width: 80px;
+  }
+  #__dc_share_link .dc-link-btn-cancel {
+    background: transparent; color: #9CA3AF;
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+  #__dc_share_link .dc-link-btn-cancel:hover { color: #E5E7EB; border-color: rgba(255,255,255,0.3); }
+  #__dc_share_link .dc-link-btn-retry {
+    background: #C9A961; color: #1A1D23; border: none; font-weight: 600;
+  }
+  #__dc_share_link .dc-link-btn-retry:hover { background: #D4B574; }
+  #__dc_share_link .dc-link-btn-fallback {
+    background: transparent; color: #4A9EFF; border: 1px solid rgba(74,158,255,0.4);
+  }
+  #__dc_share_link .dc-link-btn-fallback:hover { background: rgba(74,158,255,0.12); border-color: #4A9EFF; }
+</style>
+<div class="dc-link-modal">
+  <h3 class="dc-link-title"><span>🔗</span><span>生成在线链接</span></h3>
+  <p class="dc-link-sub" id="_link_sub">正在上传到云端分享服务…</p>
+  <div class="dc-link-stage" id="_link_stage">
+    <div class="dc-spinner"></div>
+    <div class="dc-loading-text">正在生成在线链接…</div>
+    <div class="dc-loading-sub">通常 1-3 秒，请稍候</div>
+  </div>
+  <div class="dc-link-footer" id="_link_footer"></div>
+</div>`;
+        document.body.appendChild(linkOverlay);
+
+        const stage = linkOverlay.querySelector("#_link_stage");
+        const sub = linkOverlay.querySelector("#_link_sub");
+        const footer = linkOverlay.querySelector("#_link_footer");
+        const modal = linkOverlay.querySelector(".dc-link-modal");
+
+        const renderLoading = () => {
+          sub.textContent = "正在上传到云端分享服务…";
+          stage.innerHTML = `<div class="dc-spinner"></div><div class="dc-loading-text">正在生成在线链接…</div><div class="dc-loading-sub">通常 1-3 秒，请稍候</div>`;
+          footer.innerHTML = "";
+        };
+
+        const renderSuccess = (url, expiresIn, hasPwd) => {
+          sub.textContent = "链接已生成，复制发给任何人，对方点开即看";
+          const pwdTag = hasPwd ? `<span class="pwd-tag">🔒 含密码保护</span>` : "";
+          stage.innerHTML = `
+            <div class="dc-link-success-icon">✅</div>
+            <div class="dc-link-url-box" id="_link_url">${url}</div>
+            <div class="dc-link-meta">链接 ${expiresIn} 后过期${pwdTag}</div>
+            <div class="dc-link-actions">
+              <button class="dc-link-icon-btn" id="_link_copy">📋 复制链接</button>
+              <button class="dc-link-icon-btn" id="_link_open">🔗 浏览器打开</button>
+            </div>`;
+          footer.innerHTML = `<button class="dc-link-btn dc-link-btn-cancel" id="_link_done">完成</button>`;
+          // 绑定
+          linkOverlay.querySelector("#_link_url").addEventListener("click", () => {
+            window.getSelection().selectAllChildren(linkOverlay.querySelector("#_link_url"));
+          });
+          linkOverlay.querySelector("#_link_copy").onclick = async () => {
+            try { await navigator.clipboard.writeText(url); toast("📋 链接已复制到剪贴板", "success", null, 2000); }
+            catch (_) {
+              // 降级：选中文本让用户手动复制
+              const r = document.createRange(); r.selectNodeContents(linkOverlay.querySelector("#_link_url"));
+              const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+              toast("请按 ⌘/Ctrl+C 手动复制", "info", null, 2500);
+            }
+          };
+          linkOverlay.querySelector("#_link_open").onclick = () => { window.open(url, "_blank", "noopener"); };
+          linkOverlay.querySelector("#_link_done").onclick = () => { linkOverlay.remove(); resolve({ ok: true, url, fallback: false }); };
+        };
+
+        const renderError = (errMsg) => {
+          sub.textContent = "生成失败，请检查后重试或改用离线文件";
+          stage.innerHTML = `
+            <div class="dc-link-err-icon">⚠️</div>
+            <div class="dc-link-err-msg">${errMsg}</div>`;
+          footer.innerHTML = `
+            <button class="dc-link-btn dc-link-btn-fallback" id="_link_fallback">改用离线文件</button>
+            <button class="dc-link-btn dc-link-btn-retry" id="_link_retry">重试</button>
+            <button class="dc-link-btn dc-link-btn-cancel" id="_link_cancel">取消</button>`;
+          linkOverlay.querySelector("#_link_retry").onclick = () => doUpload();
+          linkOverlay.querySelector("#_link_fallback").onclick = () => { linkOverlay.remove(); resolve({ ok: false, fallback: true }); };
+          linkOverlay.querySelector("#_link_cancel").onclick = () => { linkOverlay.remove(); resolve({ ok: false, fallback: false, cancelled: true }); };
+        };
+
+        const doUpload = async () => {
+          renderLoading();
+          setStatus("正在上传到分享服务…", "dirty");
+          try {
+            const resp = await fetch(SHARE_SERVER + "/api/share", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ html: html, password: shareChoice.password || "" }),
+            });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const d = await resp.json();
+            if (d.ok && d.url) {
+              setStatus("已保存", "");
+              renderSuccess(d.url, d.expires_in || "7 天", !!shareChoice.password);
+            } else {
+              throw new Error(d.error || "返回数据异常");
+            }
+          } catch (e) {
+            setStatus("已保存", "");
+            renderError(e.message || String(e));
+          }
+        };
+
+        // Esc 在生成中禁用；成功后关闭
+        linkOverlay.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            const doneBtn = linkOverlay.querySelector("#_link_done");
+            if (doneBtn) doneBtn.click();
+          }
         });
-        const d = await resp.json();
-        if (d.ok) {
-          // 复制到剪贴板
-          try { await navigator.clipboard.writeText(d.url); } catch (_) {}
-          setStatus("已保存", "");
-          const pwdHint = shareChoice.password ? "（含密码保护）" : "";
-          const copyHint = "链接已复制到剪贴板";
-          toast(`✅ 在线链接已生成${pwdHint}\n${d.url}\n${copyHint} · ${d.expires_in}后过期`, "success", 10000);
-          return;
-        } else {
-          throw new Error(d.error || "上传失败");
-        }
-      } catch (e) {
-        setStatus("已保存", "");
-        toast("⚠️ 在线链接生成失败，改为下载离线文件", "warning", e.message);
-        // 降级到离线文件
+
+        doUpload();
+      });
+
+      if (linkResult.ok) {
+        // 链接生成成功，结束分享流程
+        return;
       }
+      if (linkResult.cancelled) {
+        setStatus("已保存", "");
+        toast("已取消分享", "info");
+        return;
+      }
+      // fallback = 改用离线文件，继续走 3.7 流程
+      shareChoice.mode = "file";
+      toast("⚠️ 已切换为离线文件模式", "info", null, 2500);
+    } else if (shareChoice.mode === "link" && !SHARE_SERVER) {
+      // SHARE_SERVER 未配置：明确提示，不静默失败
+      toast("⚠️ 未配置分享服务，请联系管理员设置 config.json 的 share_server", "warning", null, 4000);
+      return;
     }
 
     // 3.7 离线文件 — 密码保护（注入 JS 拦截）

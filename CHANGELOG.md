@@ -2,9 +2,35 @@
 
 > Brief bilingual highlights. For detailed technical history (in Chinese), see [docs/CHANGELOG-detailed.md](docs/CHANGELOG-detailed.md).
 >
-> 双语精简版。详细技术日志（含 Bug 三段式与设计决策）见 [docs/CHANGELOG-detailed.md](docs/CHANGELOG-detailed.md)。
+> 双语精简版。详细技术日志（含 Bug 三段式与设计决策）见 [docs/CHANGELOG-detailed.md](docs/CHANGELOG-detailed.md）。
 
 This project follows [Semantic Versioning](https://semver.org/).
+
+---
+
+
+## v2.5.0 — Share Modal Redesign + Multi-Stage Flow + Toolbar Overflow Fix
+
+*2026-07-17 22:55 · 分享功能核心重构 + 工具栏高缩放修复*
+
+> 同一天 4 项迭代（v1.20.0 / v1.20.1 / v1.20.2 / v1.20.3 内部版本号）合并发布。项目版本号体系升级到 v2.x（与 git tag 对齐，CHANGELOG 此前滞留在 v1.19.8）。
+
+**🎨 分享弹窗视觉重构**：卡片背景换 `#1A1D23` 渐变 `#232830` + 金色边框，字体统一 `12px -apple-system,"PingFang SC"`，Tab 选中态金色 `#C9A961`，主 CTA 蓝色 `#4A9EFF`。密码区从"输入框"改成"iOS 开关 + 展示卡片"——开关启用自动生成 12 位强密码（等宽金色字体），🎲 重生成 + 📋 复制两个图标按钮。
+
+**🎨 分享流程塞进弹窗**（不关闭，三阶段切换）：
+- 阶段 1 生成中：36px 金色 spinner + "正在生成在线链接…"
+- 阶段 2 成功：✅ + 完整 URL（金色等宽字体，可一键全选） + 📋 复制链接 + 🔗 浏览器打开 + 完成
+- 阶段 3 失败：⚠️ + 红色错误框 + 重试 + 改用离线文件 + 取消
+
+**🐛 Bug 1 · inject_saver NameError**：`server.py:859` f-string 模板里写了 `app.get(...)`，但 `inject_saver()` 是普通函数作用域里没 `app`。任何没注入过 saver 的 HTML 一打开就 NameError。解法：签名加 `cfg: dict` 参数，调用点传 `request.app["config"]`。
+
+**🐛 Bug 2 · 150% 缩放工具栏文字竖排**：flex 默认把按钮压到 `min-content`（CJK 是 1 个汉字宽）。解法：工具栏 `overflow-x: auto` + 隐藏滚动条，所有 button/select 加 `flex-shrink: 0; white-space: nowrap`。
+
+**🐛 Bug 3 · 弹窗文字可选中让人误以为"可编辑"**：弹窗整体 `user-select: none`，仅密码 display 和 URL 区域 `user-select: all`，错误信息 `user-select: text`。
+
+**🔧 修复**：删除冗余旧 3.6 段（避免和新流程重复上传）；补 `else if mode==="link" && !SHARE_SERVER` 明确提示配置缺失；复制失败兜底 `navigator.clipboard` → `selectAllChildren + ⌘/Ctrl+C`。
+
+**👤 用户故事**：之前分享弹窗一闪就关，toast 在角落闪一下链接要靠运气复制——完全不知道成功没；现在弹窗一直在 → spinner 转动 → 链接出现在弹窗内 → 📋 一键复制 / 🔗 直接打开 → 失败时明确报错 + 重试/降级。
 
 ---
 

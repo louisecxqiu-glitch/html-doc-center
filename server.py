@@ -817,19 +817,21 @@ async def handle_config_post(request):
 SAVER_INJECT_MARKER = "<!-- html-doc-center:saver-injected -->"
 
 
-def inject_saver(html: str, file_path: str) -> str:
+def inject_saver(html: str, file_path: str, cfg: dict) -> str:
     """
     在 HTML 里注入 saver-runtime.js 引用 + <base href> 资源代理。
     - 已注入过（有 marker）则跳过
     - 优先插到 </body> 前；没有 body 则追加到文件尾
     - 通过 window.__DOC_CENTER__ 变量传递文件路径等上下文
     - v1.15: 注入 <base href> 让相对路径资源走 /api/asset/ 代理
+    - v1.20.x: cfg 显式传入（之前用 `app.get` 是 bug，作用域里没有 app）
     """
     if SAVER_INJECT_MARKER in html:
         return html
 
     import html as html_escape_mod
     safe_path = html_escape_mod.escape(file_path).replace('"', '&quot;')
+    share_server = (cfg or {}).get("share_server", "")
 
     # v1.15: 注入 <base href> 让相对路径走资源代理（如果原 HTML 没有 <base>）
     has_base = bool(re.search(r"<base\s", html, re.IGNORECASE))
@@ -856,7 +858,7 @@ def inject_saver(html: str, file_path: str) -> str:
         f'  filePath: "{safe_path}",\n'
         '  serverOrigin: window.location.origin || "http://localhost:9901",\n'
         '  inIframe: window.self !== window.top,\n'
-        f'  shareServer: "{app.get("config", {}).get("share_server", "")}"\n'
+        f'  shareServer: "{share_server}"\n'
         '};\n'
         '</script>\n'
         '<script src="/saver-runtime.js" defer></script>\n'
@@ -984,7 +986,7 @@ async def handle_file(request):
         if suffix == ".html":
             with open(safe, "r", encoding="utf-8", errors="replace") as f:
                 content = f.read()
-            injected = inject_saver(content, str(safe))
+            injected = inject_saver(content, str(safe), cfg)
         elif suffix == ".md":
             port = int(cfg.get("port", 9901))
             injected = render_md_shell(safe, port)
