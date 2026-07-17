@@ -533,8 +533,9 @@ async def handle_tree_sig(request):
 
 
 async def handle_browse(request):
-    """GET /api/browse?path=... - 浏览目录，返回子目录列表"""
+    """GET /api/browse?path=...&mode=file - 浏览目录，返回子目录列表（+ 文件列表当 mode=file）。"""
     target = request.query.get("path", "")
+    mode = request.query.get("mode", "")  # v1.19: "" 或 "file"
     try:
         if not target:
             # 没传 path，返回常用起始点
@@ -570,7 +571,8 @@ async def handle_browse(request):
                     roots.append({"name": f"📌 {name}", "path": parent})
             return web.json_response({
                 "ok": True, "current": "", "parent": "",
-                "dirs": roots, "is_root": True
+                "dirs": roots, "is_root": True,
+                **({"files": []} if mode == "file" else {})  # v1.19: root 时 files 为空
             })
 
         rp = Path(target).expanduser().resolve()
@@ -589,13 +591,35 @@ async def handle_browse(request):
         except PermissionError:
             pass
 
-        return web.json_response({
+        resp = {
             "ok": True,
             "current": str(rp),
             "parent": str(rp.parent) if rp != rp.parent else "",
             "dirs": children,
             "is_root": False
-        })
+        }
+
+        # v1.19: mode=file 时额外返回 HTML/MD 文件列表
+        if mode == "file":
+            files = []
+            try:
+                for entry in sorted(rp.iterdir(), key=lambda e: e.name.lower()):
+                    if entry.is_file() and not entry.name.startswith("."):
+                        ext = entry.suffix.lower()
+                        if ext in (".html", ".htm", ".md"):
+                            stat = entry.stat()
+                            files.append({
+                                "name": entry.name,
+                                "path": str(entry),
+                                "size": stat.st_size,
+                                "mtime": int(stat.st_mtime),
+                                "type": "md" if ext == ".md" else "html",
+                            })
+            except PermissionError:
+                pass
+            resp["files"] = files
+
+        return web.json_response(resp)
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
