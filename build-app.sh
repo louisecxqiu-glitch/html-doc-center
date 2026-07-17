@@ -226,11 +226,18 @@ img.save('$ICON_TMP')
     fi
 fi
 
+# ── ad-hoc 签名（避免 Gatekeeper "无法验证" 拦截）──
+echo "🔐 Ad-hoc signing ${APP_NAME}.app ..."
+codesign --force --deep --sign - "${APP_BUNDLE}" 2>/dev/null || {
+    echo "⚠️ codesign failed (non-fatal) — user may need to right-click → Open on first launch"
+}
+
 # ── 完成 ──
 echo ""
 echo "✅ 构建完成！"
 echo "   📦 ${APP_BUNDLE}"
 echo "   💡 双击即可启动，或拖到 /Applications/"
+echo "   🔐 如遇 Gatekeeper 拦截：右键 → 打开 → 打开"
 echo ""
 
 # 自动打开 Finder 显示产物

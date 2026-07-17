@@ -68,6 +68,17 @@ def main():
     output = SCRIPT_DIR / "dist" / f"{APP_NAME}{ext}"
     if output.exists():
         size_mb = output.stat().st_size / (1024 * 1024)
+
+        # macOS: ad-hoc 签名（避免 Gatekeeper "无法验证" 拦截）
+        if not IS_WINDOWS:
+            try:
+                subprocess.check_call([
+                    "codesign", "--force", "--sign", "-", str(output)
+                ])
+                print(f"🔐 Ad-hoc signed: {output}")
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                print(f"⚠️ codesign failed (non-fatal) — user may need to right-click → Open on first launch")
+
         print()
         print(f"✅ Build complete!")
         print(f"   📦 {output} ({size_mb:.1f} MB)")
@@ -75,6 +86,7 @@ def main():
             print(f"   💡 Double-click HTMLStudio.exe to start")
         else:
             print(f"   💡 Double-click to start, or run: ./dist/{APP_NAME}")
+            print(f"   🔐 If Gatekeeper blocks: right-click → Open → Open")
         print(f"   🌐 Browser opens automatically")
         print()
         print(f"   To test without opening browser:")
