@@ -199,7 +199,7 @@
       <div class="__dc_color_wrap" id="__dc_color_wrap" title="字色（点击选预设色或取色器）">
         <button id="__dc_color_btn" style="color:#DC2626;" title="字色：当前红色。点击弹出色板选其他颜色。"><b>A</b><span class="__dc_color_bar" style="background:#DC2626;"></span></button>
       </div>
-      <!-- v1.19.2: 高亮色改成色板；v1.19.3 用 Word 风格 "ab" + 背景色块 -->
+      <!-- v1.19.2: 高亮色改成色板；v1.19.3 用 Word 风格 "ab" + 背景色块；v1.19.4 文字色自动反转 -->
       <div class="__dc_color_wrap" id="__dc_hilite_wrap" title="高亮背景色（点击选预设浅色或取色器）">
         <button id="__dc_hilite_btn" style="background:#FDE68A;color:#1A1D23;" title="高亮背景色：当前浅黄。点击弹出色板选其他颜色或清除。"><b>ab</b></button>
       </div>
@@ -287,8 +287,10 @@
         if (existing) { existing.remove(); return; }
         showColorPalette(hiliteBtn, (color) => {
           currentHilite = color;
-          const barEl = hiliteBtn.querySelector(".__dc_color_bar");
-          if (barEl) barEl.style.background = color;
+          // v1.19.4: ab 按钮自身背景就是颜色指示（不再用 __dc_color_bar 子元素）
+          hiliteBtn.style.background = color;
+          // 文字颜色根据背景深浅自动反转（深色背景用白字、浅色背景用黑字）
+          hiliteBtn.style.color = isLightColor(color) ? "#1A1D23" : "#FFFFFF";
           restoreSelection();
           // 用 hiliteColor command 包裹选区
           document.execCommand("hiliteColor", false, color);
@@ -309,8 +311,9 @@
           clearBtn.addEventListener("click", (ev) => {
             ev.stopPropagation();
             currentHilite = "transparent";
-            const barEl = hiliteBtn.querySelector(".__dc_color_bar");
-            if (barEl) barEl.style.background = "transparent";
+            // 清除按钮自身的高亮色（按钮重置为无背景）
+            hiliteBtn.style.background = "transparent";
+            hiliteBtn.style.color = "#9CA3AF";
             restoreSelection();
             document.execCommand("hiliteColor", false, "transparent");
             markDirty();
@@ -722,6 +725,20 @@
     try { localStorage.setItem(_RECENT_COLORS_KEY, JSON.stringify(list)); } catch (_) {}
   }
 
+  /** v1.19.4: 判断颜色深浅（用于高亮按钮文字反转色） */
+  function isLightColor(hex) {
+    if (!hex || hex === "transparent") return true;
+    const c = hex.replace("#", "");
+    if (c.length !== 6 && c.length !== 3) return true;
+    const full = c.length === 3 ? c.split("").map(x => x + x).join("") : c;
+    const r = parseInt(full.slice(0, 2), 16);
+    const g = parseInt(full.slice(2, 4), 16);
+    const b = parseInt(full.slice(4, 6), 16);
+    // YIQ 亮度公式
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 160;  // >= 160 视为浅色
+  }
+
   function showColorPalette(anchor, onPick) {
     // v1.11.1: 14 色预设（覆盖深底/浅底/品牌色），按行分组
     // 第一行：基础 8 色（黑白灰系 + 主色）
@@ -739,12 +756,16 @@
     const rect = anchor.getBoundingClientRect();
     const palette = document.createElement("div");
     palette.id = "__dc_color_palette";
-    // v1.19.3: 智能定位 — 默认在 anchor 下方左对齐；若右边超出则右对齐到 viewport 边缘
-    const paletteWidth = 200;  // 缩小宽度（之前 232px 太宽）
+    // v1.19.4: 自适应宽度 — 不写死 width，让 grid 内容自然撑开（之前 200px 装不下 8 色块 + padding 导致内容溢出被截）
+    // 智能定位：默认左对齐 anchor；右边超出 viewport 则右对齐到 viewport 边缘
+    const paletteMinWidth = 220;  // 最小宽度
+    const paletteMaxWidth = 280;  // 最大宽度（防止过宽）
+    // 先计算理论宽度：8 列色块 22px + 7 gap 4px + 2 padding 10px = 204
+    const expectedWidth = 8 * 22 + 7 * 4 + 2 * 10;  // = 204
     let leftPos = rect.left;
-    if (leftPos + paletteWidth > window.innerWidth - 8) {
+    if (leftPos + expectedWidth > window.innerWidth - 8) {
       // 右边超出：右对齐到 viewport
-      leftPos = Math.max(8, window.innerWidth - paletteWidth - 8);
+      leftPos = Math.max(8, window.innerWidth - expectedWidth - 8);
     }
     palette.style.cssText = `
       position: fixed; z-index: 2147483640;
@@ -752,7 +773,9 @@
       padding: 10px; background: #1A1D23;
       border: 1px solid rgba(201,169,97,0.3);
       border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.45);
-      width: ${paletteWidth}px;
+      min-width: ${paletteMinWidth}px; max-width: ${paletteMaxWidth}px;
+      width: ${expectedWidth}px;
+      box-sizing: border-box;
       animation: __dc_popIn .15s ease-out;
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
     `;
@@ -765,8 +788,9 @@
 
     function makeSwatch(c, opts = {}) {
       const sw = document.createElement("button");
+      // v1.19.4: 色块 22px 配合新 grid
       sw.style.cssText = `
-        width: 24px; height: 24px; border-radius: 50%;
+        width: 22px; height: 22px; border-radius: 50%;
         border: 2px solid rgba(255,255,255,0.18);
         background: ${c}; cursor: pointer; padding: 0;
         transition: transform 0.1s, border-color 0.1s;
@@ -800,7 +824,8 @@
     }
     function makeRow(colors) {
       const row = document.createElement("div");
-      row.style.cssText = `display: grid; grid-template-columns: repeat(8, 24px); gap: 6px; margin-bottom: 8px;`;
+      // v1.19.4: 8 列色块 22px + gap 4px = 204px（配合 220px 容器 + 10px padding 刚好装下）
+      row.style.cssText = `display: grid; grid-template-columns: repeat(8, 22px); gap: 4px; margin-bottom: 8px;`;
       colors.forEach(c => row.appendChild(makeSwatch(c)));
       return row;
     }
@@ -813,7 +838,7 @@
     if (recent.length > 0) {
       palette.appendChild(makeLabel("最近使用"));
       const recRow = document.createElement("div");
-      recRow.style.cssText = `display: grid; grid-template-columns: repeat(8, 24px); gap: 6px; margin-bottom: 8px;`;
+      recRow.style.cssText = `display: grid; grid-template-columns: repeat(8, 22px); gap: 4px; margin-bottom: 8px;`;
       recent.forEach(c => recRow.appendChild(makeSwatch(c, { hint: "（最近使用）" })));
       palette.appendChild(recRow);
     }
