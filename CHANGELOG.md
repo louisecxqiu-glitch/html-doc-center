@@ -8,30 +8,25 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## v1.19.0 — Finder-style Modal + Editable Drag-and-Drop
 
-*2026-07-17 · v1.19.0*
+## v1.19.8 — Finder Modal + Editable Drag + Toolbar UX + Windows Fix
 
-**EN**
-- 🎯 **New: "Open file" button** — click 📂 in sidebar (or 📄 Open a file on welcome page) to browse and open any HTML/Markdown file on your disk. Selected files are editable (not preview-only) and added to "Recent" list.
-- 🖼️ **Finder-style dual-pane modal** — both "Add folder" and "Open file" now use a redesigned dual-pane modal: left sidebar (Shortcuts / Pinned / Recent) + right main area with Today/Earlier time grouping. Replaces the old single-column list.
-- ✏️ **Drag-and-drop is now editable** — previously drag-in was preview-only (no saver-runtime.js injection). Now dropped files are uploaded to `_dropbox/` server-side and opened via the full `openFile()` pipeline, with 2-second auto-snapshot and 2-choice close dialog (Save as / Discard).
-- 🕐 **"Recent" sidebar tab populated** — was empty since v1.10.7 because no entry button existed. Now shows up to 20 recently opened files (localStorage persisted, bumped from 10 to 20).
-- 🔧 **Backend**: `GET /api/browse?mode=file` (returns files array with size/mtime), `POST /api/drag-upload` (multipart, 10MB limit, .html/.htm/.md only), `POST /api/save-as` (with overwrite support), `_dropbox/` 7-day auto-cleanup on startup.
-- 🧪 **Test infrastructure**: pytest + aiohttp TestClient, 18 backend tests covering all new endpoints + backward compatibility.
+*2026-07-17 · v1.19.0 → v1.19.8 (8 patch iterations)*
 
-**中文**
-- 🎯 **新增"打开文件"按钮** — 侧栏 📂 或 welcome 页 📄 打开文件，可浏览并打开磁盘上任意 HTML/Markdown 文件。选中的文件可编辑（非预览），并加入"最近打开"列表。
-- 🖼️ **Finder 风格双栏 modal** — "添加文件夹"和"打开文件"统一升级为双栏 modal：左侧栏（快捷入口/已固定/最近打开）+ 右侧主区按今天/更早时间分组。替换旧的单栏列表。
-- ✏️ **拖入文件可编辑** — 之前拖入只能预览（无 saver-runtime.js 注入）。现在拖入文件上传到 `_dropbox/` 服务端，走完整 `openFile()` 流程，含 2 秒自动快照 + 关闭时二选一（另存为/丢弃）。
-- 🕐 **"最近打开"侧栏 tab 填充** — 自 v1.10.7 起一直为空（因为没有"打开文件"入口）。现在显示最近 20 个打开的文件（localStorage 持久化，从 10 提升到 20）。
-- 🔧 **后端**：`GET /api/browse?mode=file`（返回 files 数组含 size/mtime）、`POST /api/drag-upload`（multipart，10MB 限制，仅 .html/.htm/.md）、`POST /api/save-as`（支持覆盖）、`_dropbox/` 启动时 7 天自动清理。
-- 🧪 **测试基础设施**：pytest + aiohttp TestClient，18 个后端测试覆盖所有新 endpoint + 向后兼容性。
+**v1.19.0** — Finder-style dual-pane modal + editable drag-and-drop + Recent tab
+**v1.19.1** — emoji icon fix + safeFetchJson in browseTo
+**v1.19.2** — toolbar: remove brand dup + title hints + full hilite color palette
+**v1.19.3** — palette overflow fix + Word-style SVG alignment icons
+**v1.19.4** — palette width adapt + hilite button auto-contrast
+**v1.19.5** — SVG alignment icons + cross-platform shortcuts (Alt/Option)
+**v1.19.6** — UX overhaul: share feedback + spacing mode switch + mode states
+**v1.19.7** — spacing toast feedback (select/change/reset)
+**v1.19.8** — Windows IPv6 dual bind + manual path input + export-share API
+**+ macOS** — ad-hoc codesign in build scripts (Gatekeeper fix)
 
-**👤 用户故事**
-- 场景：想编辑一个不在扫描根目录里的 HTML 文件，之前只能拖入预览（只读），改完没法保存。
-- 之前：拖入只读预览，关闭即丢；要点按钮选文件根本没入口。
-- 现在：点 📂 按钮选任意文件直接可编辑；拖入也可编辑 + 另存为；最近打开 tab 让跨会话回到文件。
+**Backend**: `/api/browse?mode=file`, `/api/drag-upload`, `/api/save-as`, `/api/export-share`, `_dropbox/` cleanup
+**Tests**: 18 pytest (browse/drag-upload/save-as/cleanup)
+**Toolbar**: SVG icons, color palettes, mode states, cross-platform shortcuts, per-action toast
 
 ---
 
