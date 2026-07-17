@@ -2177,6 +2177,19 @@
       updateIndicators();
     }
 
+    // v1.19.7: 滑杆变化时 toast 反馈边距变化（解决"看不出前后差异"问题）
+    let _lastMarginToast = 0;
+    function applyMarginWithFeedback(el, which, px) {
+      applyMargin(el, which, px);
+      const now = Date.now();
+      if (now - _lastMarginToast < 500) return;
+      _lastMarginToast = now;
+      const mt = readMargin(el, "top");
+      const mb = readMargin(el, "bottom");
+      const label = which === "top" ? "上边距" : "下边距";
+      toast(`📐 ${label} → ${px}px · 当前：上 ${mt}px / 下 ${mb}px`, "info", 1500);
+    }
+
     function updateIndicators() {
       if (!selectedBlock) return;
       const rect = selectedBlock.getBoundingClientRect();
@@ -2257,14 +2270,14 @@
 
       mt.addEventListener("input", (e) => {
         const v = parseInt(e.target.value, 10);
-        applyMargin(selectedBlock, "top", v);
+        applyMarginWithFeedback(selectedBlock, "top", v);
         mtVal.textContent = v + "px";
         markDirty();
         refreshPresetActive();
       });
       mb.addEventListener("input", (e) => {
         const v = parseInt(e.target.value, 10);
-        applyMargin(selectedBlock, "bottom", v);
+        applyMarginWithFeedback(selectedBlock, "bottom", v);
         mbVal.textContent = v + "px";
         markDirty();
         refreshPresetActive();
@@ -2280,6 +2293,8 @@
           syncSlidersFromBlock();
           markDirty();
           refreshPresetActive();
+          // v1.19.7: 预设应用 toast 反馈
+          toast(`📐 已应用「${btn.textContent.split('\n')[0]}」预设：上 ${mtv}px / 下 ${mbv}px`, "info", 2000);
         });
       });
 
@@ -2291,7 +2306,8 @@
         syncSlidersFromBlock();
         updateIndicators();
         markDirty();
-        toast("已恢复原 CSS 间距");
+        // v1.19.7: 改用 selector 描述 + 中文 toast
+        toast(`📐 已恢复 <${describeElement(selectedBlock)}> 原始边距`, "info", 2000);
       });
       pop.querySelector("#__dc_bp_rhythm").addEventListener("click", openRhythmModal);
 
@@ -2349,6 +2365,10 @@
       refreshPresetActive();
       positionPopover();
       updateIndicators();
+      // v1.19.7: 反馈"选了什么块" + 当前边距（用户痛点：看不出前后差异 + 不知道改了什么）
+      const mt = readMargin(el, "top");
+      const mb = readMargin(el, "bottom");
+      toast(`📐 已选 <${describeElement(el)}> · 上 ${mt}px / 下 ${mb}px`, "info", 3000);
     }
 
     function deselectBlock() {
@@ -2523,19 +2543,19 @@
       let handled = false;
       if (e.key === "ArrowUp") {
         const v = Math.min(120, readMargin(selectedBlock, "top") + 4);
-        applyMargin(selectedBlock, "top", v);
+        applyMarginWithFeedback(selectedBlock, "top", v);
         handled = true;
       } else if (e.key === "ArrowDown") {
         const v = Math.max(0, readMargin(selectedBlock, "top") - 4);
-        applyMargin(selectedBlock, "top", v);
+        applyMarginWithFeedback(selectedBlock, "top", v);
         handled = true;
       } else if (e.key === "ArrowRight") {
         const v = Math.min(120, readMargin(selectedBlock, "bottom") + 4);
-        applyMargin(selectedBlock, "bottom", v);
+        applyMarginWithFeedback(selectedBlock, "bottom", v);
         handled = true;
       } else if (e.key === "ArrowLeft") {
         const v = Math.max(0, readMargin(selectedBlock, "bottom") - 4);
-        applyMargin(selectedBlock, "bottom", v);
+        applyMarginWithFeedback(selectedBlock, "bottom", v);
         handled = true;
       }
       if (handled) {
