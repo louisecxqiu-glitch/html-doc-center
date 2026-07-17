@@ -54,7 +54,7 @@
 
   // ───────────── v1.10.7 最近打开 Recent Files ─────────────
   const RECENT_KEY = "doc_center_recent_v1";
-  const RECENT_MAX = 10;
+  const RECENT_MAX = 20;  // v1.19: 从 10 提升到 20
 
   function recentGet() {
     try {
@@ -227,6 +227,8 @@
       const sidebar = document.getElementById("sidebar");
       if (sidebar) sidebar.setAttribute("data-active-tab", tab);
       try { localStorage.setItem(SIDEBAR_TAB_KEY, tab); } catch (_) {}
+      // v1.19: 切到 recent tab 时渲染最近打开列表
+      if (tab === "recent" && typeof renderRecentSection === "function") renderRecentSection();
     },
     refreshCounts() {
       const favCount = (state.favorites || []).length;
@@ -1772,7 +1774,16 @@
   // ───────────── 关闭文件 ─────────────
   async function closeCurrentFile() {
     if (!state.currentFile) return;
-    if (state.isDirty) {
+    // v1.19: dropbox 副本关闭时弹二选一（另存为 / 丢弃）
+    if (state.currentFile.isDropbox && state.isDirty) {
+      const choice = await promptDropboxSaveChoice();
+      if (choice === "cancel") return;
+      if (choice === "save_as") {
+        const saved = await promptSaveAsViaFinder();
+        if (!saved) return;
+      }
+      // choice === "discard" → 直接关闭
+    } else if (state.isDirty) {
       const ok = await promptSaveBeforeSwitch();
       if (!ok) return;
     }
@@ -1977,11 +1988,25 @@
 
   // ───────────── 目录浏览器 ─────────────
   let _browseSelected = "";
+  let _browseMode = "folder";  // v1.19: "folder" | "file"
+  let _browseOnConfirm = null;  // v1.19: mode=file 时的回调
 
-  async function openBrowseDialog() {
+  async function openBrowseDialog(mode = "folder", onConfirm = null) {
+    _browseMode = mode;
     _browseSelected = "";
+    _browseOnConfirm = onConfirm;
     $("#browse-confirm").disabled = true;
     $("#browse-selected").textContent = "";
+
+    // v1.19: 标题 + 确定按钮文案随 mode 切换
+    const titleKey = mode === "file" ? "modal.folder.title.file" : "modal.folder.title.folder";
+    const confirmKey = mode === "file" ? "modal.folder.confirm.file" : "modal.folder.confirm.folder";
+    const titleEl = $("#browse-modal-title");
+    if (titleEl) { titleEl.dataset.i18n = titleKey; titleEl.textContent = window.i18n.t(titleKey); }
+    const confirmBtn = $("#browse-confirm");
+    confirmBtn.dataset.i18n = confirmKey;
+    confirmBtn.textContent = window.i18n.t(confirmKey);
+
     $("#browse-dialog").style.display = "flex";
     await browseTo("");  // 加载起始页（快捷入口）
   }
@@ -1992,16 +2017,74 @@
 
   async function browseTo(path) {
     const list = $("#browse-list");
-    list.innerHTML = window.i18n.t("browse.loading_html");
+    list.innerHTML = window.i18n.t("browse.loading_html") || "Loading…";
     try {
-      const r = await fetch(API.browse(path));
+      const modeParam = _browseMode === "file" ? "&mode=file" : "";
+      const r = await fetch(API.browse(path) + modeParam);
       const d = await r.json();
       if (!d.ok) { list.innerHTML = `<div class="browse-empty">❌ ${d.error}</div>`; return; }
       renderBrowseBreadcrumb(d.current, d.is_root);
-      renderBrowseList(d.dirs, d.current, d.parent, d.is_root);
+      renderBrowseSidebar(d);
+      if (_browseMode === "file" && d.files) {
+        renderBrowseFileList(d.dirs, d.files, d.current, d.parent, d.is_root);
+      } else {
+        renderBrowseList(d.dirs, d.current, d.parent, d.is_root);
+      }
     } catch (e) {
-      list.innerHTML = window.i18n.t("browse.request_failed_html", { msg: e.message });
+      list.innerHTML = window.i18n.t("browse.request_failed_html", { msg: e.message }) ||
+        `<div class="browse-empty">❌ ${e.message}</div>`;
     }
+  }
+
+  // v1.19: 渲染左侧栏（Shortcuts + Pinned + Recent）
+  function renderBrowseSidebar(d) {
+    const shortcutsList = $("#browse-shortcuts-list");
+    const pinnedList = $("#browse-pinned-list");
+    const recentList = $("#browse-recent-list");
+    if (!shortcutsList) return;
+
+    if (d.is_root) {
+      const shortcuts = (d.dirs || []).filter(x => !x.name.startsWith("📌"));
+      const pinned = (d.dirs || []).filter(x => x.name.startsWith("📌"));
+      shortcutsList.innerHTML = shortcuts.map(s =>
+        `<div class="browse-sidebar-item" data-path="${escapeHtml(s.path)}">
+          <span class="browse-sidebar-item-icon">${escapeHtml(s.name.charAt(0))}</span>
+          <span class="browse-sidebar-item-name">${escapeHtml(s.name.replace(/^[^\w]+\s*/, ""))}</span>
+        </div>`).join("");
+      pinnedList.innerHTML = pinned.map(p =>
+        `<div class="browse-sidebar-item" data-path="${escapeHtml(p.path)}">
+          <span class="browse-sidebar-item-icon">📌</span>
+          <span class="browse-sidebar-item-name">${escapeHtml(p.name.replace(/^📌\s*/, ""))}</span>
+        </div>`).join("");
+    }
+
+    // Recent：从 localStorage 读最近 5 条（复用现有 recentGet，数据结构 {path, name, ts}）
+    const recent = (typeof recentGet === "function" ? recentGet() : []).slice(0, 5);
+    if (recent.length === 0) {
+      recentList.innerHTML = `<div class="browse-sidebar-item" style="opacity:0.5;cursor:default">${escapeHtml(window.i18n.t("modal.folder.recent.empty"))}</div>`;
+    } else {
+      recentList.innerHTML = recent.map(r => {
+        const isMD = r.path.toLowerCase().endsWith(".md");
+        return `<div class="browse-sidebar-item" data-recent-path="${escapeHtml(r.path)}">
+          <span class="browse-sidebar-item-icon">${isMD ? "📄" : "🌐"}</span>
+          <span class="browse-sidebar-item-name">${escapeHtml(r.name || r.path.split(/[/\\]/).pop())}</span>
+        </div>`;
+      }).join("");
+      recentList.querySelectorAll("[data-recent-path]").forEach(el => {
+        el.addEventListener("click", () => {
+          const p = el.dataset.recentPath;
+          closeBrowseDialog();
+          openFile({ abs_path: p, name: p.split(/[/\\]/).pop(), type: p.toLowerCase().endsWith(".md") ? "md" : "html" });
+        });
+      });
+    }
+
+    shortcutsList.querySelectorAll("[data-path]").forEach(el => {
+      el.addEventListener("click", () => browseTo(el.dataset.path));
+    });
+    pinnedList.querySelectorAll("[data-path]").forEach(el => {
+      el.addEventListener("click", () => browseTo(el.dataset.path));
+    });
   }
 
   function renderBrowseBreadcrumb(current, isRoot) {
@@ -2034,7 +2117,7 @@
     list.innerHTML = "";
 
     if (!dirs.length) {
-      list.innerHTML = window.i18n.t("browse.empty_dir_html");
+      list.innerHTML = window.i18n.t("browse.empty_dir_html") || `<div class="browse-empty">Empty</div>`;
       return;
     }
 
@@ -2042,7 +2125,7 @@
     if (!isRoot && parent) {
       const upRow = document.createElement("div");
       upRow.className = "browse-item browse-item-up";
-      upRow.innerHTML = window.i18n.t("browse.up_html");
+      upRow.innerHTML = window.i18n.t("browse.up_html") || `⬆️ <span>Up</span>`;
       upRow.addEventListener("click", () => browseTo(parent));
       list.appendChild(upRow);
     }
@@ -2050,43 +2133,147 @@
     for (const d of dirs) {
       const row = document.createElement("div");
       row.className = "browse-item";
+      if (_browseSelected === d.path) row.classList.add("selected");
       const icon = isRoot ? d.name.charAt(0) : "📁";
       row.innerHTML =
-        `<span class="browse-icon">${icon}</span>` +
-        `<span class="browse-name">${isRoot ? d.name : d.name}</span>` +
-        `<button class="browse-select-btn" title="${window.i18n.t("browse.select_tooltip")}">${window.i18n.t("browse.select_btn")}</button>`;
-
-      // 点击行进入子目录
+        `<span class="browse-item-icon">${escapeHtml(icon)}</span>` +
+        `<span class="browse-item-name">${escapeHtml(d.name)}</span>`;
+      // mode=folder: 单击选中，双击进入
       row.addEventListener("click", (e) => {
-        if (e.target.closest(".browse-select-btn")) return;
-        browseTo(d.path);
-      });
-
-      // 点击「选择」按钮选中此目录
-      row.querySelector(".browse-select-btn").addEventListener("click", (e) => {
         e.stopPropagation();
-        selectBrowsePath(d.path);
+        if (_browseMode === "folder") {
+          $$(".browse-item.selected").forEach(n => n.classList.remove("selected"));
+          row.classList.add("selected");
+          selectBrowsePath(d.path, d.name);
+        } else {
+          // mode=file 时目录是进入而非选中
+          browseTo(d.path);
+        }
       });
-
+      row.addEventListener("dblclick", () => {
+        if (_browseMode === "folder") {
+          selectBrowsePath(d.path, d.name);
+          confirmBrowse();
+        } else {
+          browseTo(d.path);
+        }
+      });
       list.appendChild(row);
     }
   }
 
-  function selectBrowsePath(path) {
+  // v1.19: mode=file 时渲染文件列表（按 Today/Earlier 分组）
+  function renderBrowseFileList(dirs, files, current, parent, isRoot) {
+    const list = $("#browse-list");
+    list.innerHTML = "";
+
+    if (!isRoot && parent) {
+      const upRow = document.createElement("div");
+      upRow.className = "browse-item browse-item-up";
+      upRow.innerHTML = window.i18n.t("browse.up_html") || `⬆️ <span>Up</span>`;
+      upRow.addEventListener("click", () => browseTo(parent));
+      list.appendChild(upRow);
+    }
+
+    // 目录列表（点击进入）
+    for (const d of dirs) {
+      const row = document.createElement("div");
+      row.className = "browse-item";
+      row.innerHTML =
+        `<span class="browse-item-icon">📁</span>` +
+        `<span class="browse-item-name">${escapeHtml(d.name)}</span>`;
+      row.addEventListener("click", () => browseTo(d.path));
+      list.appendChild(row);
+    }
+
+    if (!files.length && !dirs.length) {
+      list.innerHTML += `<div class="browse-empty">${escapeHtml(window.i18n.t("modal.folder.empty_files"))}</div>`;
+      return;
+    }
+
+    // 文件按 mtime 分组：Today / Earlier
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+    const todayFiles = [];
+    const earlierFiles = [];
+    for (const f of files) {
+      if (f.mtime * 1000 >= startOfToday.getTime()) todayFiles.push(f);
+      else earlierFiles.push(f);
+    }
+
+    if (todayFiles.length) {
+      const label = document.createElement("div");
+      label.className = "browse-group-label";
+      label.textContent = window.i18n.t("modal.folder.group.today") || "Today";
+      list.appendChild(label);
+      for (const f of todayFiles) appendFileRow(list, f);
+    }
+    if (earlierFiles.length) {
+      const label = document.createElement("div");
+      label.className = "browse-group-label";
+      label.textContent = window.i18n.t("modal.folder.group.earlier") || "Earlier";
+      list.appendChild(label);
+      for (const f of earlierFiles) appendFileRow(list, f);
+    }
+  }
+
+  function appendFileRow(list, f) {
+    const row = document.createElement("div");
+    row.className = "browse-item";
+    row.dataset.path = f.path;
+    if (_browseSelected === f.path) row.classList.add("selected");
+    const sizeStr = formatFileSize(f.size);
+    const timeStr = formatRelativeTime(f.mtime * 1000);
+    row.innerHTML =
+      `<span class="browse-item-icon">${f.type === "md" ? "📄" : "🌐"}</span>` +
+      `<span class="browse-item-name">${escapeHtml(f.name)}</span>` +
+      `<span class="browse-item-meta">${escapeHtml(sizeStr)} · ${escapeHtml(timeStr)}</span>`;
+    row.addEventListener("click", (e) => {
+      e.stopPropagation();
+      $$(".browse-item.selected").forEach(n => n.classList.remove("selected"));
+      row.classList.add("selected");
+      selectBrowsePath(f.path, f.name);
+    });
+    row.addEventListener("dblclick", () => {
+      selectBrowsePath(f.path, f.name);
+      confirmBrowse();
+    });
+    list.appendChild(row);
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return window.i18n.t("modal.folder.size_kb", { n: (bytes / 1024).toFixed(1) });
+    return window.i18n.t("modal.folder.size_mb", { n: (bytes / 1024 / 1024).toFixed(2) });
+  }
+
+  function formatRelativeTime(ts) {
+    const diff = Date.now() - ts;
+    if (diff < 60 * 1000) return window.i18n.t("modal.folder.rel_time.now") || "just now";
+    if (diff < 60 * 60 * 1000) return window.i18n.t("modal.folder.rel_time.hours", { n: Math.floor(diff / 3600000) });
+    return window.i18n.t("modal.folder.rel_time.days", { n: Math.floor(diff / 86400000) });
+  }
+
+  function selectBrowsePath(path, name) {
     _browseSelected = path;
     const sel = $("#browse-selected");
-    sel.textContent = window.i18n.t("browse.selected", { path: path });
+    if (_browseMode === "file") {
+      sel.textContent = window.i18n.t("modal.folder.selected.file", { name: name || path.split(/[/\\]/).pop() });
+    } else {
+      sel.textContent = window.i18n.t("modal.folder.selected.folder", { path });
+    }
     sel.title = path;
     $("#browse-confirm").disabled = false;
+  }
 
-    // 高亮选中行
-    $$(".browse-item").forEach(el => el.classList.remove("browse-item-selected"));
-    $$(".browse-item").forEach(el => {
-      const btn = el.querySelector(".browse-select-btn");
-      if (btn && el.querySelector(".browse-name")?.textContent) {
-        // 用 path 匹配
-      }
-    });
+  async function confirmBrowse() {
+    if (!_browseSelected) return;
+    if (_browseMode === "file" && _browseOnConfirm) {
+      closeBrowseDialog();
+      _browseOnConfirm(_browseSelected);
+    } else if (_browseMode === "folder") {
+      await addScanRoot(_browseSelected);
+      closeBrowseDialog();
+    }
   }
 
   async function confirmBrowse() {
@@ -2364,16 +2551,27 @@
       }
     });
     $("#btn-add-root").addEventListener("click", addRoot);
-    $("#btn-browse-root").addEventListener("click", openBrowseDialog);
+    $("#btn-browse-root").addEventListener("click", () => openBrowseDialog("folder"));
     $("#browse-cancel").addEventListener("click", closeBrowseDialog);
     $("#browse-confirm").addEventListener("click", confirmBrowse);
+    const browseCloseX = $("#browse-close-x");
+    if (browseCloseX) browseCloseX.addEventListener("click", closeBrowseDialog);
     $("#new-root-input").addEventListener("keydown", (e) => { if (e.key === "Enter") addRoot(); });
     // v1.16.1: 侧边栏 ＋ 按钮 → 直接打开目录浏览弹窗（不经过设置面板）
     const btnQuickAdd = document.getElementById("btn-quick-add-dir");
-    if (btnQuickAdd) btnQuickAdd.addEventListener("click", () => openBrowseDialog());
+    if (btnQuickAdd) btnQuickAdd.addEventListener("click", () => openBrowseDialog("folder"));
     // v1.16.1: 空状态"添加文件夹"按钮 → 同样直达
     const btnEmptyAdd = document.getElementById("btn-empty-add-dir");
-    if (btnEmptyAdd) btnEmptyAdd.addEventListener("click", () => openBrowseDialog());
+    if (btnEmptyAdd) btnEmptyAdd.addEventListener("click", () => openBrowseDialog("folder"));
+    // v1.19: 新增"打开文件"按钮
+    const btnOpenFile = $("#btn-open-file");
+    if (btnOpenFile) btnOpenFile.addEventListener("click", () => openBrowseDialog("file", (path) => {
+      openFile({ abs_path: path, name: path.split(/[/\\]/).pop(), type: path.toLowerCase().endsWith(".md") ? "md" : "html" });
+    }));
+    const btnEmptyOpenFile = $("#btn-empty-open-file");
+    if (btnEmptyOpenFile) btnEmptyOpenFile.addEventListener("click", () => openBrowseDialog("file", (path) => {
+      openFile({ abs_path: path, name: path.split(/[/\\]/).pop(), type: path.toLowerCase().endsWith(".md") ? "md" : "html" });
+    }));
 
     // ───────────── v1.16: 拖拽 HTML/MD 文件到主界面预览 ─────────────
     const editor = document.querySelector(".editor");
@@ -2417,40 +2615,36 @@
         }
 
         try {
-          const text = await target.text();
-          const iframe = document.getElementById("doc-frame");
-          if (!iframe) return;
-
-          // 隐藏空状态，显示 iframe + 临时预览状态条
-          const emptyState = document.getElementById("empty-state");
-          if (emptyState) emptyState.style.display = "none";
-          iframe.style.display = "block";
-
-          // v1.18.2: MD 文件需要渲染成 HTML 再塞进 iframe
-          const isMD = /\.md$/i.test(target.name);
-          let htmlContent;
-          if (isMD) {
-            htmlContent = renderMarkdownSimple(text);
-          } else {
-            htmlContent = text;
+          // v1.19: 改走 server 写副本 + openFile，让拖入文件可编辑
+          const fd = new FormData();
+          fd.append("file", target);
+          fd.append("filename", target.name);
+          const r = await fetch("/api/drag-upload", { method: "POST", body: fd });
+          if (!r.ok) {
+            const err = await r.json().catch(() => ({ error: r.statusText }));
+            toast(window.i18n?.t("toast.drag.upload_failed", { msg: err.error }) || `上传失败：${err.error}`, "error");
+            return;
           }
-          iframe.srcdoc = htmlContent;
-          // v1.16.1: 显示临时预览状态条
-          const previewBar = document.getElementById("drag-preview-bar");
-          if (previewBar) previewBar.style.display = "block";
-          // v1.17: 拖拽预览也启用导出按钮
-          const bep3 = document.getElementById("btn-export-pdf");
-          if (bep3) bep3.disabled = false;
-
-          // 更新面包屑
+          const data = await r.json();
+          // 走完整 openFile 路径，自动注入 saver-runtime.js
+          openFile({
+            abs_path: data.abs_path,
+            name: data.name,
+            type: data.type,
+          });
+          // 标记为 dropbox 副本，关闭时走二选一
+          if (state.currentFile) state.currentFile.isDropbox = true;
+          // 面包屑加 dropbox 标识
           const bc = document.getElementById("breadcrumb");
           if (bc) {
-            bc.innerHTML = `<b>${escapeHtml(target.name)}</b> <span class="bc-meta" style="color:#c9a961">📋 ${window.i18n?.t("breadcrumb.drag_preview") || "拖入预览（未保存）"}</span>`;
+            bc.innerHTML = `<b>${escapeHtml(data.name)}</b> <span class="bc-meta" style="color:#c9a961">📥 ${window.i18n?.t("breadcrumb.dropbox") || "Dropbox 副本"}</span>`;
           }
-
-          toast(`${window.i18n?.t("toast.drag.loaded") || "已加载"}：${target.name}`, "success");
+          // 隐藏旧的 drag-preview-bar（v1.19 不再用）
+          const previewBar = document.getElementById("drag-preview-bar");
+          if (previewBar) previewBar.style.display = "none";
+          toast(window.i18n?.t("toast.drag.uploaded", { name: data.name }) || `已加载到 dropbox（可编辑）：${data.name}`, "success");
         } catch (err) {
-          toast(window.i18n?.t("toast.drag.failed") || "文件读取失败", "error", err.message);
+          toast(window.i18n?.t("toast.drag.upload_failed", { msg: err.message }) || `上传失败：${err.message}`, "error", err.message);
         }
       });
     }
@@ -2854,6 +3048,75 @@
       .then(r => r.json())
       .then(d => { if (d && d.ok) state.autoRefresh.lastSig = d.sig; })
       .catch(() => { /* 静默 */ });
+  }
+
+  // ───────────── v1.19: 拖入副本关闭二选一 ─────────────
+  function promptDropboxSaveChoice() {
+    return new Promise((resolve) => {
+      const dlg = $("#dropbox-save-dialog");
+      if (!dlg) { resolve("discard"); return; }
+      dlg.style.display = "flex";
+      const onSaveAs = () => { cleanup(); resolve("save_as"); };
+      const onDiscard = () => { cleanup(); resolve("discard"); };
+      const onCancel = () => { cleanup(); resolve("cancel"); };
+      function cleanup() {
+        dlg.style.display = "none";
+        const sa = $("#dropbox-save-as-option"); if (sa) sa.removeEventListener("click", onSaveAs);
+        const d = $("#dropbox-discard-option"); if (d) d.removeEventListener("click", onDiscard);
+        const c = $("#dropbox-cancel"); if (c) c.removeEventListener("click", onCancel);
+      }
+      const sa = $("#dropbox-save-as-option"); if (sa) sa.addEventListener("click", onSaveAs);
+      const d = $("#dropbox-discard-option"); if (d) d.addEventListener("click", onDiscard);
+      const c = $("#dropbox-cancel"); if (c) c.addEventListener("click", onCancel);
+    });
+  }
+
+  async function promptSaveAsViaFinder() {
+    const suggestedName = state.currentFile?.name || "untitled.html";
+    const destPath = prompt(
+      window.i18n?.t("dlg.dropbox.save_as_prompt") || "Enter full destination path for the saved copy",
+      suggestedName
+    );
+    if (!destPath) return false;
+    try {
+      const r = await fetch("/api/save-as", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          src_path: state.currentFile.absPath,
+          dest_path: destPath,
+        }),
+      });
+      const data = await r.json();
+      if (data.ok) {
+        toast(window.i18n?.t("toast.save_as.success", { path: data.dest_path }) || `已另存为：${data.dest_path}`, "success");
+        return true;
+      } else if (data.error === "target_exists") {
+        if (confirm(window.i18n?.t("modal.folder.dropbox_save_as_overwrite_confirm") || "文件已存在，是否覆盖？")) {
+          const r2 = await fetch("/api/save-as", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ src_path: state.currentFile.absPath, dest_path: destPath, overwrite: true }),
+          });
+          const d2 = await r2.json();
+          if (d2.ok) {
+            toast(window.i18n?.t("toast.save_as.success", { path: d2.dest_path }) || `已另存为：${d2.dest_path}`, "success");
+            return true;
+          } else {
+            toast(window.i18n?.t("toast.save_as.failed", { msg: d2.error }) || `另存为失败：${d2.error}`, "error");
+            return false;
+          }
+        } else {
+          return false;
+        }
+      } else {
+        toast(window.i18n?.t("toast.save_as.failed", { msg: data.error }) || `另存为失败：${data.error}`, "error");
+        return false;
+      }
+    } catch (e) {
+      toast(window.i18n?.t("toast.save_as.failed", { msg: e.message }) || `另存为失败：${e.message}`, "error");
+      return false;
+    }
   }
 
   document.addEventListener("DOMContentLoaded", init);
