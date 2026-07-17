@@ -11,6 +11,14 @@ import os
 import shutil
 from pathlib import Path
 
+# Windows 控制台默认 cp1252 编码无法输出 emoji，强制设为 utf-8
+if sys.stdout.encoding and sys.stdout.encoding.lower() not in ('utf-8', 'utf8'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 SCRIPT_DIR = Path(__file__).parent.resolve()
 APP_NAME = "HTMLStudio"
 IS_WINDOWS = sys.platform == "win32"
