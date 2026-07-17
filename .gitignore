@@ -50,3 +50,6 @@ build/
 dist/
 *.spec
 _dropbox/
+share_server/
+share_server.py
+share_data/
