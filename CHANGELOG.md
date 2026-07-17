@@ -9,31 +9,123 @@ This project follows [Semantic Versioning](https://semver.org/).
 ---
 
 
-## v2.5.0 — Share Modal Redesign + Multi-Stage Flow + Toolbar Overflow Fix
+## v2.5.4 — CloudBase Password Form Path Fix
 
-*2026-07-17 22:55 · 分享功能核心重构 + 工具栏高缩放修复*
+*2026-07-17 23:05 · 云函数 hotfix*
 
-> 同一天 4 项迭代（v1.20.0 / v1.20.1 / v1.20.2 / v1.20.3 内部版本号）合并发布。项目版本号体系升级到 v2.x（与 git tag 对齐，CHANGELOG 此前滞留在 v1.19.8）。
+**🐛 Bug · 密码 form 提交后 CloudBase 报 INVALID_PATH**
+- **问题**：用户访问带密码的分享链接 → 输入密码点"进入" → CloudBase 返回 `INVALID_PATH` 错误页
+- **根因**：云函数 `passwordPage()` 生成的 form action 是 `/api/share/${id}/auth`（行 59），重定向 Location 是 `/api/share/${id}`（行 135），**都没带 CloudBase HTTP 触发器前缀 `/test`**。浏览器 POST 到 `https://...tcloudbase.com/api/share/{id}/auth`（缺 `/test`）→ CloudBase 路由不匹配触发器路径 `/test/*` → `INVALID_PATH`
+- **解法**：
+  1. 把 `const TRIGGER_PREFIX = "/test"` 从 `main` 函数内提到模块顶部（所有 helper 函数都能访问）
+  2. 密码页 form action 改成 `${TRIGGER_PREFIX}/api/share/${id}/auth`
+  3. 重定向 Location 改成 `${TRIGGER_PREFIX}/api/share/${id}`
+- **改动文件**：`html-studio-server/cloudfunctions/html-studio-share/index.js`（私有仓库，配套 html-doc-center 使用）
+- **验证**：端到端测试 4 步全过 — ①创建带密码 share ②GET 返回密码页 200 ③POST 密码返回 302 + Location 带 `/test` 前缀 ④带 cookie GET 返回 HTML 内容 200
 
-**🎨 分享弹窗视觉重构**：卡片背景换 `#1A1D23` 渐变 `#232830` + 金色边框，字体统一 `12px -apple-system,"PingFang SC"`，Tab 选中态金色 `#C9A961`，主 CTA 蓝色 `#4A9EFF`。密码区从"输入框"改成"iOS 开关 + 展示卡片"——开关启用自动生成 12 位强密码（等宽金色字体），🎲 重生成 + 📋 复制两个图标按钮。
-
-**🎨 分享流程塞进弹窗**（不关闭，三阶段切换）：
-- 阶段 1 生成中：36px 金色 spinner + "正在生成在线链接…"
-- 阶段 2 成功：✅ + 完整 URL（金色等宽字体，可一键全选） + 📋 复制链接 + 🔗 浏览器打开 + 完成
-- 阶段 3 失败：⚠️ + 红色错误框 + 重试 + 改用离线文件 + 取消
-
-**🐛 Bug 1 · inject_saver NameError**：`server.py:859` f-string 模板里写了 `app.get(...)`，但 `inject_saver()` 是普通函数作用域里没 `app`。任何没注入过 saver 的 HTML 一打开就 NameError。解法：签名加 `cfg: dict` 参数，调用点传 `request.app["config"]`。
-
-**🐛 Bug 2 · 150% 缩放工具栏文字竖排**：flex 默认把按钮压到 `min-content`（CJK 是 1 个汉字宽）。解法：工具栏 `overflow-x: auto` + 隐藏滚动条，所有 button/select 加 `flex-shrink: 0; white-space: nowrap`。
-
-**🐛 Bug 3 · 弹窗文字可选中让人误以为"可编辑"**：弹窗整体 `user-select: none`，仅密码 display 和 URL 区域 `user-select: all`，错误信息 `user-select: text`。
-
-**🔧 修复**：删除冗余旧 3.6 段（避免和新流程重复上传）；补 `else if mode==="link" && !SHARE_SERVER` 明确提示配置缺失；复制失败兜底 `navigator.clipboard` → `selectAllChildren + ⌘/Ctrl+C`。
-
-**👤 用户故事**：之前分享弹窗一闪就关，toast 在角落闪一下链接要靠运气复制——完全不知道成功没；现在弹窗一直在 → spinner 转动 → 链接出现在弹窗内 → 📋 一键复制 / 🔗 直接打开 → 失败时明确报错 + 重试/降级。
+**👤 用户故事**
+- 场景：Louis 测试自己生成的分享链接，输入密码后看到 `INVALID_PATH` 错误页
+- 之前：带密码的分享链接完全不可用
+- 现在：密码验证 → 302 重定向 → 带 cookie 访问 → 正常显示 HTML 内容
 
 ---
 
+## v2.5.3 — Share Modal Multi-Stage Flow + Anti-Text-Select
+
+*2026-07-17 22:55 · 分享流程塞进弹窗 + 防误选*
+
+**🎨 UX · 分享弹窗从"toast 通知"升级为"弹窗内多阶段"**
+- 老流程：点确认 → 弹窗关闭 → 后台上传 → toast 弹链接（用户痛点：toast 容易忽略、看不到链接、不知道成功没）
+- 新流程：弹窗**不关闭**，在弹窗内切换三个状态
+  - **阶段 1：生成中** — 36px 金色 spinner + "正在生成在线链接…" + "通常 1-3 秒，请稍候"
+  - **阶段 2：成功** — ✅ 图标 + 完整 URL（金色等宽字体，可一键全选） + "📋 复制链接" + "🔗 浏览器打开" + "完成"按钮
+  - **阶段 3：失败** — ⚠️ 图标 + 红色错误框（`FCA5A5` 文字 + 半透明红底） + "重试" + "改用离线文件" + "取消"
+- 失败重试：点"重试"会重新走阶段 1，不重新弹出配置弹窗
+- 降级：点"改用离线文件"会回到 3.7 离线文件流程（含密码注入）
+- SHELL 设计语言统一：背景 `linear-gradient(180deg, #1A1D23 0%, #232830 100%)` + 金色边框 `rgba(201,169,97,0.28)`，主 CTA 用金色 `#C9A961` 背景 + 黑色字（编辑器风格）
+
+**🔧 功能 · 复制失败有兜底**
+- `navigator.clipboard.writeText` 失败时（Safari 隐私模式/无 HTTPS）自动降级为"选中文本让用户手动 ⌘/Ctrl+C"
+- URL 区域默认 `user-select: all` + 点击自动 selectAllChildren，复制体验一致
+
+**🐛 Bug · 弹窗文字可选中让人误以为"可编辑"**
+- 弹窗整体 `user-select: none; -webkit-user-select: none` —— 标题/描述/标签都不能选中
+- 显式例外：`dc-pwd-display`（密码展示）和链接 URL 用 `user-select: all` —— 这两处就是要被复制
+- 错误信息 `dc-link-err-msg` 用 `user-select: text` —— 报错时允许复制错误文字排查
+
+**🔧 修复 · 清理冗余旧 3.6 段**
+- 删除原"在线链接 → toast"流程（行 3589-3616），避免和新流程重复上传
+- 补 `else if (shareChoice.mode === "link" && !SHARE_SERVER)` 明确提示配置缺失（不再静默走老逻辑）
+
+**👤 用户故事**
+- 场景：Louis 在 9901 点 📦 导出分享 → 选"在线链接" → 点"确认分享"，期望看到链接生成过程
+- 之前：弹窗一闪就关，toast 在角落闪一下，链接要靠运气才能复制——**完全不知道成功没**
+- 现在：弹窗一直在 → spinner 转动 → 链接出现在弹窗内 → 📋 一键复制 / 🔗 直接打开 → 失败时明确报错 + 重试/降级
+
+---
+
+## v2.5.2 — Toolbar Overflow Fix at High Zoom
+
+*2026-07-17 22:48 · 高缩放下工具栏排版修复*
+
+**🐛 Bug · 150% 缩放下工具栏按钮文字竖排溢出**
+- **问题**：浏览器缩放到 150%（或窄屏）时，工具栏右侧的"链接/表格/排版/撤销/重做/块间距/批注/导出分享"等按钮，文字被压成单字宽竖排（"链/接"竖着叠、"表/格"竖着叠），完全不可读
+- **根因**：工具栏用 `display: flex; gap: 6px;` + `position: fixed; left: 0; right: 0;`，子元素总和超过视口宽度时，flex 默认把每个按钮压缩到它的 `min-content` 宽度——CJK 字符的 min-content 是 1 个汉字宽度，emoji + CJK 的按钮就被挤成"图标+1 个汉字宽" → 文字自动竖向换行
+- **解法**（三件套）：
+  1. 工具栏 `overflow-x: auto; overflow-y: hidden` —— 缩放时出现横滚条兜底，**隐藏滚动条样式** `::-webkit-scrollbar { height: 0 }` 保持视觉干净
+  2. 所有按钮 `flex-shrink: 0; white-space: nowrap` —— 禁止 flex 压缩，禁止文字换行
+  3. `.dc-title` / `.sep` / `select#__dc_fontsize` / `.dc-status` 也加 `flex-shrink: 0; white-space: nowrap`，避免分栏和字号下拉被压扁
+
+**👤 用户故事**
+- 场景：Louis 在 150% 缩放看 15-MigraQ Landing 页，工具栏右侧所有 CJK 按钮文字竖排
+- 之前：150% 缩放下工具栏基本不可用，文字溢出严重
+- 现在：100%/125%/150%/200% 任意缩放下，按钮宽度正常、横滚兜底、滚动条隐藏
+
+---
+
+## v2.5.1 — inject_saver NameError Fix
+
+*2026-07-17 22:41 · 紧急修复*
+
+**🐛 Bug · inject_saver 引用未定义 `app` 触发 NameError**
+- **问题**：打开任一 HTML（如 `15-MigraQ价值证明-Landing风格.html`）都报 `{"ok": false, "error": "读取失败: name 'app' is not defined"}`，文件彻底打不开（500 错误 + 加载超时）
+- **根因**：`server.py:859` 的 f-string 模板里写了 `app.get("config", {}).get("share_server", "")`，但 `inject_saver()` 是普通函数，作用域里根本没有 `app` 变量（`app` 是 aiohttp 的 web.Application 实例，只有路由 handler 能通过 `request.app` 拿到）。任何没注入过 saver 的 HTML 一打开就立即触发 `NameError`
+- **解法**：
+  1. `inject_saver()` 签名增加 `cfg: dict` 参数（显式优于隐式）
+  2. 函数顶部加 `share_server = (cfg or {}).get("share_server", "")` 局部变量
+  3. 模板字符串改成 `f'  shareServer: "{share_server}"\n'`
+  4. 调用点（`handle_file` 第 987 行）传入已有的 `cfg = request.app["config"]`
+  5. 验证：curl `/api/file?path=15-MigraQ价值证明-Landing风格.html` 返回 HTTP 200 + size 53685，注入的 `shareServer` 字段已正确填上 CloudBase URL
+
+**👤 用户故事**
+- 场景：Louis 在 9901 打开养虾系列做好的 Landing 风格页面，弹错误 + 加载超时
+- 之前：所有 HTML 文件都打不开，只能看 .md 或者用外置工具
+- 现在：HTML 正常加载，分享弹窗的 shareServer 配置正确注入
+
+---
+
+## v2.5.0 — Share Modal Visual Redesign + Password Switch
+
+*2026-07-17 22:30 · 分享弹窗视觉与交互重构*
+
+**🎨 UX · 视觉和编辑器设计统一**
+- 卡片背景换 `linear-gradient(180deg, #1A1D23 0%, #232830 100%)` + 金色边框 `rgba(201,169,97,0.28)`，与顶部工具栏同色系
+- 字体统一 `12px/1.5 -apple-system,"PingFang SC",sans-serif`，主文字 `#E5E7EB` / 次文字 `#9CA3AF`
+- Tab 选中态用金色 `#C9A961`（与工具栏 hover 同色），蓝色 `#4A9EFF` 仅留给"确认分享"主 CTA
+- 副标题改为 "选择分享方式，生成可发给任何人的文件或链接"
+
+**🔧 功能 · 密码区从"输入框"改成"开关 + 展示卡片"**
+- iOS 风格开关启用密码保护，关闭时整区折叠（不留痕）
+- 首次开启自动生成 12 位强密码（`SF Mono` 等宽字体金色显示，可一键全选）
+- 🎲 重生成 + 📋 复制 两个图标按钮，hover 金色高亮
+- 关闭开关 = 清空密码（不留任何状态）
+
+**👤 用户故事**
+- 场景：Louis 反馈分享弹窗"和编辑器设计不统一" + "密码框不该可编辑"
+- 之前：弹窗用 `#1a2028` 蓝灰背景，文字 `#e8eef5`，密码是普通 input 可手输
+- 现在：弹窗和工具栏同色系，密码改成开关 + 自动生成 + 展示卡片，整体不可手输
+
+---
 
 ## v1.19.8 — Finder Modal + Editable Drag + Toolbar UX + Windows Fix
 
