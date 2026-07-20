@@ -1981,6 +1981,50 @@
     }
   }
 
+  // v1.20.1: addScanRoot(path) — 接受路径参数的版本（native picker / browse modal 用）
+  // 逻辑和 addRoot() 一致，但不依赖 input 框
+  async function addScanRoot(p) {
+    if (!p) return;
+    // 规范化路径：去尾部斜杠、展开 ~（macOS NSOpenPanel 返回的路径可能带 trailing /）
+    p = p.replace(/[/\\]+$/, "");
+    if (!p) return;
+
+    toast(window.i18n.t("toast.scan.adding"), "info");
+
+    try {
+      const cur = await safeFetchJson(API.config);
+      const roots = cur.config.scan_roots || [];
+
+      // 去重：规范化路径后对比
+      const normalize = s => s.replace(/[/\\]+$/, "").replace(/^~/, "");
+      const np = normalize(p);
+      const existingIdx = roots.findIndex(item => {
+        const ep = typeof item === "string" ? item : item.path;
+        return normalize(ep) === np;
+      });
+      if (existingIdx >= 0) {
+        // 已存在但 disabled → 自动启用
+        const item = roots[existingIdx];
+        const isEnabled = typeof item === "string" ? true : item.enabled !== false;
+        if (isEnabled) {
+          toast(window.i18n.t("toast.scan.exists"), "warning");
+          return;
+        }
+        roots[existingIdx] = { path: p, enabled: true };
+        await updateRoots(roots);
+        sidebarCtl.show(true);
+        return;
+      }
+
+      roots.push({ path: p, enabled: true });
+      await updateRoots(roots);
+      // 添加成功后显示侧边栏
+      sidebarCtl.show(true);
+    } catch (e) {
+      toast(window.i18n.t("toast.scan.add_failed"), "error", e.message);
+    }
+  }
+
   async function removeRoot(p) {
     if (!confirm(window.i18n.t("confirm.scan.remove", { path: p }))) return;
     try {
