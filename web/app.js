@@ -2738,21 +2738,68 @@
       pathGo.addEventListener("click", goToTypedPath);
     }
     $("#new-root-input").addEventListener("keydown", (e) => { if (e.key === "Enter") addRoot(); });
-    // v1.16.1: 侧边栏 ＋ 按钮 → 直接打开目录浏览弹窗（不经过设置面板）
+
+    // ───────────── v1.20.0: Native picker (macOS NSOpenPanel / Windows FolderBrowser) ─────────────
+    // 用户痛点：HTML 模仿版 modal 不如系统原生（NSOpenPanel/FolderBrowser）体验好
+    // 设计：先尝试调系统原生选择器；不可用/失败时 fallback 到现有 HTML modal
+    async function nativePick(mode) {
+      // mode: "dir" | "file"
+      try {
+        const url = mode === "dir" ? "/api/native-pick-dir" : "/api/native-pick-file";
+        const body = JSON.stringify({});
+        const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body });
+        const d = await r.json();
+        if (d.ok) {
+          if (d.cancelled) return { cancelled: true };
+          return { path: d.path };
+        }
+        return { error: d.error || "native pick failed" };
+      } catch (e) {
+        return { error: e.message };
+      }
+    }
+
+    async function handleAddDirClick() {
+      // 优先 native picker
+      const r = await nativePick("dir");
+      if (r.cancelled) return;
+      if (r.path) {
+        await addScanRoot(r.path);
+        toast(`✅ 已添加扫描根：${r.path}`, "success", 3000);
+        return;
+      }
+      // native 不可用，fallback 到 HTML modal
+      _log(`Native picker failed (${r.error}), fallback to HTML modal`);
+      openBrowseDialog("folder");
+    }
+
+    async function handleOpenFileClick() {
+      // 优先 native picker
+      const r = await nativePick("file");
+      if (r.cancelled) return;
+      if (r.path) {
+        const p = r.path;
+        openFile({ abs_path: p, name: p.split(/[/\\]/).pop(), type: p.toLowerCase().endsWith(".md") ? "md" : "html" });
+        return;
+      }
+      // native 不可用，fallback 到 HTML modal
+      _log(`Native picker failed (${r.error}), fallback to HTML modal`);
+      openBrowseDialog("file", (path) => {
+        openFile({ abs_path: path, name: path.split(/[/\\]/).pop(), type: path.toLowerCase().endsWith(".md") ? "md" : "html" });
+      });
+    }
+
+    // v1.16.1: 侧边栏 ＋ 按钮 → 优先调 native picker
     const btnQuickAdd = document.getElementById("btn-quick-add-dir");
-    if (btnQuickAdd) btnQuickAdd.addEventListener("click", () => openBrowseDialog("folder"));
-    // v1.16.1: 空状态"添加文件夹"按钮 → 同样直达
+    if (btnQuickAdd) btnQuickAdd.addEventListener("click", handleAddDirClick);
+    // v1.16.1: 空状态"添加文件夹"按钮
     const btnEmptyAdd = document.getElementById("btn-empty-add-dir");
-    if (btnEmptyAdd) btnEmptyAdd.addEventListener("click", () => openBrowseDialog("folder"));
-    // v1.19: 新增"打开文件"按钮
+    if (btnEmptyAdd) btnEmptyAdd.addEventListener("click", handleAddDirClick);
+    // v1.19: 打开文件按钮 (v1.20: 优先调 native picker)
     const btnOpenFile = $("#btn-open-file");
-    if (btnOpenFile) btnOpenFile.addEventListener("click", () => openBrowseDialog("file", (path) => {
-      openFile({ abs_path: path, name: path.split(/[/\\]/).pop(), type: path.toLowerCase().endsWith(".md") ? "md" : "html" });
-    }));
+    if (btnOpenFile) btnOpenFile.addEventListener("click", handleOpenFileClick);
     const btnEmptyOpenFile = $("#btn-empty-open-file");
-    if (btnEmptyOpenFile) btnEmptyOpenFile.addEventListener("click", () => openBrowseDialog("file", (path) => {
-      openFile({ abs_path: path, name: path.split(/[/\\]/).pop(), type: path.toLowerCase().endsWith(".md") ? "md" : "html" });
-    }));
+    if (btnEmptyOpenFile) btnEmptyOpenFile.addEventListener("click", handleOpenFileClick);
 
     // ───────────── v1.16: 拖拽 HTML/MD 文件到主界面预览 ─────────────
     const editor = document.querySelector(".editor");

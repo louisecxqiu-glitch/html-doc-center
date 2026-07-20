@@ -754,6 +754,198 @@ async def handle_save_as(request):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# v1.20.0: Native picker（弹 macOS NSOpenPanel / Windows FolderBrowser）
+# 替代 HTML 模仿版 modal，提供"和微信/其他软件一样的"系统原生体验
+# ─────────────────────────────────────────────────────────────────────────────
+def _native_pick_dir_macos(start_dir=None):
+    """macOS: 用 osascript 弹 NSOpenPanel 选目录，返回 POSIX 路径（取消返回 None）"""
+    start = start_dir or str(Path.home())
+    # AppleScript 选择目录
+    script = f'''
+    set theFolder to (choose folder with prompt "选择文件夹" default location POSIX file "{start}")
+    return POSIX path of theFolder
+    '''
+    try:
+        result = subprocess.run(
+            ["osascript", "-e", script],
+            capture_output=True, text=True, timeout=300,
+        )
+        if result.returncode == 0:
+            path = result.stdout.strip()
+            return path if path else None
+        # 用户取消 (returncode != 0 且无 error) → None
+        return None
+    except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+        _log(f"⚠️ native_pick_dir_macos failed: {e}")
+        return None
+
+
+def _native_pick_file_macos(start_dir=None, file_types=None):
+    """macOS: 用 osascript 弹 NSOpenPanel 选文件，返回 POSIX 路径
+    file_types: ['html', 'md'] 这样的扩展名列表
+    """
+    start = start_dir or str(Path.home())
+    # file_types 转 NSOpenPanel 的 of type 列表
+    if file_types:
+        types_clause = " of type {" + ", ".join(f'"{t}"' for t in file_types) + "}"
+    else:
+        types_clause = ""
+    script = f'''
+    set theFile to (choose file with prompt "选择文件" default location POSIX file "{start}"{types_clause})
+    return POSIX path of theFile
+    '''
+    try:
+        result = subprocess.run(
+            ["osascript", "-e", script],
+            capture_output=True, text=True, timeout=300,
+        )
+        if result.returncode == 0:
+            path = result.stdout.strip()
+            return path if path else None
+        return None
+    except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+        _log(f"⚠️ native_pick_file_macos failed: {e}")
+        return None
+
+
+def _native_pick_dir_windows(start_dir=None):
+    """Windows: 用 PowerShell 弹 FolderBrowser 对话框（Shell.Application）"""
+    start = start_dir or str(Path.home())
+    ps_script = f'''
+    Add-Type -AssemblyName System.Windows.Forms
+    $f = New-Object System.Windows.Forms.FolderBrowserDialog
+    $f.Description = "选择文件夹"
+    $f.SelectedPath = "{start.replace(chr(92), chr(92)+chr(92))}"
+    $f.ShowNewFolderButton = $true
+    if ($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {{
+        Write-Output $f.SelectedPath
+    }}
+    '''
+    try:
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps_script],
+            capture_output=True, text=True, timeout=300,
+        )
+        if result.returncode == 0:
+            path = result.stdout.strip()
+            return path if path else None
+        return None
+    except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+        _log(f"⚠️ native_pick_dir_windows failed: {e}")
+        return None
+
+
+def _native_pick_file_windows(start_dir=None, file_types=None):
+    """Windows: 用 PowerShell 弹 OpenFileDialog"""
+    start = start_dir or str(Path.home())
+    # file_filter: "HTML Files|*.html;*.htm;*.md|All Files|*.*"
+    if file_types:
+        extensions = ";".join(f"*.{t}" for t in file_types)
+        filter_str = f"支持的格式|{extensions}|所有文件|*.*"
+    else:
+        filter_str = "所有文件|*.*"
+    ps_script = f'''
+    Add-Type -AssemblyName System.Windows.Forms
+    $f = New-Object System.Windows.Forms.OpenFileDialog
+    $f.Title = "选择文件"
+    $f.InitialDirectory = "{start.replace(chr(92), chr(92)+chr(92))}"
+    $f.Filter = "{filter_str}"
+    if ($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {{
+        Write-Output $f.FileName
+    }}
+    '''
+    try:
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps_script],
+            capture_output=True, text=True, timeout=300,
+        )
+        if result.returncode == 0:
+            path = result.stdout.strip()
+            return path if path else None
+        return None
+    except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+        _log(f"⚠️ native_pick_file_windows failed: {e}")
+        return None
+
+
+def _native_pick_linux(start_dir=None, file_mode=False, file_types=None):
+    """Linux: 用 zenity/kdialog 弹原生选择器（GNOME/KDE）"""
+    start = start_dir or str(Path.home())
+    if file_mode:
+        # 文件选择
+        filters = ["--file-filter"] + [
+            f"*.{t} " for t in (file_types or [])
+        ] if file_types else []
+        cmd_base = ["zenity", "--file-selection", f"--filename={start}/"]
+        cmd = cmd_base + filters
+    else:
+        cmd = ["zenity", "--file-selection", "--directory", f"--filename={start}/"]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        if result.returncode == 0:
+            return result.stdout.strip()
+        return None
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        # Fallback to kdialog
+        kcmd = ["kdialog", "--getopenfilename" if file_mode else "--getexistingdirectory", start]
+        try:
+            r2 = subprocess.run(kcmd, capture_output=True, text=True, timeout=300)
+            return r2.stdout.strip() if r2.returncode == 0 else None
+        except Exception:
+            return None
+
+
+async def handle_native_pick_dir(request):
+    """POST /api/native-pick-dir - 调系统原生文件夹选择器
+    body: {start_dir?: string} 返回 {ok, path?, cancelled?, error?}
+    """
+    try:
+        try:
+            data = await request.json() if request.body_exists else {}
+        except Exception:
+            data = {}
+        start = (data or {}).get("start_dir") or str(Path.home())
+        sysname = platform.system()
+        if sysname == "Darwin":
+            path = _native_pick_dir_macos(start)
+        elif sysname == "Windows":
+            path = _native_pick_dir_windows(start)
+        else:
+            path = _native_pick_linux(start, file_mode=False)
+        if path is None:
+            return web.json_response({"ok": True, "cancelled": True})
+        return web.json_response({"ok": True, "path": path})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_native_pick_file(request):
+    """POST /api/native-pick-file - 调系统原生文件选择器
+    body: {start_dir?: string, file_types?: string[]} 返回 {ok, path?, cancelled?, error?}
+    """
+    try:
+        try:
+            data = await request.json() if request.body_exists else {}
+        except Exception:
+            data = {}
+        data = data or {}
+        start = data.get("start_dir") or str(Path.home())
+        file_types = data.get("file_types") or ["html", "htm", "md"]
+        sysname = platform.system()
+        if sysname == "Darwin":
+            path = _native_pick_file_macos(start, file_types)
+        elif sysname == "Windows":
+            path = _native_pick_file_windows(start, file_types)
+        else:
+            path = _native_pick_linux(start, file_mode=True, file_types=file_types)
+        if path is None:
+            return web.json_response({"ok": True, "cancelled": True})
+        return web.json_response({"ok": True, "path": path})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_config_get(request):
     """GET /api/config"""
     cfg = request.app["config"]
@@ -2001,6 +2193,9 @@ def create_app() -> web.Application:
     # v1.19: 拖入副本 + 另存为
     app.router.add_post("/api/drag-upload", handle_drag_upload)
     app.router.add_post("/api/save-as", handle_save_as)
+    # v1.20.0: Native picker (macOS NSOpenPanel / Windows FolderBrowser / Linux zenity)
+    app.router.add_post("/api/native-pick-dir", handle_native_pick_dir)
+    app.router.add_post("/api/native-pick-file", handle_native_pick_file)
     # v1.6 新增：收藏
     app.router.add_get("/api/favorites", handle_favorites_get)
     app.router.add_post("/api/favorites", handle_favorites_post)
