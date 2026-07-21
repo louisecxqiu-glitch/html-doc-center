@@ -73,7 +73,7 @@ def _safe_url(url: str) -> str:
     parsed = urlsplit(url)
     if parsed.scheme.lower() not in {"http", "https", "mailto"}:
         return "#"
-    return html.escape(url, quote=True)
+    return html.escape(html.unescape(url), quote=True)
 
 
 def convert_image_to_data_uri(image_path: Path) -> str:
@@ -107,9 +107,13 @@ def _inline_markup(text: str) -> str:
     def link(match: re.Match[str]) -> str:
         label, url = match.group(1), match.group(2)
         title = match.group(3)
-        title_attr = f' title="{html.escape(title, quote=True)}"' if title else ""
+        title_attr = (
+            f' title="{html.escape(html.unescape(title), quote=True)}"'
+            if title
+            else ""
+        )
         return stash(
-            f'<a class="wx-link" href="{_safe_url(url)}"{title_attr}>{html.escape(label)}</a>'
+            f'<a class="wx-link" href="{_safe_url(url)}"{title_attr}>{label}</a>'
         )
 
     escaped = _LINK_RE.sub(link, escaped)

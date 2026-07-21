@@ -29,6 +29,17 @@ def test_render_markdown_has_safe_typography_and_escaped_text(tmp_path: Path):
     assert '<blockquote class="wx-quote">提醒</blockquote>' in html
 
 
+def test_render_markdown_escapes_link_content_once(tmp_path: Path):
+    html = render_markdown(
+        '[Apple & Docs](https://example.com?a=1&b=2 "A & B")',
+        tmp_path,
+    )
+    assert '>Apple &amp; Docs</a>' in html
+    assert 'href="https://example.com?a=1&amp;b=2"' in html
+    assert 'title="A &amp; B"' in html
+    assert '&amp;amp;' not in html
+
+
 def test_render_markdown_embeds_local_image(tmp_path: Path):
     image = tmp_path / "shot.png"
     image.write_bytes(ONE_PIXEL_PNG)

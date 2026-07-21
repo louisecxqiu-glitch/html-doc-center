@@ -60,7 +60,7 @@
 <p class="wx-paragraph">Apple Developer 会员资格不是“上架 App Store”的专属门票。对于本文的独立分发场景，它的核心用途是让你能够创建 Developer ID 证书并使用公证服务。</p>
 <h2 class="wx-section">第二步：创建 Developer ID Application 证书</h2>
 <p class="wx-paragraph">证书解决的是“这个 App 是谁签名的”。</p>
-<p class="wx-paragraph">在 <a class="wx-link" href="https://developer.apple.com/account/resources/certificates/list">Certificates, Identifiers &amp;amp; Profiles</a> 中：</p>
+<p class="wx-paragraph">在 <a class="wx-link" href="https://developer.apple.com/account/resources/certificates/list">Certificates, Identifiers &amp; Profiles</a> 中：</p>
 <ol class="wx-list"><li>点击右上角的“+”</li><li>选择 Developer ID Application</li><li>选择现代的 G2 Sub-CA</li><li>上传 CSR 文件</li><li>点击 Continue</li><li>下载 .cer 文件</li><li>双击 .cer，安装到“登录”钥匙串</li></ol>
 <p class="wx-paragraph">不要把 Developer ID Application 和 Developer ID Installer 混在一起。本文分发的是 App 和 DMG，应该使用 Application 证书。</p>
 <h2 class="wx-section">第三步：生成 CSR，并确认私钥配对</h2>
