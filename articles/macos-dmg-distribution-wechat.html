@@ -67,91 +67,138 @@
 <p class="wx-paragraph">打开 macOS 的“钥匙串访问”。</p>
 <p class="wx-paragraph">注意：菜单在 Mac 屏幕最顶部，不是在钥匙串访问窗口内部。</p>
 <p class="wx-paragraph">选择：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">text 钥匙串访问 → 证书助理 → 从证书颁发机构请求证书 \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-text">钥匙串访问
+  → 证书助理
+  → 从证书颁发机构请求证书</code></pre>
 <p class="wx-paragraph">填写：</p>
 <div class="wx-table-wrap"><table class="wx-table"><thead><tr><th>字段</th><th>填写内容</th></tr></thead><tbody><tr><td>用户电子邮件地址</td><td>你的 Apple ID 邮箱</td></tr><tr><td>常用名称</td><td>例如：Your Name Developer ID</td></tr><tr><td>CA 电子邮件地址</td><td>留空</td></tr><tr><td>请求是</td><td>存储到磁盘</td></tr></tbody></table></div>
 <p class="wx-paragraph">生成 CSR 后，私钥会留在“登录”钥匙串里。下载 Apple 返回的 .cer 后，双击安装。</p>
 <p class="wx-paragraph">最终在“钥匙串访问 → 登录 → 我的证书”中确认：证书左边可以展开，并且下面有对应私钥。</p>
 <p class="wx-paragraph">终端检查：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash security find-identity -v -p codesigning \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">security find-identity -v -p codesigning</code></pre>
 <p class="wx-paragraph">你应该看到类似：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">text Developer ID Application: Your Name (TEAM_ID) \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-text">Developer ID Application: Your Name (TEAM_ID)</code></pre>
 <p class="wx-paragraph">如果只看到证书，展开后没有私钥，说明证书和 CSR 不是同一对，需要重新生成。</p>
 <h2 class="wx-section">第四步：准备公证凭据</h2>
 <p class="wx-paragraph">公证服务需要验证你的 Apple 账号。</p>
 <h3 class="wx-subsection">创建 App 专用密码</h3>
 <p class="wx-paragraph">打开 <a class="wx-link" href="https://account.apple.com/">Apple Account</a>，进入：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">text 登录与安全 → App 专用密码 → 生成 App 专用密码 \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-text">登录与安全
+  → App 专用密码
+  → 生成 App 专用密码</code></pre>
 <p class="wx-paragraph">这串密码不是 Apple ID 主密码，也不是 Mac 登录密码。</p>
 <h3 class="wx-subsection">将凭据保存到钥匙串</h3>
 <p class="wx-paragraph">把下面的占位符替换成自己的信息：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash xcrun notarytool store-credentials "HTMLStudio-notary" \\ --apple-id "&lt;APPLE_ID&gt;" \\ --team-id "&lt;TEAM_ID&gt;" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">xcrun notarytool store-credentials &quot;HTMLStudio-notary&quot; \
+  --apple-id &quot;&lt;APPLE_ID&gt;&quot; \
+  --team-id &quot;&lt;TEAM_ID&gt;&quot;</code></pre>
 <p class="wx-paragraph">命令提示输入密码时，粘贴刚才生成的 App 专用密码。</p>
 <p class="wx-paragraph">验证凭据：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash xcrun notarytool history \\ --keychain-profile "HTMLStudio-notary" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">xcrun notarytool history \
+  --keychain-profile &quot;HTMLStudio-notary&quot;</code></pre>
 <h2 class="wx-section">第五步：构建并签名 App</h2>
 <p class="wx-paragraph">进入项目目录：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash cd "/path/to/html-doc-center" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">cd &quot;/path/to/html-doc-center&quot;</code></pre>
 <p class="wx-paragraph">设置本次构建变量：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash SIGNING_IDENTITY="Developer ID Application: Your Name (TEAM_ID)" VERSION="$(tr -d '[:space:]' &lt; VERSION)" APP="dist/HTMLStudio.app" DMG="dist/HTMLStudio-$VERSION-macos-arm64.dmg" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">SIGNING_IDENTITY=&quot;Developer ID Application: Your Name (TEAM_ID)&quot;
+VERSION=&quot;$(tr -d &#x27;[:space:]&#x27; &lt; VERSION)&quot;
+APP=&quot;dist/HTMLStudio.app&quot;
+DMG=&quot;dist/HTMLStudio-$VERSION-macos-arm64.dmg&quot;</code></pre>
 <p class="wx-paragraph">先删除旧产物：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash rm -rf build dist HTMLStudio.spec \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">rm -rf build dist HTMLStudio.spec</code></pre>
 <p class="wx-paragraph">安装构建依赖：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash python3 -m pip install -r requirements-build.txt \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">python3 -m pip install -r requirements-build.txt</code></pre>
 <p class="wx-paragraph">构建 App，并让 PyInstaller 签名内部框架、动态库和可执行文件：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash python3 build.py \\ --version "$VERSION" \\ --codesign-identity "$SIGNING_IDENTITY" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">python3 build.py \
+  --version &quot;$VERSION&quot; \
+  --codesign-identity &quot;$SIGNING_IDENTITY&quot;</code></pre>
 <p class="wx-paragraph">签名前清除无关扩展属性：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash xattr -cr "$APP" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">xattr -cr &quot;$APP&quot;</code></pre>
 <p class="wx-paragraph">对外层 App 开启 Hardened Runtime 并加时间戳：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash codesign --force \\ --timestamp \\ --options runtime \\ --entitlements packaging/macos/entitlements.plist \\ --sign "$SIGNING_IDENTITY" \\ "$APP" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">codesign --force \
+  --timestamp \
+  --options runtime \
+  --entitlements packaging/macos/entitlements.plist \
+  --sign &quot;$SIGNING_IDENTITY&quot; \
+  &quot;$APP&quot;</code></pre>
 <p class="wx-paragraph">严格验证：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash codesign --verify \\ --deep \\ --strict \\ --verbose=2 \\ "$APP" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">codesign --verify \
+  --deep \
+  --strict \
+  --verbose=2 \
+  &quot;$APP&quot;</code></pre>
 <p class="wx-paragraph">成功时应该看到：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">text valid on disk satisfies its Designated Requirement \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-text">valid on disk
+satisfies its Designated Requirement</code></pre>
 <p class="wx-paragraph">检查 Apple Silicon 架构：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash lipo -archs "$APP/Contents/MacOS/HTMLStudio" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">lipo -archs &quot;$APP/Contents/MacOS/HTMLStudio&quot;</code></pre>
 <p class="wx-paragraph">应该输出：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">text arm64 \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-text">arm64</code></pre>
 <p class="wx-paragraph">从这一步开始，不要再向 App 包内部写入配置、日志或其他文件。</p>
 <h2 class="wx-section">第六步：创建并签名 DMG</h2>
 <p class="wx-paragraph">先准备 DMG 展示目录：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash rm -rf build/dmg-root mkdir -p build/dmg-root ditto "$APP" "build/dmg-root/HTMLStudio.app" ln -s /Applications "build/dmg-root/Applications" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">rm -rf build/dmg-root
+mkdir -p build/dmg-root
+ditto &quot;$APP&quot; &quot;build/dmg-root/HTMLStudio.app&quot;
+ln -s /Applications &quot;build/dmg-root/Applications&quot;</code></pre>
 <p class="wx-paragraph">创建 DMG：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash hdiutil create \\ -volname "HTML Studio" \\ -srcfolder "build/dmg-root" \\ -format UDZO \\ -ov \\ "$DMG" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">hdiutil create \
+  -volname &quot;HTML Studio&quot; \
+  -srcfolder &quot;build/dmg-root&quot; \
+  -format UDZO \
+  -ov \
+  &quot;$DMG&quot;</code></pre>
 <p class="wx-paragraph">对最终 DMG 单独签名：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash codesign --force \\ --timestamp \\ --sign "$SIGNING_IDENTITY" \\ "$DMG" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">codesign --force \
+  --timestamp \
+  --sign &quot;$SIGNING_IDENTITY&quot; \
+  &quot;$DMG&quot;</code></pre>
 <p class="wx-paragraph">验证 DMG：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash codesign --verify --verbose=4 "$DMG" hdiutil verify "$DMG" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">codesign --verify --verbose=4 &quot;$DMG&quot;
+hdiutil verify &quot;$DMG&quot;</code></pre>
 <p class="wx-paragraph">记录公证前哈希：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash shasum -a 256 "$DMG" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">shasum -a 256 &quot;$DMG&quot;</code></pre>
 <p class="wx-paragraph">这一步之后不要重新生成、重新签名或修改 DMG。签名后改内容，会导致 codesign 或公证失败。</p>
 <figure class="wx-figure"><img class="wx-image" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDUyMCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIGRlc2MiPgogIDx0aXRsZSBpZD0idGl0bGUiPm1hY09TIERNRyDliIblj5HmtYHnqIs8L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj7ku47mnoTlu7ogQXBwIOWIsOetvuWQjeOAgeWFrOivgeOAgemSieWFpeelqOaNruWSjOWIhuWPkeeahOa1geeoizwvZGVzYz4KICA8cmVjdCB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI1MjAiIHJ4PSIzMiIgZmlsbD0iI2Y1ZjVmNyIvPgogIDx0ZXh0IHg9IjcyIiB5PSI3OCIgZmlsbD0iIzFkMWQxZiIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sQmxpbmtNYWNTeXN0ZW1Gb250LEhlbHZldGljYSBOZXVlLEFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPuS4gOadoeWPr+WkjeeUqOeahOWPkeW4g+mTvui3rzwvdGV4dD4KICA8dGV4dCB4PSI3MiIgeT0iMTE2IiBmaWxsPSIjNmU2ZTczIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCI+562+5ZCN5ZCO55qEIEFwcCDkuI3lho3mlLnlhpnvvIzlho3mj5DkuqQgQXBwbGUg5YWs6K+BPC90ZXh0PgogIDxnIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLEJsaW5rTWFjU3lzdGVtRm9udCxIZWx2ZXRpY2EgTmV1ZSxBcmlhbCxzYW5zLXNlcmlmIj4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDcyIDE4MikiPgogICAgICA8cmVjdCB3aWR0aD0iMTkwIiBoZWlnaHQ9IjE5MCIgcng9IjIyIiBmaWxsPSIjZmZmIi8+CiAgICAgIDxjaXJjbGUgY3g9IjM4IiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjMDZjIi8+PHRleHQgeD0iMzIiIHk9IjQ3IiBmaWxsPSIjZmZmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIj4xPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iOTQiIGZpbGw9IiMxZDFkMWYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI3MDAiPkJ1aWxkPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iMTMwIiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7mnoTlu7ogQXBwPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iMTU2IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7lh4blpIfotYTmupA8L3RleHQ+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyOTAgMTgyKSI+CiAgICAgIDxyZWN0IHdpZHRoPSIxOTAiIGhlaWdodD0iMTkwIiByeD0iMjIiIGZpbGw9IiNmZmYiLz4KICAgICAgPGNpcmNsZSBjeD0iMzgiIGN5PSI0MCIgcj0iMjAiIGZpbGw9IiMwNmMiLz48dGV4dCB4PSIzMiIgeT0iNDciIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiPjI8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSI5NCIgZmlsbD0iIzFkMWQxZiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCI+U2lnbjwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjEzMCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+562+5ZCNIEFwcDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjE1NiIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+5byA5ZCv56Gs5YyW6L+Q6KGM5pe2PC90ZXh0PgogICAgPC9nPgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTA4IDE4MikiPgogICAgICA8cmVjdCB3aWR0aD0iMTkwIiBoZWlnaHQ9IjE5MCIgcng9IjIyIiBmaWxsPSIjZmZmIi8+CiAgICAgIDxjaXJjbGUgY3g9IjM4IiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjMDZjIi8+PHRleHQgeD0iMzIiIHk9IjQ3IiBmaWxsPSIjZmZmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIj4zPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iOTQiIGZpbGw9IiMxZDFkMWYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI3MDAiPlBhY2thZ2U8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSIxMzAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuWItuS9nCBETUc8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSIxNTYiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuWGjeetvuWQjSBETUc8L3RleHQ+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg3MjYgMTgyKSI+CiAgICAgIDxyZWN0IHdpZHRoPSIxOTAiIGhlaWdodD0iMTkwIiByeD0iMjIiIGZpbGw9IiNmZmYiLz4KICAgICAgPGNpcmNsZSBjeD0iMzgiIGN5PSI0MCIgcj0iMjAiIGZpbGw9IiMwNmMiLz48dGV4dCB4PSIzMiIgeT0iNDciIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiPjQ8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSI5NCIgZmlsbD0iIzFkMWQxZiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCI+Tm90YXJpemU8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSIxMzAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuaPkOS6pCBBcHBsZTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjE1NiIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+562J5b6FIEFjY2VwdGVkPC90ZXh0PgogICAgPC9nPgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTQ0IDE4MikiPgogICAgICA8cmVjdCB3aWR0aD0iMTg0IiBoZWlnaHQ9IjE5MCIgcng9IjIyIiBmaWxsPSIjZmZmIi8+CiAgICAgIDxjaXJjbGUgY3g9IjM4IiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjMDZjIi8+PHRleHQgeD0iMzIiIHk9IjQ3IiBmaWxsPSIjZmZmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIj41PC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iOTQiIGZpbGw9IiMxZDFkMWYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI3MDAiPlN0YXBsZTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjEzMCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+6ZKJ5YWl56Wo5o2uPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iMTU2IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7oh6rnlLHliIblj5E8L3RleHQ+CiAgICA8L2c+CiAgPC9nPgogIDxnIHN0cm9rZT0iIzA2YyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggZD0iTTI2MiAyNzdoMjgiLz48cGF0aCBkPSJNNDgwIDI3N2gyOCIvPjxwYXRoIGQ9Ik02OTggMjc3aDI4Ii8+PHBhdGggZD0iTTkxNiAyNzdoMjgiLz4KICA8L2c+Cjwvc3ZnPgo=" alt="macOS DMG 发布链路"><figcaption class="wx-caption">macOS DMG 发布链路</figcaption></figure>
 <h2 class="wx-section">第七步：使用 notarytool 提交公证</h2>
 <p class="wx-paragraph">提交时只提交一次：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash xcrun notarytool submit "$DMG" \\ --keychain-profile "HTMLStudio-notary" \\ --wait \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">xcrun notarytool submit &quot;$DMG&quot; \
+  --keychain-profile &quot;HTMLStudio-notary&quot; \
+  --wait</code></pre>
 <p class="wx-paragraph">记下 Apple 返回的提交 ID：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">text xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-text">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code></pre>
 <p class="wx-paragraph">如果本地等待时间太长，可以按 Control + C 结束本地等待，但不要再次提交同一个 DMG。服务器上的任务会继续处理。</p>
 <p class="wx-paragraph">查询状态：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash xcrun notarytool info "&lt;SUBMISSION_ID&gt;" \\ --keychain-profile "HTMLStudio-notary" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">xcrun notarytool info &quot;&lt;SUBMISSION_ID&gt;&quot; \
+  --keychain-profile &quot;HTMLStudio-notary&quot;</code></pre>
 <h3 class="wx-subsection">Accepted</h3>
 <p class="wx-paragraph">下载公证日志。即使 Accepted，也建议检查日志中的 warning：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash xcrun notarytool log "&lt;SUBMISSION_ID&gt;" \\ --keychain-profile "HTMLStudio-notary" \\ "notarization-log.json" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">xcrun notarytool log &quot;&lt;SUBMISSION_ID&gt;&quot; \
+  --keychain-profile &quot;HTMLStudio-notary&quot; \
+  &quot;notarization-log.json&quot;</code></pre>
 <h3 class="wx-subsection">Invalid</h3>
 <p class="wx-paragraph">打开 notarization-log.json 查看具体错误。修复后必须从“清理旧产物”开始重新构建、签名和提交，不要在原 DMG 上直接补签。</p>
 <h3 class="wx-subsection">In Progress</h3>
 <p class="wx-paragraph">继续使用 notarytool info 查询。不要重复提交第三份、第四份 DMG。</p>
 <h2 class="wx-section">第八步：Staple 公证票据</h2>
 <p class="wx-paragraph">只有状态为 Accepted 才执行：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash xcrun stapler staple -v "$DMG" xcrun stapler validate -v "$DMG" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">xcrun stapler staple -v &quot;$DMG&quot;
+xcrun stapler validate -v &quot;$DMG&quot;</code></pre>
 <p class="wx-paragraph">注意：staple 会修改 DMG，所以 stapling 后的哈希和提交前哈希不同是正常现象。</p>
 <h2 class="wx-section">第九步：Gatekeeper 最终验证</h2>
 <p class="wx-paragraph">执行完整验证：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">bash codesign --verify --verbose=4 "$DMG" hdiutil verify "$DMG" spctl --assess \\ --type open \\ --context context:primary-signature \\ --verbose=4 \\ "$DMG" \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-bash">codesign --verify --verbose=4 &quot;$DMG&quot;
+hdiutil verify &quot;$DMG&quot;
+spctl --assess \
+  --type open \
+  --context context:primary-signature \
+  --verbose=4 \
+  &quot;$DMG&quot;</code></pre>
 <p class="wx-paragraph">成功时通常会看到：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">text accepted source=Notarized Developer ID \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-text">accepted
+source=Notarized Developer ID</code></pre>
 <p class="wx-paragraph">最终可自由分发的文件是：</p>
-<p class="wx-paragraph">\<code class="wx-inline-code">\</code>\<code class="wx-inline-code">text dist/HTMLStudio-2.6.0-macos-arm64.dmg \</code>\<code class="wx-inline-code">\</code></p>
+<pre class="wx-code"><code class="language-text">dist/HTMLStudio-2.6.0-macos-arm64.dmg</code></pre>
 <p class="wx-paragraph">你可以把它放到 GitHub Releases、自己的网站、网盘或公司内网，不需要上传 Mac App Store。</p>
 <h2 class="wx-section">常见问题</h2>
 <h3 class="wx-subsection">“输入登录钥匙串密码”是什么？</h3>

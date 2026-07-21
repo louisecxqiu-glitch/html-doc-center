@@ -69,11 +69,11 @@ Apple Developer 会员资格不是“上架 App Store”的专属门票。对于
 
 选择：
 
-\`\`\`text
+```text
 钥匙串访问
   → 证书助理
   → 从证书颁发机构请求证书
-\`\`\`
+```
 
 填写：
 
@@ -90,15 +90,15 @@ Apple Developer 会员资格不是“上架 App Store”的专属门票。对于
 
 终端检查：
 
-\`\`\`bash
+```bash
 security find-identity -v -p codesigning
-\`\`\`
+```
 
 你应该看到类似：
 
-\`\`\`text
+```text
 Developer ID Application: Your Name (TEAM_ID)
-\`\`\`
+```
 
 如果只看到证书，展开后没有私钥，说明证书和 CSR 不是同一对，需要重新生成。
 
@@ -110,11 +110,11 @@ Developer ID Application: Your Name (TEAM_ID)
 
 打开 [Apple Account](https://account.apple.com/)，进入：
 
-\`\`\`text
+```text
 登录与安全
   → App 专用密码
   → 生成 App 专用密码
-\`\`\`
+```
 
 这串密码不是 Apple ID 主密码，也不是 Mac 登录密码。
 
@@ -122,103 +122,103 @@ Developer ID Application: Your Name (TEAM_ID)
 
 把下面的占位符替换成自己的信息：
 
-\`\`\`bash
-xcrun notarytool store-credentials "HTMLStudio-notary" \\
-  --apple-id "<APPLE_ID>" \\
+```bash
+xcrun notarytool store-credentials "HTMLStudio-notary" \
+  --apple-id "<APPLE_ID>" \
   --team-id "<TEAM_ID>"
-\`\`\`
+```
 
 命令提示输入密码时，粘贴刚才生成的 App 专用密码。
 
 验证凭据：
 
-\`\`\`bash
-xcrun notarytool history \\
+```bash
+xcrun notarytool history \
   --keychain-profile "HTMLStudio-notary"
-\`\`\`
+```
 
 ## 第五步：构建并签名 App
 
 进入项目目录：
 
-\`\`\`bash
+```bash
 cd "/path/to/html-doc-center"
-\`\`\`
+```
 
 设置本次构建变量：
 
-\`\`\`bash
+```bash
 SIGNING_IDENTITY="Developer ID Application: Your Name (TEAM_ID)"
 VERSION="$(tr -d '[:space:]' < VERSION)"
 APP="dist/HTMLStudio.app"
 DMG="dist/HTMLStudio-$VERSION-macos-arm64.dmg"
-\`\`\`
+```
 
 先删除旧产物：
 
-\`\`\`bash
+```bash
 rm -rf build dist HTMLStudio.spec
-\`\`\`
+```
 
 安装构建依赖：
 
-\`\`\`bash
+```bash
 python3 -m pip install -r requirements-build.txt
-\`\`\`
+```
 
 构建 App，并让 PyInstaller 签名内部框架、动态库和可执行文件：
 
-\`\`\`bash
-python3 build.py \\
-  --version "$VERSION" \\
+```bash
+python3 build.py \
+  --version "$VERSION" \
   --codesign-identity "$SIGNING_IDENTITY"
-\`\`\`
+```
 
 签名前清除无关扩展属性：
 
-\`\`\`bash
+```bash
 xattr -cr "$APP"
-\`\`\`
+```
 
 对外层 App 开启 Hardened Runtime 并加时间戳：
 
-\`\`\`bash
-codesign --force \\
-  --timestamp \\
-  --options runtime \\
-  --entitlements packaging/macos/entitlements.plist \\
-  --sign "$SIGNING_IDENTITY" \\
+```bash
+codesign --force \
+  --timestamp \
+  --options runtime \
+  --entitlements packaging/macos/entitlements.plist \
+  --sign "$SIGNING_IDENTITY" \
   "$APP"
-\`\`\`
+```
 
 严格验证：
 
-\`\`\`bash
-codesign --verify \\
-  --deep \\
-  --strict \\
-  --verbose=2 \\
+```bash
+codesign --verify \
+  --deep \
+  --strict \
+  --verbose=2 \
   "$APP"
-\`\`\`
+```
 
 成功时应该看到：
 
-\`\`\`text
+```text
 valid on disk
 satisfies its Designated Requirement
-\`\`\`
+```
 
 检查 Apple Silicon 架构：
 
-\`\`\`bash
+```bash
 lipo -archs "$APP/Contents/MacOS/HTMLStudio"
-\`\`\`
+```
 
 应该输出：
 
-\`\`\`text
+```text
 arm64
-\`\`\`
+```
 
 从这一步开始，不要再向 App 包内部写入配置、日志或其他文件。
 
@@ -226,45 +226,45 @@ arm64
 
 先准备 DMG 展示目录：
 
-\`\`\`bash
+```bash
 rm -rf build/dmg-root
 mkdir -p build/dmg-root
 ditto "$APP" "build/dmg-root/HTMLStudio.app"
 ln -s /Applications "build/dmg-root/Applications"
-\`\`\`
+```
 
 创建 DMG：
 
-\`\`\`bash
-hdiutil create \\
-  -volname "HTML Studio" \\
-  -srcfolder "build/dmg-root" \\
-  -format UDZO \\
-  -ov \\
+```bash
+hdiutil create \
+  -volname "HTML Studio" \
+  -srcfolder "build/dmg-root" \
+  -format UDZO \
+  -ov \
   "$DMG"
-\`\`\`
+```
 
 对最终 DMG 单独签名：
 
-\`\`\`bash
-codesign --force \\
-  --timestamp \\
-  --sign "$SIGNING_IDENTITY" \\
+```bash
+codesign --force \
+  --timestamp \
+  --sign "$SIGNING_IDENTITY" \
   "$DMG"
-\`\`\`
+```
 
 验证 DMG：
 
-\`\`\`bash
+```bash
 codesign --verify --verbose=4 "$DMG"
 hdiutil verify "$DMG"
-\`\`\`
+```
 
 记录公证前哈希：
 
-\`\`\`bash
+```bash
 shasum -a 256 "$DMG"
-\`\`\`
+```
 
 这一步之后不要重新生成、重新签名或修改 DMG。签名后改内容，会导致 codesign 或公证失败。
 
@@ -274,36 +274,36 @@ shasum -a 256 "$DMG"
 
 提交时只提交一次：
 
-\`\`\`bash
-xcrun notarytool submit "$DMG" \\
-  --keychain-profile "HTMLStudio-notary" \\
+```bash
+xcrun notarytool submit "$DMG" \
+  --keychain-profile "HTMLStudio-notary" \
   --wait
-\`\`\`
+```
 
 记下 Apple 返回的提交 ID：
 
-\`\`\`text
+```text
 xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-\`\`\`
+```
 
 如果本地等待时间太长，可以按 Control + C 结束本地等待，但不要再次提交同一个 DMG。服务器上的任务会继续处理。
 
 查询状态：
 
-\`\`\`bash
-xcrun notarytool info "<SUBMISSION_ID>" \\
+```bash
+xcrun notarytool info "<SUBMISSION_ID>" \
   --keychain-profile "HTMLStudio-notary"
-\`\`\`
+```
 
 ### Accepted
 
 下载公证日志。即使 Accepted，也建议检查日志中的 warning：
 
-\`\`\`bash
-xcrun notarytool log "<SUBMISSION_ID>" \\
-  --keychain-profile "HTMLStudio-notary" \\
+```bash
+xcrun notarytool log "<SUBMISSION_ID>" \
+  --keychain-profile "HTMLStudio-notary" \
   "notarization-log.json"
-\`\`\`
+```
 
 ### Invalid
 
@@ -317,10 +317,10 @@ xcrun notarytool log "<SUBMISSION_ID>" \\
 
 只有状态为 Accepted 才执行：
 
-\`\`\`bash
+```bash
 xcrun stapler staple -v "$DMG"
 xcrun stapler validate -v "$DMG"
-\`\`\`
+```
 
 注意：staple 会修改 DMG，所以 stapling 后的哈希和提交前哈希不同是正常现象。
 
@@ -328,28 +328,28 @@ xcrun stapler validate -v "$DMG"
 
 执行完整验证：
 
-\`\`\`bash
+```bash
 codesign --verify --verbose=4 "$DMG"
 hdiutil verify "$DMG"
-spctl --assess \\
-  --type open \\
-  --context context:primary-signature \\
-  --verbose=4 \\
+spctl --assess \
+  --type open \
+  --context context:primary-signature \
+  --verbose=4 \
   "$DMG"
-\`\`\`
+```
 
 成功时通常会看到：
 
-\`\`\`text
+```text
 accepted
 source=Notarized Developer ID
-\`\`\`
+```
 
 最终可自由分发的文件是：
 
-\`\`\`text
+```text
 dist/HTMLStudio-2.6.0-macos-arm64.dmg
-\`\`\`
+```
 
 你可以把它放到 GitHub Releases、自己的网站、网盘或公司内网，不需要上传 Mac App Store。
 
@@ -378,3 +378,7 @@ dist/HTMLStudio-2.6.0-macos-arm64.dmg
 - [ ] stapler validate 通过
 - [ ] codesign、hdiutil、spctl 全部通过
 - [ ] 只分发最终的 DMG，不分发 unnotarized 文件
+
+
+
+
