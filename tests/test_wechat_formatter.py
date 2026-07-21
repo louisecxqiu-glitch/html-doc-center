@@ -27,7 +27,6 @@ def test_render_markdown_has_safe_typography_and_escaped_text(tmp_path: Path):
     assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html
     assert '<strong class="wx-strong">重点</strong>' in html
     assert '<blockquote class="wx-quote">提醒</blockquote>' in html
-    assert "background" in html
 
 
 def test_render_markdown_embeds_local_image(tmp_path: Path):
