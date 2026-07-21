@@ -21,6 +21,7 @@ _IMAGE_RE = re.compile(r"^!\[([^\]]*)\]\(([^)\s]+)(?:\s+[\"']([^\"']+)[\"'])?\)$
 _LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)\s]+)(?:\s+[\"']([^\"']+)[\"'])?\)")
 _BOLD_RE = re.compile(r"(\*\*|__)(.+?)\1")
 _ITALIC_RE = re.compile(r"(?<!\w)(\*|_)([^*_]+?)\1(?!\w)")
+_CODE_SPAN_RE = re.compile(r"`([^`]+)`")
 
 _CSS = """
 <style>
@@ -38,6 +39,8 @@ _CSS = """
   .wx-paragraph { margin: 0 0 18px; font-size: 16px; }
   .wx-strong { font-weight: 700; color: #111; }
   .wx-em { font-style: italic; }
+  .wx-inline-code { padding: 2px 5px; color: #1d1d1f; background: #f5f5f7; border-radius: 5px;
+                    font: 0.9em SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
   .wx-link { color: #06c; text-decoration: none; border-bottom: 1px solid rgba(0,102,204,.25); }
   .wx-list { margin: 8px 0 20px; padding-left: 26px; font-size: 16px; }
   .wx-list li { margin: 5px 0; padding-left: 4px; }
@@ -110,6 +113,10 @@ def _inline_markup(text: str) -> str:
         )
 
     escaped = _LINK_RE.sub(link, escaped)
+    escaped = _CODE_SPAN_RE.sub(
+        lambda match: stash(f'<code class="wx-inline-code">{match.group(1)}</code>'),
+        escaped,
+    )
     escaped = _BOLD_RE.sub(
         lambda match: f'<strong class="wx-strong">{match.group(2)}</strong>', escaped
     )
@@ -269,7 +276,7 @@ def _document(fragment: str) -> str:
         '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
         "<title>微信公众号文章预览</title>"
-        f"{_CSS}</head><body><main class=\"wx-article\">{fragment}</main></body></html>"
+        f'{_CSS}</head><body><main class="wx-article">{fragment}</main></body></html>'
     )
 
 

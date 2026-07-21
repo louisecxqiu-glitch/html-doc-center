@@ -38,6 +38,11 @@ def test_render_markdown_embeds_local_image(tmp_path: Path):
     assert "wx-figure" in html
 
 
+def test_render_markdown_styles_inline_code():
+    html = render_markdown("运行 `codesign --verify`。", Path("."))
+    assert '<code class="wx-inline-code">codesign --verify</code>' in html
+
+
 def test_convert_image_rejects_missing_or_unsupported_file(tmp_path: Path):
     with pytest.raises(FileNotFoundError):
         convert_image_to_data_uri(tmp_path / "missing.png")
