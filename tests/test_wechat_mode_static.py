@@ -19,3 +19,5 @@ def test_wechat_mode_uses_local_format_endpoint_and_rich_clipboard():
     assert "ClipboardItem" in MD_EDITOR
     assert "text/html" in MD_EDITOR
     assert "URL.createObjectURL" in MD_EDITOR
+    assert '#wechat-preview-frame { display: block; }' in MD_EDITOR
+    assert "fallbackCopyText(wechatState.html)" in MD_EDITOR

@@ -1126,8 +1126,16 @@ def render_md_shell(md_path: Path, port: int) -> str:
     # textarea 内容必须 HTML 转义（尤其 &<>），否则 </textarea> 会提前闭合
     md_escaped = html_escape_mod.escape(md_raw)
     file_name_esc = html_escape_mod.escape(md_path.name).replace('"', '&quot;')
-    file_path_esc = html_escape_mod.escape(str(md_path)).replace('"', '&quot;')
-    server_origin = f"http://localhost:{port}"
+    # JS 字符串必须使用 JSON 编码；HTML 转义会把路径中的 & 变成字面量 &amp;。
+    # 额外转义 <>&，避免特殊路径打断内联 script。
+    def _json_script_string(value):
+        return (json.dumps(value, ensure_ascii=False)
+                .replace("<", "\\u003c")
+                .replace(">", "\\u003e")
+                .replace("&", "\\u0026"))
+
+    file_path_esc = _json_script_string(str(md_path))
+    server_origin = _json_script_string(f"http://localhost:{port}")
 
     return (tpl
             .replace("{{MD_CONTENT}}", md_escaped)
@@ -1244,6 +1252,9 @@ async def handle_wechat_format(request):
         data = await request.json()
     except Exception as error:
         return web.json_response({"ok": False, "error": f"JSON 解析失败: {error}"}, status=400)
+
+    if not isinstance(data, dict):
+        return web.json_response({"ok": False, "error": "请求体必须是 JSON 对象"}, status=400)
 
     raw_path = (data.get("path") or "").strip()
     content = data.get("content")

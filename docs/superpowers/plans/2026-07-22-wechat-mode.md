@@ -45,7 +45,7 @@
 - `render_document(source: str, source_dir: Path) -> str`：返回完整自包含 HTML，不写文件。
 - `async handle_wechat_format(request) -> web.Response`：接收 `{path, content}`，返回 `{ok, html, text, filename}`。
 
-- [ ] **Step 1: 写 API 和 formatter 的失败测试**
+- [x] **Step 1: 写 API 和 formatter 的失败测试**
 
 ```python
 async def test_wechat_format_returns_self_contained_html(client, tmp_workspace):
@@ -76,7 +76,7 @@ async def test_wechat_format_rejects_outside_path_and_non_md(client, tmp_workspa
     assert response.status == 400
 ```
 
-- [ ] **Step 2: 运行失败测试确认接口尚不存在**
+- [x] **Step 2: 运行失败测试确认接口尚不存在**
 
 Run:
 
@@ -86,7 +86,7 @@ python3 -m pytest tests/test_wechat_format_api.py -q
 
 Expected: collection or request failure because `render_document` and `/api/wechat/format` are not implemented.
 
-- [ ] **Step 3: 实现 `render_document` 和安全 API**
+- [x] **Step 3: 实现 `render_document` 和安全 API**
 
 在 `tools/wechat_formatter.py` 中把 `_document` 通过下面的公开函数复用：
 
@@ -128,7 +128,7 @@ async def handle_wechat_format(request):
 
 将 `app.router.add_post("/api/wechat/format", handle_wechat_format)` 注册在现有 API 路由区；不写文件、不调用快照。
 
-- [ ] **Step 4: 运行 API 测试并提交**
+- [x] **Step 4: 运行 API 测试并提交**
 
 Run:
 
@@ -155,7 +155,7 @@ git commit -m "feat: expose local WeChat formatter API"
 - `data-view-mode` 新增 `wechat`；原 `source/split/preview` 保持兼容。
 - `window.__MD_WECHAT_CTL__ = { enter, exit, refresh, copyHtml, exportHtml }` 供浏览器验证使用。
 
-- [ ] **Step 1: 写前端静态失败测试**
+- [x] **Step 1: 写前端静态失败测试**
 
 ```python
 from pathlib import Path
@@ -170,7 +170,7 @@ def test_wechat_mode_contract_is_present():
     assert "__MD_WECHAT_CTL__" in MD_EDITOR
 ```
 
-- [ ] **Step 2: 运行失败测试确认 UI 尚不存在**
+- [x] **Step 2: 运行失败测试确认 UI 尚不存在**
 
 Run:
 
@@ -180,7 +180,7 @@ python3 -m pytest tests/test_wechat_mode_static.py -q
 
 Expected: FAIL because the `wechat` button and controller are absent.
 
-- [ ] **Step 3: 添加按钮、工作区和客户端控制器**
+- [x] **Step 3: 添加按钮、工作区和客户端控制器**
 
 在 `md-view-toolbar` 增加：
 
@@ -229,7 +229,7 @@ function requestWechatPreview() {
 - 点击 source/split/preview 时退出公众号操作条；
 - 不改变 `input` 的 input 事件，因此 saver-runtime 的 MD 快照不受影响。
 
-- [ ] **Step 4: 运行静态测试并提交 UI**
+- [x] **Step 4: 运行静态测试并提交 UI**
 
 Run:
 
@@ -252,11 +252,11 @@ git commit -m "feat: add WeChat publishing mode to Markdown editor"
 - Modify: `CHANGELOG.md`
 - Modify: `docs/superpowers/plans/2026-07-22-wechat-mode.md`
 
-- [ ] **Step 1: 更新 CHANGELOG**
+- [x] **Step 1: 更新 CHANGELOG**
 
 新增版本条目，包含用户故事、公众号入口、复制/导出、安全边界和不影响 HTML 编辑的说明。
 
-- [ ] **Step 2: 运行自动化回归**
+- [x] **Step 2: 运行自动化回归**
 
 Run:
 
@@ -274,7 +274,7 @@ PY
 
 Expected: all tests pass and the existing generated article remains self-contained.
 
-- [ ] **Step 3: 真实浏览器验证**
+- [x] **Step 3: 真实浏览器验证**
 
 在 localhost 服务中打开 `.md` 文件并执行：
 
@@ -285,7 +285,7 @@ Expected: all tests pass and the existing generated article remains self-contain
 5. 切回普通三视图，确认 Markdown 预览与自动快照仍正常；
 6. 打开一个 HTML 文件回归原有编辑功能。
 
-- [ ] **Step 4: 勾选计划并提交文档**
+- [x] **Step 4: 勾选计划并提交文档**
 
 ```bash
 git add CHANGELOG.md docs/superpowers/plans/2026-07-22-wechat-mode.md
@@ -301,4 +301,3 @@ git commit -m "docs: document WeChat publishing mode"
 - 非法路径和非 MD 请求被拒绝；
 - 现有普通 Markdown 预览、自动快照、三选项保存和 HTML 编辑流程无退化；
 - 自动化测试、HTML 结构检查和真实浏览器验证全部通过。
-

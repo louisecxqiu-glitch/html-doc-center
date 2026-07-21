@@ -169,12 +169,13 @@
       display: none;
     }
     #wechat-preview-frame {
-      display: block;
+      display: none;
       width: 100%;
       height: 100%;
       border: 0;
       background: #f5f5f7;
     }
+    [data-view-mode="wechat"] #wechat-preview-frame { display: block; }
     .md-wechat-actions {
       display: inline-flex;
       align-items: center;
@@ -312,8 +313,8 @@
   <script>
     // DocCenter 上下文：saver-runtime.js 靠 mode="md" 走 md 分支
     window.__DOC_CENTER__ = {
-      filePath: "{{FILE_PATH}}",
-      serverOrigin: "{{SERVER_ORIGIN}}",
+      filePath: {{FILE_PATH}},
+      serverOrigin: {{SERVER_ORIGIN}},
       inIframe: window.self !== window.top,
       mode: "md"
     };
@@ -329,6 +330,7 @@
       var timer = null;
       var wechatTimer = null;
       var wechatAbort = null;
+      var wechatRequestId = 0;
       var wechatState = { html: "", text: "", filename: "" };
 
       function setWechatStatus(text, isError) {
@@ -340,6 +342,7 @@
       function requestWechatPreview(immediate) {
         clearTimeout(wechatTimer);
         var run = async function () {
+          var requestId = ++wechatRequestId;
           if (wechatAbort) wechatAbort.abort();
           wechatAbort = new AbortController();
           setWechatStatus("排版中…", false);
@@ -355,6 +358,7 @@
             });
             var data = await response.json();
             if (!response.ok || !data.ok) throw new Error(data.error || "公众号排版失败");
+            if (requestId !== wechatRequestId) return;
             wechatState = data;
             if (wechatFrame) wechatFrame.srcdoc = data.html;
             setWechatStatus("已更新", false);
@@ -392,8 +396,8 @@
               "text/plain": new Blob([wechatState.text], { type: "text/plain" })
             });
             await navigator.clipboard.write([item]);
-          } else if (!fallbackCopyText(wechatState.text)) {
-            throw new Error("当前浏览器不支持富文本复制");
+          } else if (!fallbackCopyText(wechatState.html)) {
+            throw new Error("当前浏览器不支持富文本复制，HTML 源码复制失败");
           }
           setWechatStatus("已复制，可粘贴到公众号", false);
           return true;
@@ -416,7 +420,7 @@
         document.body.appendChild(link);
         link.click();
         link.remove();
-        URL.revokeObjectURL(url);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
         setWechatStatus("已导出 HTML", false);
         return true;
       }
@@ -449,7 +453,12 @@
       };
       window.__MD_WECHAT_CTL__ = {
         enter: function () { requestWechatPreview(true); },
-        exit: function () { setWechatStatus("", false); },
+        exit: function () {
+          clearTimeout(wechatTimer);
+          if (wechatAbort) wechatAbort.abort();
+          wechatRequestId += 1;
+          setWechatStatus("", false);
+        },
         refresh: function () { requestWechatPreview(true); },
         copyHtml: copyWechatHtml,
         exportHtml: exportWechatHtml

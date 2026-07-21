@@ -1,5 +1,7 @@
 """Tests for the local Markdown-to-WeChat formatter endpoint."""
 
+from server import render_md_shell
+
 
 async def test_wechat_format_returns_self_contained_html(client, tmp_workspace):
     client.app["config"]["scan_roots"] = [str(tmp_workspace)]
@@ -50,3 +52,17 @@ async def test_wechat_format_rejects_malformed_payload(client, tmp_workspace):
         "/api/wechat/format", json={"path": str(tmp_workspace / "article.md")}
     )
     assert response.status == 400
+
+    response = await client.post("/api/wechat/format", json=["not-an-object"])
+    assert response.status == 400
+
+
+def test_md_shell_json_escapes_special_paths(tmp_path):
+    article = tmp_path / "foo&bar.md"
+    article.write_text("# title", encoding="utf-8")
+
+    shell = render_md_shell(article, 9901)
+
+    path_line = next(line for line in shell.splitlines() if "filePath:" in line)
+    assert "&amp;" not in path_line
+    assert "\\u0026" in path_line
