@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">Apple Developer 注册流程</title>
+  <desc id="desc">从注册 Apple Developer 到获得 Developer ID Application 证书的四步流程</desc>
+  <rect width="1200" height="520" rx="32" fill="#f5f5f7"/>
+  <text x="72" y="78" fill="#1d1d1f" font-family="-apple-system,BlinkMacSystemFont,Helvetica Neue,Arial,sans-serif" font-size="30" font-weight="700">从注册到 Developer ID</text>
+  <text x="72" y="116" fill="#6e6e73" font-family="-apple-system,BlinkMacSystemFont,Helvetica Neue,Arial,sans-serif" font-size="18">个人开发者的 macOS 独立分发准备</text>
+  <g font-family="-apple-system,BlinkMacSystemFont,Helvetica Neue,Arial,sans-serif">
+    <g transform="translate(72 182)">
+      <rect width="238" height="200" rx="22" fill="#fff"/>
+      <circle cx="42" cy="44" r="22" fill="#06c"/><text x="35" y="52" fill="#fff" font-size="20" font-weight="700">1</text>
+      <text x="28" y="98" fill="#1d1d1f" font-size="21" font-weight="700">注册账号</text>
+      <text x="28" y="134" fill="#6e6e73" font-size="16">加入 Apple</text>
+      <text x="28" y="160" fill="#6e6e73" font-size="16">Developer Program</text>
+    </g>
+    <g transform="translate(350 182)">
+      <rect width="238" height="200" rx="22" fill="#fff"/>
+      <circle cx="42" cy="44" r="22" fill="#06c"/><text x="35" y="52" fill="#fff" font-size="20" font-weight="700">2</text>
+      <text x="28" y="98" fill="#1d1d1f" font-size="21" font-weight="700">完成审核</text>
+      <text x="28" y="134" fill="#6e6e73" font-size="16">缴费并等待</text>
+      <text x="28" y="160" fill="#6e6e73" font-size="16">确认邮件</text>
+    </g>
+    <g transform="translate(628 182)">
+      <rect width="238" height="200" rx="22" fill="#fff"/>
+      <circle cx="42" cy="44" r="22" fill="#06c"/><text x="35" y="52" fill="#fff" font-size="20" font-weight="700">3</text>
+      <text x="28" y="98" fill="#1d1d1f" font-size="21" font-weight="700">创建 CSR</text>
+      <text x="28" y="134" fill="#6e6e73" font-size="16">生成密钥对</text>
+      <text x="28" y="160" fill="#6e6e73" font-size="16">并上传请求文件</text>
+    </g>
+    <g transform="translate(906 182)">
+      <rect width="222" height="200" rx="22" fill="#fff"/>
+      <circle cx="42" cy="44" r="22" fill="#06c"/><text x="35" y="52" fill="#fff" font-size="20" font-weight="700">4</text>
+      <text x="28" y="98" fill="#1d1d1f" font-size="21" font-weight="700">下载证书</text>
+      <text x="28" y="134" fill="#6e6e73" font-size="16">Developer ID</text>
+      <text x="28" y="160" fill="#6e6e73" font-size="16">Application</text>
+    </g>
+  </g>
+  <g stroke="#06c" stroke-width="4" stroke-linecap="round" fill="none">
+    <path d="M310 282h32"/><path d="M588 282h32"/><path d="M866 282h32"/>
+  </g>
+</svg>
