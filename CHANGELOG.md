@@ -9,6 +9,63 @@ This project follows [Semantic Versioning](https://semver.org/).
 ---
 
 
+## v2.6.0 — 公众号教程排版工具
+
+*2026-07-21 · Markdown 原稿一键生成苹果式公众号 HTML*
+
+### 👤 用户故事
+
+**场景**：个人开发者写完 macOS DMG 分发教程，还要反复调整标题、代码块、提示卡片和截图样式。
+**之前**：每次都重新描述排版要求，图片路径和公众号兼容性也容易出错。
+**现在**：只维护 Markdown 和 `articles/assets/` 图片，运行一条本地命令即可生成单文件 HTML 并预览。
+**一句话**：把一次性的排版沟通，变成以后可复用的本地工作流。
+
+**🔧 功能**
+
+- 新增 Markdown → 公众号 HTML 的本地 Python CLI。
+- 内联 Apple 风格样式，支持标题、列表、引用、代码、表格、链接和图片。
+- 本地 PNG、JPEG、WebP、GIF、SVG 图片自动内嵌，复制文章时不依赖外部 CSS 或资源。
+- 配套首篇“macOS DMG 独立分发完整指南”和两张本地 SVG 流程图。
+
+**🔒 安全**
+
+- 所有正文、链接属性和图片说明均进行 HTML 转义；脚本不联网、不读取 Apple 凭据、不上传文章。
+
+## v1.20.4 — 修复 Windows 下拖入副本（_dropbox）写入权限报错
+
+*2026-07-20 · macOS 行为不变，Windows 打包版不再崩*
+
+**🐛 Bug · 临时 drop 文件跑到 Windows 下报错**
+
+- **问题**：在 Windows 上使用「拖入副本」功能时直接报错，文件写不进 `_dropbox/`
+- **根因**：`get_dropbox_dir()` 把 `_dropbox/` 建在 `Path.cwd()`（server 工作目录）。macOS 上工作目录可写正常；但 Windows 打包 exe 常跑在 `C:\Program Files\...` 等受保护路径，`mkdir`/`write_bytes` 抛 `PermissionError`，且无任何异常兜底，直接 500 崩溃
+- **解法**：
+  1. `get_dropbox_dir()` 改为「候选目录链」——优先 `CWD/_dropbox`（保持 macOS 开发态行为不变），不可写时回退到用户主目录 `~/.html-doc-center/_dropbox`（Windows 即 `%USERPROFILE%\.html-doc-center\_dropbox`，一定可写）
+  2. 每次候选先 `mkdir(parents=True)` 再「写探针文件 + 删除」验证真正可写，避免「目录能建但文件写不进」的假成功
+  3. `handle_drag_upload` 的 `get_dropbox_dir()` 与 `write_bytes` 均加 `try/except`，失败时返回友好中文错误而非裸 500
+
+## v1.20.3 — 新增 --host 启动参数支持远程/AnyDev 部署
+
+*2026-07-20 · 可绑定 0.0.0.0 对外提供服务*
+
+**🔧 功能 · 部署到 AnyDev 无法被外部访问**
+
+- **问题**：`server.py` 默认只绑 `127.0.0.1`，部署到 AnyDev（21.6.56.139:9901）后用户浏览器通过 IP 访问不通
+- **根因**：硬编码 `bind_hosts = ["127.0.0.1"]`，缺少可配置绑定地址；同机 visa 项目绑 `0.0.0.0` 才能外部访问
+- **解法**：新增 `--host` CLI 参数（默认 `None` → 保持原 127.0.0.1 本地安全行为）；部署时用 `--host 0.0.0.0` 即可对外。非破坏性改动
+
+## v1.20.2 — iframe 超时从 12s 延长至 30s + 诊断增强
+
+*2026-07-20 · 大文件/复杂文件加载不再误报超时*
+
+**🐛 Bug · 12 秒超时对大文件不够用，architecture.html 等复杂页面触发假失败**
+- **问题**：打开较大的 HTML 文件（如架构图、信息图）时，iframe 渲染超过 12 秒就弹出 "File failed to load or timed out" 兜底 UI。实际上文件正在加载中，只是没来得及发 `ready` 消息
+- **根因**：v1.10.6 设定的 12s 硬超时对简单 HTML 够用，但对包含大量 SVG/Canvas/内嵌资源的复杂文档明显不足
+- **解法**：
+  1. 超时从 `12000ms` → `30000ms`（30 秒）
+  2. 超时触发前尝试检测 iframe DOM 状态（`contentDocument.readyState === "complete"`），在控制台输出诊断日志
+  3. 兜底 UI 提示文案增加 "按 F12 查看控制台" 和 "大文件渲染慢" 两条
+
 ## v2.5.7 — Password Field Reverts to Editable Input
 
 *2026-07-18 00:55 · 密码框改回可编辑*

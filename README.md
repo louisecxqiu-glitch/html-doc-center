@@ -159,6 +159,31 @@ python3 server.py --dev
 python3 -m pytest tests/
 ```
 
+### Build distributable apps
+
+```bash
+python3 -m pip install -r requirements-build.txt
+python3 build.py
+```
+
+On Apple Silicon macOS, the signed and notarized release command is:
+
+```bash
+python3 scripts/release_macos.py
+```
+
+See [docs/macos-release.md](docs/macos-release.md) for the one-time Apple certificate and GitHub Secrets setup.
+
+### WeChat article formatter
+
+将 Markdown 教程转换成带苹果式内联样式、可直接复制到微信公众号编辑器的单文件 HTML：
+
+```bash
+python3 tools/wechat_formatter.py articles/macos-dmg-distribution.md --open
+```
+
+复制下一篇文章时，只需保留 Markdown 原稿，并把本地图片放入 `articles/assets/` 后引用；脚本会把图片内嵌到 HTML。需要指定输出路径时使用 `--output`，覆盖已有输出时使用 `--force`。
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---

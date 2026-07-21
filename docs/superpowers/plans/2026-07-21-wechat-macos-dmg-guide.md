@@ -1,6 +1,6 @@
 # WeChat macOS DMG Guide Formatter Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Build a local Python CLI that converts a reusable Markdown tutorial and local assets into a self-contained, Apple-style HTML file that can be copied into the WeChat public-account editor.
 
@@ -33,7 +33,7 @@
 - `convert_image_to_data_uri(image_path: Path) -> str` returns a MIME-typed `data:` URI or raises `ValueError` for unsupported formats.
 - `format_file(input_path: Path, output_path: Path | None = None, *, force: bool = False) -> Path` writes the generated HTML and returns its path.
 
-- [ ] **Step 1: Write the failing unit tests**
+- [x] **Step 1: Write the failing unit tests**
 
 ```python
 from __future__ import annotations
@@ -97,7 +97,7 @@ def test_format_file_defaults_output_and_protects_existing_file(tmp_path: Path):
     format_file(source, force=True)
 ```
 
-- [ ] **Step 2: Run the focused tests and verify the expected import failure**
+- [x] **Step 2: Run the focused tests and verify the expected import failure**
 
 Run:
 
@@ -107,7 +107,7 @@ python3 -m pytest tests/test_wechat_formatter.py -q
 
 Expected: collection fails because `tools/wechat_formatter.py` does not yet exist.
 
-- [ ] **Step 3: Commit the test contract**
+- [x] **Step 3: Commit the test contract**
 
 ```bash
 git add tests/test_wechat_formatter.py
@@ -127,7 +127,7 @@ git commit -m "test: define WeChat formatter contract"
 - `render_markdown`, `convert_image_to_data_uri`, and `format_file` use the signatures from Task 1.
 - CLI arguments are `input`, optional `--output`, `--open`, and `--force`.
 
-- [ ] **Step 1: Implement the renderer**
+- [x] **Step 1: Implement the renderer**
 
 Implement these concrete behaviors:
 
@@ -151,7 +151,7 @@ The parser must escape all text with `html.escape`, support fenced code blocks w
 
 The document wrapper must include a viewport meta tag, system-font stack, black text, Apple blue accents, generous whitespace, rounded notice cards, horizontal-scroll code blocks, responsive images, and no external stylesheet or script. Use `--open` to call `open <output>` on macOS; catch `OSError` and print a warning without failing an otherwise successful conversion.
 
-- [ ] **Step 2: Run focused tests until green**
+- [x] **Step 2: Run focused tests until green**
 
 Run:
 
@@ -161,7 +161,7 @@ python3 -m pytest tests/test_wechat_formatter.py -q
 
 Expected: all formatter tests pass.
 
-- [ ] **Step 3: Verify CLI behavior manually**
+- [x] **Step 3: Verify CLI behavior manually**
 
 Run:
 
@@ -172,7 +172,7 @@ test -s /tmp/html-studio-wechat-smoke.html
 
 Expected: the command prints the output path and the file is non-empty.
 
-- [ ] **Step 4: Commit the renderer**
+- [x] **Step 4: Commit the renderer**
 
 ```bash
 git add tools tests/test_wechat_formatter.py
@@ -194,7 +194,7 @@ git commit -m "feat: add self-contained WeChat HTML formatter"
 - The article references images with paths relative to its own directory, such as `assets/apple-developer-registration.svg`.
 - The two SVGs are local, lightweight, Apple-style diagrams with no external fonts, images, scripts, or network resources.
 
-- [ ] **Step 1: Write the Markdown article**
+- [x] **Step 1: Write the Markdown article**
 
 Include these sections in Chinese, with placeholders instead of real credentials:
 
@@ -216,7 +216,7 @@ Include these sections in Chinese, with placeholders instead of real credentials
 
 The registration section must explain the individual $99 annual membership, review confirmation email, and the difference between Developer ID direct distribution and App Store submission. Code examples must use placeholders such as `<APPLE_ID>`, `<TEAM_ID>`, `<SUBMISSION_ID>`, and `<SIGNING_IDENTITY>`; never include real secrets.
 
-- [ ] **Step 2: Create two local SVG diagrams**
+- [x] **Step 2: Create two local SVG diagrams**
 
 Create clean diagrams using white backgrounds, black typography, Apple blue connectors, subtle rounded cards, and a 2:1 or 16:9 viewBox:
 
@@ -225,7 +225,7 @@ Create clean diagrams using white backgrounds, black typography, Apple blue conn
 
 The SVGs must be safe static assets with no scripts or external references.
 
-- [ ] **Step 3: Run article conversion**
+- [x] **Step 3: Run article conversion**
 
 Run:
 
@@ -237,7 +237,7 @@ python3 tools/wechat_formatter.py \
 
 Expected: `articles/macos-dmg-distribution-wechat.html` is created, includes both `data:image/svg+xml;base64,` images, and opens locally when `open` is available.
 
-- [ ] **Step 4: Commit the article and assets**
+- [x] **Step 4: Commit the article and assets**
 
 ```bash
 git add articles tests/fixtures/formatter-smoke.md
@@ -257,7 +257,7 @@ git commit -m "docs: add macOS DMG WeChat tutorial"
 - README documents the exact `python3 tools/wechat_formatter.py <markdown>` command, `--open`, `--output`, `--force`, and the `articles/assets/` convention.
 - Changelog entry records the user-facing utility and image support; it does not claim that the macOS app itself was changed.
 
-- [ ] **Step 1: Add the reuse instructions**
+- [x] **Step 1: Add the reuse instructions**
 
 Document this exact flow:
 
@@ -269,11 +269,11 @@ python3 tools/wechat_formatter.py articles/my-next-guide.md --open
 
 Explain that Markdown is the only source of truth and local images are automatically embedded.
 
-- [ ] **Step 2: Add the changelog entry**
+- [x] **Step 2: Add the changelog entry**
 
 Add a dated entry with the user story, formatter capability, image embedding, and scope boundary. Use the current project’s bilingual changelog style and do not alter unrelated entries.
 
-- [ ] **Step 3: Run the full test suite**
+- [x] **Step 3: Run the full test suite**
 
 Run:
 
@@ -283,7 +283,7 @@ python3 -m pytest tests/ -q
 
 Expected: all existing tests and formatter tests pass.
 
-- [ ] **Step 4: Verify output structure and image self-containment**
+- [x] **Step 4: Verify output structure and image self-containment**
 
 Run:
 
@@ -304,11 +304,11 @@ PY
 
 Expected: the command prints `wechat html: OK` and no external CSS or script tags exist.
 
-- [ ] **Step 5: Perform real browser copy verification**
+- [x] **Step 5: Perform real browser copy verification**
 
 Open the generated HTML in a browser, hard-refresh, inspect the article at a narrow mobile-width window, then select all and copy. Paste into a test WeChat draft and confirm title hierarchy, code blocks, notice cards, links, captions, and both images remain visible.
 
-- [ ] **Step 6: Commit documentation and verification changes**
+- [x] **Step 6: Commit documentation and verification changes**
 
 ```bash
 git add README.md CHANGELOG.md
@@ -323,3 +323,4 @@ git commit -m "docs: document reusable WeChat publishing workflow"
 - Images are embedded as data URIs and survive copying from the browser into a WeChat draft.
 - No formatter path reads credentials, uploads content, modifies the app, or requires a network connection.
 - Focused and full tests pass, and real browser copy verification is recorded before claiming completion.
+
