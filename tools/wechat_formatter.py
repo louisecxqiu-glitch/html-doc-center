@@ -318,6 +318,11 @@ def _document(fragment: str) -> str:
     )
 
 
+def render_document(source: str, source_dir: Path) -> str:
+    """Render Markdown into a complete self-contained HTML document."""
+    return _document(render_markdown(source, Path(source_dir)))
+
+
 def format_file(input_path: Path, output_path: Path | None = None, *, force: bool = False) -> Path:
     input_path = Path(input_path)
     if not input_path.is_file():
@@ -326,7 +331,7 @@ def format_file(input_path: Path, output_path: Path | None = None, *, force: boo
     if output_path.exists() and not force:
         raise FileExistsError(f"Output already exists: {output_path}; use --force to overwrite")
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    rendered = _document(render_markdown(input_path.read_text(encoding="utf-8"), input_path.parent))
+    rendered = render_document(input_path.read_text(encoding="utf-8"), input_path.parent)
     output_path.write_text(rendered, encoding="utf-8")
     return output_path
 

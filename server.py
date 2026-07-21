@@ -39,6 +39,7 @@ except ImportError:
 # 常量与配置
 # ─────────────────────────────────────────────────────────────────────────────
 # 资源路径：兼容 PyInstaller 打包（frozen）和源码运行两种模式
+CONFIG_DIR = os.path.expanduser("~/.codebuddy/html-doc-center")
 if getattr(sys, 'frozen', False):
     # PyInstaller onefile 模式：资源打包在 _MEIPASS 临时解压目录
     _INSTALL_DIR = sys._MEIPASS
@@ -56,7 +57,6 @@ else:
     # 源码运行：取 server.py 所在目录的父目录
     _INSTALL_DIR = os.path.dirname(os.path.abspath(__file__))
     WORKSPACE = os.path.dirname(_INSTALL_DIR)
-CONFIG_DIR = os.path.expanduser("~/.codebuddy/html-doc-center")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 FAVORITES_FILE = os.path.join(CONFIG_DIR, "favorites.json")  # v1.6
 WEB_DIR = os.path.join(_INSTALL_DIR, "web")
@@ -651,10 +651,36 @@ DROPBOX_MAX_AGE_DAYS = 7
 
 
 def get_dropbox_dir() -> Path:
-    """Return _dropbox/ directory path under server CWD. Create if not exists."""
-    dropbox = Path.cwd() / "_dropbox"
-    dropbox.mkdir(exist_ok=True)
-    return dropbox
+    """Return _dropbox/ directory.
+
+    打包后始终放在用户配置目录，避免 cwd 落在签名的 App 包内时改写包体。
+    源码运行时优先放在 server 工作目录（保持现有行为）；
+    若该目录不可写（Windows 打包版常跑在 C:\\Program Files 等受保护路径，
+    mkdir/write 会抛 PermissionError），回退到用户主目录下一定可写的
+    ~/.html-doc-center/_dropbox（Windows 即 %USERPROFILE%\\.html-doc-center\\_dropbox）。
+    """
+    if getattr(sys, "frozen", False):
+        candidates = [Path(CONFIG_DIR) / "_dropbox"]
+    else:
+        candidates = [
+            Path.cwd() / "_dropbox",
+            Path.home() / ".html-doc-center" / "_dropbox",
+        ]
+    last_err = None
+    for c in candidates:
+        try:
+            c.mkdir(parents=True, exist_ok=True)
+            # 写权限探测：建一个临时文件再删，确认目录真正可写
+            probe = c / ".write_test"
+            probe.write_text("ok", encoding="utf-8")
+            probe.unlink()
+            return c
+        except Exception as e:
+            last_err = e
+            _log(f"⚠️ _dropbox 目录不可用 {c}: {e}")
+    # 极端兜底：连主目录都写不了（几乎不可能），返回最后候选但不保证可用
+    _log(f"⚠️ _dropbox 所有候选目录均不可写，退回最后候选: {last_err}")
+    return candidates[-1]
 
 
 def cleanup_dropbox():
@@ -705,13 +731,25 @@ async def handle_drag_upload(request):
                 status=413,
             )
 
-        dropbox = get_dropbox_dir()
+        try:
+            dropbox = get_dropbox_dir()
+        except Exception as e:
+            return web.json_response(
+                {"ok": False, "error": f"无法初始化 dropbox 目录（请检查程序目录写权限）: {e}"},
+                status=500,
+            )
         dest = dropbox / filename_field
         if dest.exists():
             stem = Path(filename_field).stem
             timestamp = time.strftime("%Y%m%d-%H%M%S")
             dest = dropbox / f"{stem}-{timestamp}{ext}"
-        dest.write_bytes(file_content)
+        try:
+            dest.write_bytes(file_content)
+        except Exception as e:
+            return web.json_response(
+                {"ok": False, "error": f"写入 dropbox 文件失败（请检查程序目录写权限）: {e}"},
+                status=500,
+            )
 
         return web.json_response({
             "ok": True,
@@ -1197,6 +1235,40 @@ async def handle_file(request):
     resp.headers["Expires"] = "0"
     resp.headers["Vary"] = "*"
     return resp
+
+
+async def handle_wechat_format(request):
+    """POST /api/wechat/format {path, content} -> self-contained HTML."""
+    cfg = request.app["config"]
+    try:
+        data = await request.json()
+    except Exception as error:
+        return web.json_response({"ok": False, "error": f"JSON 解析失败: {error}"}, status=400)
+
+    raw_path = (data.get("path") or "").strip()
+    content = data.get("content")
+    if not raw_path or not isinstance(content, str):
+        return web.json_response({"ok": False, "error": "path/content 必填"}, status=400)
+
+    safe = _resolve_safe(raw_path, cfg.get("scan_roots", []))
+    if not safe or not safe.is_file():
+        return web.json_response({"ok": False, "error": "非法路径"}, status=403)
+    if safe.suffix.lower() != ".md":
+        return web.json_response({"ok": False, "error": "只支持 Markdown 文件"}, status=400)
+
+    try:
+        from tools.wechat_formatter import render_document
+
+        rendered = render_document(content, safe.parent)
+    except (OSError, UnicodeError, ValueError) as error:
+        return web.json_response({"ok": False, "error": str(error)}, status=422)
+
+    return web.json_response({
+        "ok": True,
+        "html": rendered,
+        "text": content,
+        "filename": f"{safe.stem}-wechat.html",
+    })
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2177,6 +2249,7 @@ def create_app() -> web.Application:
     app.router.add_get("/api/config", handle_config_get)
     app.router.add_post("/api/config", handle_config_post)
     app.router.add_get("/api/file", handle_file)
+    app.router.add_post("/api/wechat/format", handle_wechat_format)
     app.router.add_post("/api/snapshot", handle_snapshot)
     app.router.add_post("/api/save", handle_save)
     # v1.10.2: 版本时间线
@@ -2223,6 +2296,8 @@ def main():
                         help="Automatically open browser after server starts (default: True in packaged mode, use --no-open-browser to disable)")
     parser.add_argument("--port", type=int, default=None,
                         help="Port to listen on (overrides config, default: 9901)")
+    parser.add_argument("--host", type=str, default=None,
+                        help="Host/interface to bind (default: 127.0.0.1; use 0.0.0.0 for remote/AnyDev access)")
     args = parser.parse_args()
 
     app = create_app()
@@ -2266,14 +2341,18 @@ def main():
     # 根因：Windows 上 localhost 常解析为 ::1 (IPv6)，如果 ::1 绑定失败
     # 服务启动失败或 fetch 请求 "加载失败"
     # 修复：(1) 检测 ::1 可用性 (2) 浏览器用 127.0.0.1 打开（不走 localhost 解析）
-    bind_hosts = ["127.0.0.1"]
-    try:
-        import socket
-        with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
-            s.bind(("::1", 0))
-        bind_hosts.append("::1")
-    except OSError:
-        _log("⚠️ IPv6 (::1) 不可用，仅绑定 IPv4 (127.0.0.1)")
+    if args.host:
+        # --host 显式指定（如部署到 AnyDev 用 0.0.0.0），跳过自动检测
+        bind_hosts = [args.host]
+    else:
+        bind_hosts = ["127.0.0.1"]
+        try:
+            import socket
+            with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
+                s.bind(("::1", 0))
+            bind_hosts.append("::1")
+        except OSError:
+            _log("⚠️ IPv6 (::1) 不可用，仅绑定 IPv4 (127.0.0.1)")
     web.run_app(app, host=bind_hosts, port=port, print=None)
 
 

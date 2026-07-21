@@ -9,6 +9,27 @@ This project follows [Semantic Versioning](https://semver.org/).
 ---
 
 
+## v2.7.0 — Markdown 公众号排版模式
+
+*2026-07-22 · 在 HTML Studio 内直接生成苹果风格公众号 HTML*
+
+### 👤 用户故事
+
+**场景**：个人开发者已经在 HTML Studio 里维护 Markdown 教程，还要切到其他工具才能做公众号排版。
+**之前**：编辑、预览、复制和导出分散在不同页面，图片与样式容易丢失。
+**现在**：打开 Markdown 后点击「公众号排版」，左侧编辑、右侧预览，并可直接复制富文本或导出 HTML。
+**一句话**：Markdown 写作和公众号发布排版在同一个本地工作台完成。
+
+**🔧 功能**
+
+- 新增本地 `/api/wechat/format` 接口，复用现有 Python formatter 生成自包含 HTML。
+- Markdown 编辑器新增公众号排版模式、苹果风格预览、复制 HTML 和导出 HTML。
+- 图片继续以内嵌 data URI 处理，不依赖外部 CSS、脚本或图片地址。
+
+**🔒 安全**
+
+- 格式化接口沿用 `_resolve_safe()` 路径白名单，只接受 Markdown 文件，不写入源文件、不联网。
+
 ## v2.6.0 — 公众号教程排版工具
 
 *2026-07-21 · Markdown 原稿一键生成苹果式公众号 HTML*
