@@ -156,6 +156,44 @@
       border-left: 0;
     }
 
+    /* 公众号排版模式：复用左侧 Markdown 编辑，右侧隔离渲染完整 HTML */
+    [data-view-mode="wechat"] .md-pane-source {
+      flex: 0 0 var(--md-split-left);
+    }
+    [data-view-mode="wechat"] .md-pane-preview {
+      flex: 1 1 auto;
+      border-left: 1px solid var(--border);
+      padding: 0;
+    }
+    [data-view-mode="wechat"] .md-preview {
+      display: none;
+    }
+    #wechat-preview-frame {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #f5f5f7;
+    }
+    .md-wechat-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: 4px;
+    }
+    .md-wechat-action {
+      border: 1px solid rgba(201,169,97,.55);
+      border-radius: 4px;
+      padding: 4px 8px;
+      color: var(--gold);
+      background: rgba(201,169,97,.08);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .md-wechat-action:hover { background: rgba(201,169,97,.18); }
+    .md-wechat-status { color: #9CA3AF; font-size: 11px; }
+
     /* 左：textarea */
     #md-input {
       display: block;
@@ -250,6 +288,12 @@
       <button class="md-view-btn" data-view="source" id="btn-source" title="">📝 原文</button>
       <button class="md-view-btn active" data-view="split" id="btn-split" title="">⇔ 分栏</button>
       <button class="md-view-btn" data-view="preview" id="btn-preview" title="">👁 预览</button>
+      <button class="md-view-btn" data-view="wechat" id="btn-wechat" title="">📰 公众号排版</button>
+    </span>
+    <span class="md-wechat-actions" id="md-wechat-actions" hidden>
+      <button class="md-wechat-action" id="btn-wechat-copy" type="button">复制 HTML</button>
+      <button class="md-wechat-action" id="btn-wechat-export" type="button">导出 HTML</button>
+      <span class="md-wechat-status" id="md-wechat-status"></span>
     </span>
     <span class="md-status">
       <span class="md-dot" id="md-dot"></span>
@@ -259,7 +303,10 @@
   <div class="md-container" id="md-container" data-view-mode="split">
     <div class="md-pane md-pane-source"><textarea id="md-input" spellcheck="false">{{MD_CONTENT}}</textarea></div>
     <div class="md-splitter" id="md-splitter" role="separator" aria-label="Drag to resize panes" tabindex="0"></div>
-    <div class="md-pane md-pane-preview"><div class="md-preview" id="md-preview"></div></div>
+    <div class="md-pane md-pane-preview">
+      <div class="md-preview" id="md-preview"></div>
+      <iframe id="wechat-preview-frame" title="公众号排版预览" sandbox="allow-same-origin"></iframe>
+    </div>
   </div>
 
   <script>
@@ -277,7 +324,102 @@
     (function () {
       var input = document.getElementById("md-input");
       var preview = document.getElementById("md-preview");
+      var wechatFrame = document.getElementById("wechat-preview-frame");
+      var wechatStatus = document.getElementById("md-wechat-status");
       var timer = null;
+      var wechatTimer = null;
+      var wechatAbort = null;
+      var wechatState = { html: "", text: "", filename: "" };
+
+      function setWechatStatus(text, isError) {
+        if (!wechatStatus) return;
+        wechatStatus.textContent = text || "";
+        wechatStatus.style.color = isError ? "#FCA5A5" : "#9CA3AF";
+      }
+
+      function requestWechatPreview(immediate) {
+        clearTimeout(wechatTimer);
+        var run = async function () {
+          if (wechatAbort) wechatAbort.abort();
+          wechatAbort = new AbortController();
+          setWechatStatus("排版中…", false);
+          try {
+            var response = await fetch("/api/wechat/format", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                path: window.__DOC_CENTER__.filePath,
+                content: input.value
+              }),
+              signal: wechatAbort.signal
+            });
+            var data = await response.json();
+            if (!response.ok || !data.ok) throw new Error(data.error || "公众号排版失败");
+            wechatState = data;
+            if (wechatFrame) wechatFrame.srcdoc = data.html;
+            setWechatStatus("已更新", false);
+          } catch (error) {
+            if (error && error.name === "AbortError") return;
+            setWechatStatus((error && error.message) || "公众号排版失败", true);
+          }
+        };
+        if (immediate) run();
+        else wechatTimer = setTimeout(run, 250);
+      }
+
+      function fallbackCopyText(text) {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+        ta.remove();
+        return ok;
+      }
+
+      async function copyWechatHtml() {
+        if (!wechatState.html) {
+          setWechatStatus("请先等待排版完成", true);
+          return false;
+        }
+        try {
+          if (navigator.clipboard && window.ClipboardItem) {
+            var item = new ClipboardItem({
+              "text/html": new Blob([wechatState.html], { type: "text/html" }),
+              "text/plain": new Blob([wechatState.text], { type: "text/plain" })
+            });
+            await navigator.clipboard.write([item]);
+          } else if (!fallbackCopyText(wechatState.text)) {
+            throw new Error("当前浏览器不支持富文本复制");
+          }
+          setWechatStatus("已复制，可粘贴到公众号", false);
+          return true;
+        } catch (error) {
+          setWechatStatus(error.message || "复制失败", true);
+          return false;
+        }
+      }
+
+      function exportWechatHtml() {
+        if (!wechatState.html) {
+          setWechatStatus("请先等待排版完成", true);
+          return false;
+        }
+        var blob = new Blob([wechatState.html], { type: "text/html;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.href = url;
+        link.download = wechatState.filename || "wechat-article.html";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        setWechatStatus("已导出 HTML", false);
+        return true;
+      }
 
       function render() {
         try {
@@ -293,11 +435,25 @@
       input.addEventListener("input", function () {
         clearTimeout(timer);
         timer = setTimeout(render, 150);
+        var container = document.getElementById("md-container");
+        if (container && container.dataset.viewMode === "wechat") requestWechatPreview(false);
       });
 
       // 暴露给 saver-runtime.js：请求当前内容
       window.__MD_GET_CONTENT__ = function () { return input.value; };
-      window.__MD_SET_CONTENT__ = function (v) { input.value = v; render(); };
+      window.__MD_SET_CONTENT__ = function (v) {
+        input.value = v;
+        render();
+        var container = document.getElementById("md-container");
+        if (container && container.dataset.viewMode === "wechat") requestWechatPreview(true);
+      };
+      window.__MD_WECHAT_CTL__ = {
+        enter: function () { requestWechatPreview(true); },
+        exit: function () { setWechatStatus("", false); },
+        refresh: function () { requestWechatPreview(true); },
+        copyHtml: copyWechatHtml,
+        exportHtml: exportWechatHtml
+      };
     })();
   </script>
 
@@ -308,7 +464,7 @@
       var LS_RATIO = "doccenter.md.splitRatio";    // 0.1 ~ 0.9, default 0.5
       var LS_LANG = "doccenter.lang";              // 'en' | 'zh'，与主 app 共享
       var MIN_RATIO = 0.1, MAX_RATIO = 0.9, DEFAULT_RATIO = 0.5;
-      var ALLOWED_VIEWS = { source: 1, split: 1, preview: 1 };
+      var ALLOWED_VIEWS = { source: 1, split: 1, preview: 1, wechat: 1 };
 
       // 微型双语字典（壳子页面独立，与主 app 的 i18n.js 不耦合）
       var I18N = {
@@ -316,9 +472,11 @@
           'view.source': '📝 Source',
           'view.split': '⇔ Split',
           'view.preview': '👁 Preview',
+          'view.wechat': '📰 WeChat',
           'view.source.tip': 'Show source only (hide preview)',
           'view.split.tip': 'Show source and preview side by side',
           'view.preview.tip': 'Show preview only (hide source)',
+          'view.wechat.tip': 'Open Apple-style WeChat publishing mode',
           'hint': 'Edit on the left · Live preview on the right · Auto snapshot every 2s',
           'status.ready': 'Ready'
         },
@@ -326,9 +484,11 @@
           'view.source': '📝 原文',
           'view.split': '⇔ 分栏',
           'view.preview': '👁 预览',
+          'view.wechat': '📰 公众号排版',
           'view.source.tip': '仅展示原文（隐藏预览）',
           'view.split.tip': '左侧编辑 · 右侧预览',
           'view.preview.tip': '仅展示预览（隐藏原文）',
+          'view.wechat.tip': '打开苹果风格公众号排版模式',
           'hint': '左侧编辑 · 右侧实时预览 · 2 秒自动快照',
           'status.ready': '已就绪'
         }
@@ -345,9 +505,11 @@
         document.getElementById('btn-source').textContent = d['view.source'];
         document.getElementById('btn-split').textContent = d['view.split'];
         document.getElementById('btn-preview').textContent = d['view.preview'];
+        document.getElementById('btn-wechat').textContent = d['view.wechat'];
         document.getElementById('btn-source').title = d['view.source.tip'];
         document.getElementById('btn-split').title = d['view.split.tip'];
         document.getElementById('btn-preview').title = d['view.preview.tip'];
+        document.getElementById('btn-wechat').title = d['view.wechat.tip'];
         document.getElementById('md-hint').textContent = d['hint'];
         document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
         // 状态文案（如果还没被 saver-runtime 改写）
@@ -364,6 +526,12 @@
         var btns = document.querySelectorAll('.md-view-btn');
         for (var i = 0; i < btns.length; i++) {
           btns[i].classList.toggle('active', btns[i].dataset.view === mode);
+        }
+        var actions = document.getElementById('md-wechat-actions');
+        if (actions) actions.hidden = mode !== 'wechat';
+        if (window.__MD_WECHAT_CTL__) {
+          if (mode === 'wechat') window.__MD_WECHAT_CTL__.enter();
+          else window.__MD_WECHAT_CTL__.exit();
         }
         try { localStorage.setItem(LS_VIEW, mode); } catch (e) {}
       }
@@ -422,6 +590,13 @@
           btn.addEventListener('click', function() { setViewMode(btn.dataset.view); });
         })(btns[i]);
       }
+
+      document.getElementById('btn-wechat-copy').addEventListener('click', function () {
+        if (window.__MD_WECHAT_CTL__) window.__MD_WECHAT_CTL__.copyHtml();
+      });
+      document.getElementById('btn-wechat-export').addEventListener('click', function () {
+        if (window.__MD_WECHAT_CTL__) window.__MD_WECHAT_CTL__.exportHtml();
+      });
 
       // 4. splitter 拖拽
       document.getElementById('md-splitter').addEventListener('mousedown', startDrag);
