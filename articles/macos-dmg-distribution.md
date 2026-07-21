@@ -378,7 +378,3 @@ dist/HTMLStudio-2.6.0-macos-arm64.dmg
 - [ ] stapler validate 通过
 - [ ] codesign、hdiutil、spctl 全部通过
 - [ ] 只分发最终的 DMG，不分发 unnotarized 文件
-
-
-
-

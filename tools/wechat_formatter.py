@@ -23,6 +23,26 @@ _BOLD_RE = re.compile(r"(\*\*|__)(.+?)\1")
 _ITALIC_RE = re.compile(r"(?<!\w)(\*|_)([^*_]+?)\1(?!\w)")
 _CODE_SPAN_RE = re.compile(r"`([^`]+)`")
 
+_INLINE_STYLES = {
+    "wx-title": "margin:0 0 26px;color:#111;font-size:34px;line-height:1.2;letter-spacing:-.02em;font-weight:700",
+    "wx-section": "margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700",
+    "wx-subsection": "margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650",
+    "wx-paragraph": "margin:0 0 18px;font-size:16px",
+    "wx-strong": "font-weight:700;color:#111",
+    "wx-em": "font-style:italic",
+    "wx-inline-code": "padding:2px 5px;color:#1d1d1f;background:#f5f5f7;border-radius:5px;font:0.9em SFMono-Regular,Menlo,Monaco,Consolas,monospace",
+    "wx-link": "color:#06c;text-decoration:none;border-bottom:1px solid rgba(0,102,204,.25)",
+    "wx-list": "margin:8px 0 20px;padding-left:26px;font-size:16px",
+    "wx-quote": "margin:20px 0;padding:15px 18px;color:#424245;background:#f5f5f7;border-left:4px solid #06c;border-radius:12px;font-size:15px",
+    "wx-code": "margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre",
+    "wx-rule": "border:0;border-top:1px solid #d2d2d7;margin:34px 0",
+    "wx-table-wrap": "margin:20px 0;overflow-x:auto",
+    "wx-table": "width:100%;border-collapse:collapse;font-size:14px",
+    "wx-figure": "margin:26px 0 30px;text-align:center",
+    "wx-image": "display:block;width:100%;max-width:100%;height:auto;margin:0 auto;border-radius:16px;box-shadow:0 8px 26px rgba(0,0,0,.10)",
+    "wx-caption": "display:block;margin-top:9px;color:#6e6e73;font-size:13px;line-height:1.45",
+}
+
 _CSS = """
 <style>
   :root { color-scheme: light; }
@@ -116,11 +136,11 @@ def _inline_markup(text: str) -> str:
             f'<a class="wx-link" href="{_safe_url(url)}"{title_attr}>{label}</a>'
         )
 
-    escaped = _LINK_RE.sub(link, escaped)
     escaped = _CODE_SPAN_RE.sub(
         lambda match: stash(f'<code class="wx-inline-code">{match.group(1)}</code>'),
         escaped,
     )
+    escaped = _LINK_RE.sub(link, escaped)
     escaped = _BOLD_RE.sub(
         lambda match: f'<strong class="wx-strong">{match.group(2)}</strong>', escaped
     )
@@ -266,13 +286,27 @@ def render_markdown(source: str, source_dir: Path) -> str:
                 or lines[index].lstrip().startswith(">")
                 or _UNORDERED_RE.match(lines[index])
                 or _ORDERED_RE.match(lines[index])
+                or _IMAGE_RE.match(lines[index].strip())
+                or lines[index].strip() in {"---", "***", "___"}
+                or (
+                    index + 1 < len(lines)
+                    and "|" in lines[index]
+                    and _is_table_separator(lines[index + 1])
+                )
             ):
                 break
             paragraph_lines.append(lines[index].strip())
             index += 1
         blocks.append(f'<p class="wx-paragraph">{_inline_markup(" ".join(paragraph_lines))}</p>')
 
-    return "\n".join(blocks)
+    fragment = "\n".join(blocks)
+    for class_name, style in _INLINE_STYLES.items():
+        escaped_style = html.escape(style, quote=True)
+        fragment = fragment.replace(
+            f'class="{class_name}"',
+            f'class="{class_name}" style="{escaped_style}"',
+        )
+    return fragment
 
 
 def _document(fragment: str) -> str:

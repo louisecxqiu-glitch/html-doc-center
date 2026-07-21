@@ -39,173 +39,173 @@
     .wx-section { font-size: 23px; }
     .wx-paragraph, .wx-list { font-size: 16px; }
   }
-</style></head><body><main class="wx-article"><h1 class="wx-title">macOS DMG 独立分发完整指南</h1>
-<p class="wx-paragraph">如果你做了一个 Mac 应用，想把它发给客户、同事或朋友，通常会遇到两个问题：</p>
-<ol class="wx-list"><li>为什么双击 App 会出现“无法验证开发者”？</li><li>为什么一个看起来正常的 DMG，到了别人电脑上却被 Gatekeeper 拦截？</li></ol>
-<p class="wx-paragraph">这篇文章从零开始，带你完成个人开发者的 macOS 独立分发流程。</p>
-<figure class="wx-figure"><img class="wx-image" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDUyMCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIGRlc2MiPgogIDx0aXRsZSBpZD0idGl0bGUiPkFwcGxlIERldmVsb3BlciDms6jlhozmtYHnqIs8L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj7ku47ms6jlhowgQXBwbGUgRGV2ZWxvcGVyIOWIsOiOt+W+lyBEZXZlbG9wZXIgSUQgQXBwbGljYXRpb24g6K+B5Lmm55qE5Zub5q2l5rWB56iLPC9kZXNjPgogIDxyZWN0IHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjUyMCIgcng9IjMyIiBmaWxsPSIjZjVmNWY3Ii8+CiAgPHRleHQgeD0iNzIiIHk9Ijc4IiBmaWxsPSIjMWQxZDFmIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzMCIgZm9udC13ZWlnaHQ9IjcwMCI+5LuO5rOo5YaM5YiwIERldmVsb3BlciBJRDwvdGV4dD4KICA8dGV4dCB4PSI3MiIgeT0iMTE2IiBmaWxsPSIjNmU2ZTczIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCI+5Liq5Lq65byA5Y+R6ICF55qEIG1hY09TIOeLrOeri+WIhuWPkeWHhuWkhzwvdGV4dD4KICA8ZyBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiI+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg3MiAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIzOCIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+MTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7ms6jlhozotKblj7c8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxMzQiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuWKoOWFpSBBcHBsZTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9IjE2MCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+RGV2ZWxvcGVyIFByb2dyYW08L3RleHQ+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNTAgMTgyKSI+CiAgICAgIDxyZWN0IHdpZHRoPSIyMzgiIGhlaWdodD0iMjAwIiByeD0iMjIiIGZpbGw9IiNmZmYiLz4KICAgICAgPGNpcmNsZSBjeD0iNDIiIGN5PSI0NCIgcj0iMjIiIGZpbGw9IiMwNmMiLz48dGV4dCB4PSIzNSIgeT0iNTIiIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMjAiIGZvbnQtd2VpZ2h0PSI3MDAiPjI8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSI5OCIgZmlsbD0iIzFkMWQxZiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCI+5a6M5oiQ5a6h5qC4PC90ZXh0PgogICAgICA8dGV4dCB4PSIyOCIgeT0iMTM0IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7nvLTotLnlubbnrYnlvoU8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxNjAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuehruiupOmCruS7tjwvdGV4dD4KICAgIDwvZz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDYyOCAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIzOCIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+MzwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7liJvlu7ogQ1NSPC90ZXh0PgogICAgICA8dGV4dCB4PSIyOCIgeT0iMTM0IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7nlJ/miJDlr4bpkqXlr7k8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxNjAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuW5tuS4iuS8oOivt+axguaWh+S7tjwvdGV4dD4KICAgIDwvZz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDkwNiAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIyMiIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+NDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7kuIvovb3or4HkuaY8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxMzQiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPkRldmVsb3BlciBJRDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9IjE2MCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+QXBwbGljYXRpb248L3RleHQ+CiAgICA8L2c+CiAgPC9nPgogIDxnIHN0cm9rZT0iIzA2YyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggZD0iTTMxMCAyODJoMzIiLz48cGF0aCBkPSJNNTg4IDI4MmgzMiIvPjxwYXRoIGQ9Ik04NjYgMjgyaDMyIi8+CiAgPC9nPgo8L3N2Zz4K" alt="从注册到 Developer ID"><figcaption class="wx-caption">从注册到 Developer ID</figcaption></figure>
-<h2 class="wx-section">先说结论：直接分发不等于上架 App Store</h2>
-<p class="wx-paragraph">如果你的目标是把 DMG 放到自己的网站、GitHub Releases、网盘或公司内网中，<strong class="wx-strong">不需要把 App 上架到 Mac App Store</strong>。</p>
-<p class="wx-paragraph">但是，你仍然需要：</p>
-<ul class="wx-list"><li>Apple Developer Program 会员资格</li><li>Developer ID Application 证书</li><li>Hardened Runtime（硬化运行时）</li><li>Apple Notary Service 公证</li><li>最终的 Gatekeeper 验证</li></ul>
-<p class="wx-paragraph">App Store 分发是另一套流程，使用的是 Mac App Distribution 证书和 App Store Connect。本文只讨论“自由分发 DMG”。</p>
-<h2 class="wx-section">第一步：注册 Apple Developer Program</h2>
-<figure class="wx-figure"><img class="wx-image" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDUyMCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIGRlc2MiPgogIDx0aXRsZSBpZD0idGl0bGUiPkFwcGxlIERldmVsb3BlciDms6jlhozmtYHnqIs8L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj7ku47ms6jlhowgQXBwbGUgRGV2ZWxvcGVyIOWIsOiOt+W+lyBEZXZlbG9wZXIgSUQgQXBwbGljYXRpb24g6K+B5Lmm55qE5Zub5q2l5rWB56iLPC9kZXNjPgogIDxyZWN0IHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjUyMCIgcng9IjMyIiBmaWxsPSIjZjVmNWY3Ii8+CiAgPHRleHQgeD0iNzIiIHk9Ijc4IiBmaWxsPSIjMWQxZDFmIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzMCIgZm9udC13ZWlnaHQ9IjcwMCI+5LuO5rOo5YaM5YiwIERldmVsb3BlciBJRDwvdGV4dD4KICA8dGV4dCB4PSI3MiIgeT0iMTE2IiBmaWxsPSIjNmU2ZTczIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCI+5Liq5Lq65byA5Y+R6ICF55qEIG1hY09TIOeLrOeri+WIhuWPkeWHhuWkhzwvdGV4dD4KICA8ZyBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiI+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg3MiAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIzOCIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+MTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7ms6jlhozotKblj7c8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxMzQiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuWKoOWFpSBBcHBsZTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9IjE2MCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+RGV2ZWxvcGVyIFByb2dyYW08L3RleHQ+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNTAgMTgyKSI+CiAgICAgIDxyZWN0IHdpZHRoPSIyMzgiIGhlaWdodD0iMjAwIiByeD0iMjIiIGZpbGw9IiNmZmYiLz4KICAgICAgPGNpcmNsZSBjeD0iNDIiIGN5PSI0NCIgcj0iMjIiIGZpbGw9IiMwNmMiLz48dGV4dCB4PSIzNSIgeT0iNTIiIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMjAiIGZvbnQtd2VpZ2h0PSI3MDAiPjI8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSI5OCIgZmlsbD0iIzFkMWQxZiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCI+5a6M5oiQ5a6h5qC4PC90ZXh0PgogICAgICA8dGV4dCB4PSIyOCIgeT0iMTM0IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7nvLTotLnlubbnrYnlvoU8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxNjAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuehruiupOmCruS7tjwvdGV4dD4KICAgIDwvZz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDYyOCAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIzOCIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+MzwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7liJvlu7ogQ1NSPC90ZXh0PgogICAgICA8dGV4dCB4PSIyOCIgeT0iMTM0IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7nlJ/miJDlr4bpkqXlr7k8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxNjAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuW5tuS4iuS8oOivt+axguaWh+S7tjwvdGV4dD4KICAgIDwvZz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDkwNiAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIyMiIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+NDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7kuIvovb3or4HkuaY8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxMzQiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPkRldmVsb3BlciBJRDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9IjE2MCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+QXBwbGljYXRpb248L3RleHQ+CiAgICA8L2c+CiAgPC9nPgogIDxnIHN0cm9rZT0iIzA2YyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggZD0iTTMxMCAyODJoMzIiLz48cGF0aCBkPSJNNTg4IDI4MmgzMiIvPjxwYXRoIGQ9Ik04NjYgMjgyaDMyIi8+CiAgPC9nPgo8L3N2Zz4K" alt="Apple Developer 注册流程"><figcaption class="wx-caption">Apple Developer 注册流程</figcaption></figure>
-<p class="wx-paragraph">打开 <a class="wx-link" href="https://developer.apple.com/programs/">Apple Developer Program</a>，使用你的 Apple ID 注册并加入 Apple Developer Program。</p>
-<p class="wx-paragraph">个人开发者通常需要支付每年 99 美元的会员费用，具体金额可能会根据地区和税费显示不同。缴费成功并通过审核后，你会收到 Apple 的确认邮件。</p>
-<p class="wx-paragraph">个人账号就可以完成本文的流程，不需要注册公司账号。</p>
-<h3 class="wx-subsection">注册时你需要准备什么</h3>
-<ul class="wx-list"><li>一个已开启双重认证的 Apple ID</li><li>可支付年费的支付方式</li><li>真实姓名和联系方式</li><li>能接收邮件的邮箱</li><li>一台用于生成 CSR 和保存私钥的 Mac</li></ul>
-<h3 class="wx-subsection">重要提醒</h3>
-<p class="wx-paragraph">Apple Developer 会员资格不是“上架 App Store”的专属门票。对于本文的独立分发场景，它的核心用途是让你能够创建 Developer ID 证书并使用公证服务。</p>
-<h2 class="wx-section">第二步：创建 Developer ID Application 证书</h2>
-<p class="wx-paragraph">证书解决的是“这个 App 是谁签名的”。</p>
-<p class="wx-paragraph">在 <a class="wx-link" href="https://developer.apple.com/account/resources/certificates/list">Certificates, Identifiers &amp; Profiles</a> 中：</p>
-<ol class="wx-list"><li>点击右上角的“+”</li><li>选择 Developer ID Application</li><li>选择现代的 G2 Sub-CA</li><li>上传 CSR 文件</li><li>点击 Continue</li><li>下载 .cer 文件</li><li>双击 .cer，安装到“登录”钥匙串</li></ol>
-<p class="wx-paragraph">不要把 Developer ID Application 和 Developer ID Installer 混在一起。本文分发的是 App 和 DMG，应该使用 Application 证书。</p>
-<h2 class="wx-section">第三步：生成 CSR，并确认私钥配对</h2>
-<p class="wx-paragraph">打开 macOS 的“钥匙串访问”。</p>
-<p class="wx-paragraph">注意：菜单在 Mac 屏幕最顶部，不是在钥匙串访问窗口内部。</p>
-<p class="wx-paragraph">选择：</p>
-<pre class="wx-code"><code class="language-text">钥匙串访问
+</style></head><body><main class="wx-article"><h1 class="wx-title" style="margin:0 0 26px;color:#111;font-size:34px;line-height:1.2;letter-spacing:-.02em;font-weight:700">macOS DMG 独立分发完整指南</h1>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">如果你做了一个 Mac 应用，想把它发给客户、同事或朋友，通常会遇到两个问题：</p>
+<ol class="wx-list" style="margin:8px 0 20px;padding-left:26px;font-size:16px"><li>为什么双击 App 会出现“无法验证开发者”？</li><li>为什么一个看起来正常的 DMG，到了别人电脑上却被 Gatekeeper 拦截？</li></ol>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">这篇文章从零开始，带你完成个人开发者的 macOS 独立分发流程。</p>
+<figure class="wx-figure" style="margin:26px 0 30px;text-align:center"><img class="wx-image" style="display:block;width:100%;max-width:100%;height:auto;margin:0 auto;border-radius:16px;box-shadow:0 8px 26px rgba(0,0,0,.10)" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDUyMCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIGRlc2MiPgogIDx0aXRsZSBpZD0idGl0bGUiPkFwcGxlIERldmVsb3BlciDms6jlhozmtYHnqIs8L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj7ku47ms6jlhowgQXBwbGUgRGV2ZWxvcGVyIOWIsOiOt+W+lyBEZXZlbG9wZXIgSUQgQXBwbGljYXRpb24g6K+B5Lmm55qE5Zub5q2l5rWB56iLPC9kZXNjPgogIDxyZWN0IHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjUyMCIgcng9IjMyIiBmaWxsPSIjZjVmNWY3Ii8+CiAgPHRleHQgeD0iNzIiIHk9Ijc4IiBmaWxsPSIjMWQxZDFmIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzMCIgZm9udC13ZWlnaHQ9IjcwMCI+5LuO5rOo5YaM5YiwIERldmVsb3BlciBJRDwvdGV4dD4KICA8dGV4dCB4PSI3MiIgeT0iMTE2IiBmaWxsPSIjNmU2ZTczIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCI+5Liq5Lq65byA5Y+R6ICF55qEIG1hY09TIOeLrOeri+WIhuWPkeWHhuWkhzwvdGV4dD4KICA8ZyBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiI+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg3MiAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIzOCIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+MTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7ms6jlhozotKblj7c8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxMzQiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuWKoOWFpSBBcHBsZTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9IjE2MCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+RGV2ZWxvcGVyIFByb2dyYW08L3RleHQ+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNTAgMTgyKSI+CiAgICAgIDxyZWN0IHdpZHRoPSIyMzgiIGhlaWdodD0iMjAwIiByeD0iMjIiIGZpbGw9IiNmZmYiLz4KICAgICAgPGNpcmNsZSBjeD0iNDIiIGN5PSI0NCIgcj0iMjIiIGZpbGw9IiMwNmMiLz48dGV4dCB4PSIzNSIgeT0iNTIiIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMjAiIGZvbnQtd2VpZ2h0PSI3MDAiPjI8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSI5OCIgZmlsbD0iIzFkMWQxZiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCI+5a6M5oiQ5a6h5qC4PC90ZXh0PgogICAgICA8dGV4dCB4PSIyOCIgeT0iMTM0IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7nvLTotLnlubbnrYnlvoU8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxNjAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuehruiupOmCruS7tjwvdGV4dD4KICAgIDwvZz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDYyOCAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIzOCIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+MzwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7liJvlu7ogQ1NSPC90ZXh0PgogICAgICA8dGV4dCB4PSIyOCIgeT0iMTM0IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7nlJ/miJDlr4bpkqXlr7k8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxNjAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuW5tuS4iuS8oOivt+axguaWh+S7tjwvdGV4dD4KICAgIDwvZz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDkwNiAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIyMiIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+NDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7kuIvovb3or4HkuaY8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxMzQiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPkRldmVsb3BlciBJRDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9IjE2MCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+QXBwbGljYXRpb248L3RleHQ+CiAgICA8L2c+CiAgPC9nPgogIDxnIHN0cm9rZT0iIzA2YyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggZD0iTTMxMCAyODJoMzIiLz48cGF0aCBkPSJNNTg4IDI4MmgzMiIvPjxwYXRoIGQ9Ik04NjYgMjgyaDMyIi8+CiAgPC9nPgo8L3N2Zz4K" alt="从注册到 Developer ID"><figcaption class="wx-caption" style="display:block;margin-top:9px;color:#6e6e73;font-size:13px;line-height:1.45">从注册到 Developer ID</figcaption></figure>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">先说结论：直接分发不等于上架 App Store</h2>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">如果你的目标是把 DMG 放到自己的网站、GitHub Releases、网盘或公司内网中，<strong class="wx-strong" style="font-weight:700;color:#111">不需要把 App 上架到 Mac App Store</strong>。</p>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">但是，你仍然需要：</p>
+<ul class="wx-list" style="margin:8px 0 20px;padding-left:26px;font-size:16px"><li>Apple Developer Program 会员资格</li><li>Developer ID Application 证书</li><li>Hardened Runtime（硬化运行时）</li><li>Apple Notary Service 公证</li><li>最终的 Gatekeeper 验证</li></ul>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">App Store 分发是另一套流程，使用的是 Mac App Distribution 证书和 App Store Connect。本文只讨论“自由分发 DMG”。</p>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">第一步：注册 Apple Developer Program</h2>
+<figure class="wx-figure" style="margin:26px 0 30px;text-align:center"><img class="wx-image" style="display:block;width:100%;max-width:100%;height:auto;margin:0 auto;border-radius:16px;box-shadow:0 8px 26px rgba(0,0,0,.10)" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDUyMCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIGRlc2MiPgogIDx0aXRsZSBpZD0idGl0bGUiPkFwcGxlIERldmVsb3BlciDms6jlhozmtYHnqIs8L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj7ku47ms6jlhowgQXBwbGUgRGV2ZWxvcGVyIOWIsOiOt+W+lyBEZXZlbG9wZXIgSUQgQXBwbGljYXRpb24g6K+B5Lmm55qE5Zub5q2l5rWB56iLPC9kZXNjPgogIDxyZWN0IHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjUyMCIgcng9IjMyIiBmaWxsPSIjZjVmNWY3Ii8+CiAgPHRleHQgeD0iNzIiIHk9Ijc4IiBmaWxsPSIjMWQxZDFmIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzMCIgZm9udC13ZWlnaHQ9IjcwMCI+5LuO5rOo5YaM5YiwIERldmVsb3BlciBJRDwvdGV4dD4KICA8dGV4dCB4PSI3MiIgeT0iMTE2IiBmaWxsPSIjNmU2ZTczIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCI+5Liq5Lq65byA5Y+R6ICF55qEIG1hY09TIOeLrOeri+WIhuWPkeWHhuWkhzwvdGV4dD4KICA8ZyBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiI+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg3MiAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIzOCIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+MTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7ms6jlhozotKblj7c8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxMzQiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuWKoOWFpSBBcHBsZTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9IjE2MCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+RGV2ZWxvcGVyIFByb2dyYW08L3RleHQ+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNTAgMTgyKSI+CiAgICAgIDxyZWN0IHdpZHRoPSIyMzgiIGhlaWdodD0iMjAwIiByeD0iMjIiIGZpbGw9IiNmZmYiLz4KICAgICAgPGNpcmNsZSBjeD0iNDIiIGN5PSI0NCIgcj0iMjIiIGZpbGw9IiMwNmMiLz48dGV4dCB4PSIzNSIgeT0iNTIiIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMjAiIGZvbnQtd2VpZ2h0PSI3MDAiPjI8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSI5OCIgZmlsbD0iIzFkMWQxZiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCI+5a6M5oiQ5a6h5qC4PC90ZXh0PgogICAgICA8dGV4dCB4PSIyOCIgeT0iMTM0IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7nvLTotLnlubbnrYnlvoU8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxNjAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuehruiupOmCruS7tjwvdGV4dD4KICAgIDwvZz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDYyOCAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIzOCIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+MzwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7liJvlu7ogQ1NSPC90ZXh0PgogICAgICA8dGV4dCB4PSIyOCIgeT0iMTM0IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7nlJ/miJDlr4bpkqXlr7k8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxNjAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuW5tuS4iuS8oOivt+axguaWh+S7tjwvdGV4dD4KICAgIDwvZz4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDkwNiAxODIpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjIyMiIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0iI2ZmZiIvPgogICAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjQ0IiByPSIyMiIgZmlsbD0iIzA2YyIvPjx0ZXh0IHg9IjM1IiB5PSI1MiIgZmlsbD0iI2ZmZiIgZm9udC1zaXplPSIyMCIgZm9udC13ZWlnaHQ9IjcwMCI+NDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9Ijk4IiBmaWxsPSIjMWQxZDFmIiBmb250LXNpemU9IjIxIiBmb250LXdlaWdodD0iNzAwIj7kuIvovb3or4HkuaY8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI4IiB5PSIxMzQiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPkRldmVsb3BlciBJRDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjgiIHk9IjE2MCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+QXBwbGljYXRpb248L3RleHQ+CiAgICA8L2c+CiAgPC9nPgogIDxnIHN0cm9rZT0iIzA2YyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggZD0iTTMxMCAyODJoMzIiLz48cGF0aCBkPSJNNTg4IDI4MmgzMiIvPjxwYXRoIGQ9Ik04NjYgMjgyaDMyIi8+CiAgPC9nPgo8L3N2Zz4K" alt="Apple Developer 注册流程"><figcaption class="wx-caption" style="display:block;margin-top:9px;color:#6e6e73;font-size:13px;line-height:1.45">Apple Developer 注册流程</figcaption></figure>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">打开 <a class="wx-link" style="color:#06c;text-decoration:none;border-bottom:1px solid rgba(0,102,204,.25)" href="https://developer.apple.com/programs/">Apple Developer Program</a>，使用你的 Apple ID 注册并加入 Apple Developer Program。</p>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">个人开发者通常需要支付每年 99 美元的会员费用，具体金额可能会根据地区和税费显示不同。缴费成功并通过审核后，你会收到 Apple 的确认邮件。</p>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">个人账号就可以完成本文的流程，不需要注册公司账号。</p>
+<h3 class="wx-subsection" style="margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650">注册时你需要准备什么</h3>
+<ul class="wx-list" style="margin:8px 0 20px;padding-left:26px;font-size:16px"><li>一个已开启双重认证的 Apple ID</li><li>可支付年费的支付方式</li><li>真实姓名和联系方式</li><li>能接收邮件的邮箱</li><li>一台用于生成 CSR 和保存私钥的 Mac</li></ul>
+<h3 class="wx-subsection" style="margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650">重要提醒</h3>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">Apple Developer 会员资格不是“上架 App Store”的专属门票。对于本文的独立分发场景，它的核心用途是让你能够创建 Developer ID 证书并使用公证服务。</p>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">第二步：创建 Developer ID Application 证书</h2>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">证书解决的是“这个 App 是谁签名的”。</p>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">在 <a class="wx-link" style="color:#06c;text-decoration:none;border-bottom:1px solid rgba(0,102,204,.25)" href="https://developer.apple.com/account/resources/certificates/list">Certificates, Identifiers &amp; Profiles</a> 中：</p>
+<ol class="wx-list" style="margin:8px 0 20px;padding-left:26px;font-size:16px"><li>点击右上角的“+”</li><li>选择 Developer ID Application</li><li>选择现代的 G2 Sub-CA</li><li>上传 CSR 文件</li><li>点击 Continue</li><li>下载 .cer 文件</li><li>双击 .cer，安装到“登录”钥匙串</li></ol>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">不要把 Developer ID Application 和 Developer ID Installer 混在一起。本文分发的是 App 和 DMG，应该使用 Application 证书。</p>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">第三步：生成 CSR，并确认私钥配对</h2>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">打开 macOS 的“钥匙串访问”。</p>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">注意：菜单在 Mac 屏幕最顶部，不是在钥匙串访问窗口内部。</p>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">选择：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-text">钥匙串访问
   → 证书助理
   → 从证书颁发机构请求证书</code></pre>
-<p class="wx-paragraph">填写：</p>
-<div class="wx-table-wrap"><table class="wx-table"><thead><tr><th>字段</th><th>填写内容</th></tr></thead><tbody><tr><td>用户电子邮件地址</td><td>你的 Apple ID 邮箱</td></tr><tr><td>常用名称</td><td>例如：Your Name Developer ID</td></tr><tr><td>CA 电子邮件地址</td><td>留空</td></tr><tr><td>请求是</td><td>存储到磁盘</td></tr></tbody></table></div>
-<p class="wx-paragraph">生成 CSR 后，私钥会留在“登录”钥匙串里。下载 Apple 返回的 .cer 后，双击安装。</p>
-<p class="wx-paragraph">最终在“钥匙串访问 → 登录 → 我的证书”中确认：证书左边可以展开，并且下面有对应私钥。</p>
-<p class="wx-paragraph">终端检查：</p>
-<pre class="wx-code"><code class="language-bash">security find-identity -v -p codesigning</code></pre>
-<p class="wx-paragraph">你应该看到类似：</p>
-<pre class="wx-code"><code class="language-text">Developer ID Application: Your Name (TEAM_ID)</code></pre>
-<p class="wx-paragraph">如果只看到证书，展开后没有私钥，说明证书和 CSR 不是同一对，需要重新生成。</p>
-<h2 class="wx-section">第四步：准备公证凭据</h2>
-<p class="wx-paragraph">公证服务需要验证你的 Apple 账号。</p>
-<h3 class="wx-subsection">创建 App 专用密码</h3>
-<p class="wx-paragraph">打开 <a class="wx-link" href="https://account.apple.com/">Apple Account</a>，进入：</p>
-<pre class="wx-code"><code class="language-text">登录与安全
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">填写：</p>
+<div class="wx-table-wrap" style="margin:20px 0;overflow-x:auto"><table class="wx-table" style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr><th>字段</th><th>填写内容</th></tr></thead><tbody><tr><td>用户电子邮件地址</td><td>你的 Apple ID 邮箱</td></tr><tr><td>常用名称</td><td>例如：Your Name Developer ID</td></tr><tr><td>CA 电子邮件地址</td><td>留空</td></tr><tr><td>请求是</td><td>存储到磁盘</td></tr></tbody></table></div>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">生成 CSR 后，私钥会留在“登录”钥匙串里。下载 Apple 返回的 .cer 后，双击安装。</p>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">最终在“钥匙串访问 → 登录 → 我的证书”中确认：证书左边可以展开，并且下面有对应私钥。</p>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">终端检查：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">security find-identity -v -p codesigning</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">你应该看到类似：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-text">Developer ID Application: Your Name (TEAM_ID)</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">如果只看到证书，展开后没有私钥，说明证书和 CSR 不是同一对，需要重新生成。</p>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">第四步：准备公证凭据</h2>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">公证服务需要验证你的 Apple 账号。</p>
+<h3 class="wx-subsection" style="margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650">创建 App 专用密码</h3>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">打开 <a class="wx-link" style="color:#06c;text-decoration:none;border-bottom:1px solid rgba(0,102,204,.25)" href="https://account.apple.com/">Apple Account</a>，进入：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-text">登录与安全
   → App 专用密码
   → 生成 App 专用密码</code></pre>
-<p class="wx-paragraph">这串密码不是 Apple ID 主密码，也不是 Mac 登录密码。</p>
-<h3 class="wx-subsection">将凭据保存到钥匙串</h3>
-<p class="wx-paragraph">把下面的占位符替换成自己的信息：</p>
-<pre class="wx-code"><code class="language-bash">xcrun notarytool store-credentials &quot;HTMLStudio-notary&quot; \
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">这串密码不是 Apple ID 主密码，也不是 Mac 登录密码。</p>
+<h3 class="wx-subsection" style="margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650">将凭据保存到钥匙串</h3>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">把下面的占位符替换成自己的信息：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">xcrun notarytool store-credentials &quot;HTMLStudio-notary&quot; \
   --apple-id &quot;&lt;APPLE_ID&gt;&quot; \
   --team-id &quot;&lt;TEAM_ID&gt;&quot;</code></pre>
-<p class="wx-paragraph">命令提示输入密码时，粘贴刚才生成的 App 专用密码。</p>
-<p class="wx-paragraph">验证凭据：</p>
-<pre class="wx-code"><code class="language-bash">xcrun notarytool history \
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">命令提示输入密码时，粘贴刚才生成的 App 专用密码。</p>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">验证凭据：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">xcrun notarytool history \
   --keychain-profile &quot;HTMLStudio-notary&quot;</code></pre>
-<h2 class="wx-section">第五步：构建并签名 App</h2>
-<p class="wx-paragraph">进入项目目录：</p>
-<pre class="wx-code"><code class="language-bash">cd &quot;/path/to/html-doc-center&quot;</code></pre>
-<p class="wx-paragraph">设置本次构建变量：</p>
-<pre class="wx-code"><code class="language-bash">SIGNING_IDENTITY=&quot;Developer ID Application: Your Name (TEAM_ID)&quot;
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">第五步：构建并签名 App</h2>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">进入项目目录：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">cd &quot;/path/to/html-doc-center&quot;</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">设置本次构建变量：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">SIGNING_IDENTITY=&quot;Developer ID Application: Your Name (TEAM_ID)&quot;
 VERSION=&quot;$(tr -d &#x27;[:space:]&#x27; &lt; VERSION)&quot;
 APP=&quot;dist/HTMLStudio.app&quot;
 DMG=&quot;dist/HTMLStudio-$VERSION-macos-arm64.dmg&quot;</code></pre>
-<p class="wx-paragraph">先删除旧产物：</p>
-<pre class="wx-code"><code class="language-bash">rm -rf build dist HTMLStudio.spec</code></pre>
-<p class="wx-paragraph">安装构建依赖：</p>
-<pre class="wx-code"><code class="language-bash">python3 -m pip install -r requirements-build.txt</code></pre>
-<p class="wx-paragraph">构建 App，并让 PyInstaller 签名内部框架、动态库和可执行文件：</p>
-<pre class="wx-code"><code class="language-bash">python3 build.py \
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">先删除旧产物：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">rm -rf build dist HTMLStudio.spec</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">安装构建依赖：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">python3 -m pip install -r requirements-build.txt</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">构建 App，并让 PyInstaller 签名内部框架、动态库和可执行文件：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">python3 build.py \
   --version &quot;$VERSION&quot; \
   --codesign-identity &quot;$SIGNING_IDENTITY&quot;</code></pre>
-<p class="wx-paragraph">签名前清除无关扩展属性：</p>
-<pre class="wx-code"><code class="language-bash">xattr -cr &quot;$APP&quot;</code></pre>
-<p class="wx-paragraph">对外层 App 开启 Hardened Runtime 并加时间戳：</p>
-<pre class="wx-code"><code class="language-bash">codesign --force \
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">签名前清除无关扩展属性：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">xattr -cr &quot;$APP&quot;</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">对外层 App 开启 Hardened Runtime 并加时间戳：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">codesign --force \
   --timestamp \
   --options runtime \
   --entitlements packaging/macos/entitlements.plist \
   --sign &quot;$SIGNING_IDENTITY&quot; \
   &quot;$APP&quot;</code></pre>
-<p class="wx-paragraph">严格验证：</p>
-<pre class="wx-code"><code class="language-bash">codesign --verify \
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">严格验证：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">codesign --verify \
   --deep \
   --strict \
   --verbose=2 \
   &quot;$APP&quot;</code></pre>
-<p class="wx-paragraph">成功时应该看到：</p>
-<pre class="wx-code"><code class="language-text">valid on disk
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">成功时应该看到：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-text">valid on disk
 satisfies its Designated Requirement</code></pre>
-<p class="wx-paragraph">检查 Apple Silicon 架构：</p>
-<pre class="wx-code"><code class="language-bash">lipo -archs &quot;$APP/Contents/MacOS/HTMLStudio&quot;</code></pre>
-<p class="wx-paragraph">应该输出：</p>
-<pre class="wx-code"><code class="language-text">arm64</code></pre>
-<p class="wx-paragraph">从这一步开始，不要再向 App 包内部写入配置、日志或其他文件。</p>
-<h2 class="wx-section">第六步：创建并签名 DMG</h2>
-<p class="wx-paragraph">先准备 DMG 展示目录：</p>
-<pre class="wx-code"><code class="language-bash">rm -rf build/dmg-root
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">检查 Apple Silicon 架构：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">lipo -archs &quot;$APP/Contents/MacOS/HTMLStudio&quot;</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">应该输出：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-text">arm64</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">从这一步开始，不要再向 App 包内部写入配置、日志或其他文件。</p>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">第六步：创建并签名 DMG</h2>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">先准备 DMG 展示目录：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">rm -rf build/dmg-root
 mkdir -p build/dmg-root
 ditto &quot;$APP&quot; &quot;build/dmg-root/HTMLStudio.app&quot;
 ln -s /Applications &quot;build/dmg-root/Applications&quot;</code></pre>
-<p class="wx-paragraph">创建 DMG：</p>
-<pre class="wx-code"><code class="language-bash">hdiutil create \
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">创建 DMG：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">hdiutil create \
   -volname &quot;HTML Studio&quot; \
   -srcfolder &quot;build/dmg-root&quot; \
   -format UDZO \
   -ov \
   &quot;$DMG&quot;</code></pre>
-<p class="wx-paragraph">对最终 DMG 单独签名：</p>
-<pre class="wx-code"><code class="language-bash">codesign --force \
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">对最终 DMG 单独签名：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">codesign --force \
   --timestamp \
   --sign &quot;$SIGNING_IDENTITY&quot; \
   &quot;$DMG&quot;</code></pre>
-<p class="wx-paragraph">验证 DMG：</p>
-<pre class="wx-code"><code class="language-bash">codesign --verify --verbose=4 &quot;$DMG&quot;
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">验证 DMG：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">codesign --verify --verbose=4 &quot;$DMG&quot;
 hdiutil verify &quot;$DMG&quot;</code></pre>
-<p class="wx-paragraph">记录公证前哈希：</p>
-<pre class="wx-code"><code class="language-bash">shasum -a 256 &quot;$DMG&quot;</code></pre>
-<p class="wx-paragraph">这一步之后不要重新生成、重新签名或修改 DMG。签名后改内容，会导致 codesign 或公证失败。</p>
-<figure class="wx-figure"><img class="wx-image" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDUyMCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIGRlc2MiPgogIDx0aXRsZSBpZD0idGl0bGUiPm1hY09TIERNRyDliIblj5HmtYHnqIs8L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj7ku47mnoTlu7ogQXBwIOWIsOetvuWQjeOAgeWFrOivgeOAgemSieWFpeelqOaNruWSjOWIhuWPkeeahOa1geeoizwvZGVzYz4KICA8cmVjdCB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI1MjAiIHJ4PSIzMiIgZmlsbD0iI2Y1ZjVmNyIvPgogIDx0ZXh0IHg9IjcyIiB5PSI3OCIgZmlsbD0iIzFkMWQxZiIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sQmxpbmtNYWNTeXN0ZW1Gb250LEhlbHZldGljYSBOZXVlLEFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPuS4gOadoeWPr+WkjeeUqOeahOWPkeW4g+mTvui3rzwvdGV4dD4KICA8dGV4dCB4PSI3MiIgeT0iMTE2IiBmaWxsPSIjNmU2ZTczIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCI+562+5ZCN5ZCO55qEIEFwcCDkuI3lho3mlLnlhpnvvIzlho3mj5DkuqQgQXBwbGUg5YWs6K+BPC90ZXh0PgogIDxnIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLEJsaW5rTWFjU3lzdGVtRm9udCxIZWx2ZXRpY2EgTmV1ZSxBcmlhbCxzYW5zLXNlcmlmIj4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDcyIDE4MikiPgogICAgICA8cmVjdCB3aWR0aD0iMTkwIiBoZWlnaHQ9IjE5MCIgcng9IjIyIiBmaWxsPSIjZmZmIi8+CiAgICAgIDxjaXJjbGUgY3g9IjM4IiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjMDZjIi8+PHRleHQgeD0iMzIiIHk9IjQ3IiBmaWxsPSIjZmZmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIj4xPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iOTQiIGZpbGw9IiMxZDFkMWYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI3MDAiPkJ1aWxkPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iMTMwIiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7mnoTlu7ogQXBwPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iMTU2IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7lh4blpIfotYTmupA8L3RleHQ+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyOTAgMTgyKSI+CiAgICAgIDxyZWN0IHdpZHRoPSIxOTAiIGhlaWdodD0iMTkwIiByeD0iMjIiIGZpbGw9IiNmZmYiLz4KICAgICAgPGNpcmNsZSBjeD0iMzgiIGN5PSI0MCIgcj0iMjAiIGZpbGw9IiMwNmMiLz48dGV4dCB4PSIzMiIgeT0iNDciIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiPjI8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSI5NCIgZmlsbD0iIzFkMWQxZiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCI+U2lnbjwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjEzMCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+562+5ZCNIEFwcDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjE1NiIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+5byA5ZCv56Gs5YyW6L+Q6KGM5pe2PC90ZXh0PgogICAgPC9nPgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTA4IDE4MikiPgogICAgICA8cmVjdCB3aWR0aD0iMTkwIiBoZWlnaHQ9IjE5MCIgcng9IjIyIiBmaWxsPSIjZmZmIi8+CiAgICAgIDxjaXJjbGUgY3g9IjM4IiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjMDZjIi8+PHRleHQgeD0iMzIiIHk9IjQ3IiBmaWxsPSIjZmZmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIj4zPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iOTQiIGZpbGw9IiMxZDFkMWYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI3MDAiPlBhY2thZ2U8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSIxMzAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuWItuS9nCBETUc8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSIxNTYiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuWGjeetvuWQjSBETUc8L3RleHQ+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg3MjYgMTgyKSI+CiAgICAgIDxyZWN0IHdpZHRoPSIxOTAiIGhlaWdodD0iMTkwIiByeD0iMjIiIGZpbGw9IiNmZmYiLz4KICAgICAgPGNpcmNsZSBjeD0iMzgiIGN5PSI0MCIgcj0iMjAiIGZpbGw9IiMwNmMiLz48dGV4dCB4PSIzMiIgeT0iNDciIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiPjQ8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSI5NCIgZmlsbD0iIzFkMWQxZiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCI+Tm90YXJpemU8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSIxMzAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuaPkOS6pCBBcHBsZTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjE1NiIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+562J5b6FIEFjY2VwdGVkPC90ZXh0PgogICAgPC9nPgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTQ0IDE4MikiPgogICAgICA8cmVjdCB3aWR0aD0iMTg0IiBoZWlnaHQ9IjE5MCIgcng9IjIyIiBmaWxsPSIjZmZmIi8+CiAgICAgIDxjaXJjbGUgY3g9IjM4IiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjMDZjIi8+PHRleHQgeD0iMzIiIHk9IjQ3IiBmaWxsPSIjZmZmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIj41PC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iOTQiIGZpbGw9IiMxZDFkMWYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI3MDAiPlN0YXBsZTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjEzMCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+6ZKJ5YWl56Wo5o2uPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iMTU2IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7oh6rnlLHliIblj5E8L3RleHQ+CiAgICA8L2c+CiAgPC9nPgogIDxnIHN0cm9rZT0iIzA2YyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggZD0iTTI2MiAyNzdoMjgiLz48cGF0aCBkPSJNNDgwIDI3N2gyOCIvPjxwYXRoIGQ9Ik02OTggMjc3aDI4Ii8+PHBhdGggZD0iTTkxNiAyNzdoMjgiLz4KICA8L2c+Cjwvc3ZnPgo=" alt="macOS DMG 发布链路"><figcaption class="wx-caption">macOS DMG 发布链路</figcaption></figure>
-<h2 class="wx-section">第七步：使用 notarytool 提交公证</h2>
-<p class="wx-paragraph">提交时只提交一次：</p>
-<pre class="wx-code"><code class="language-bash">xcrun notarytool submit &quot;$DMG&quot; \
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">记录公证前哈希：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">shasum -a 256 &quot;$DMG&quot;</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">这一步之后不要重新生成、重新签名或修改 DMG。签名后改内容，会导致 codesign 或公证失败。</p>
+<figure class="wx-figure" style="margin:26px 0 30px;text-align:center"><img class="wx-image" style="display:block;width:100%;max-width:100%;height:auto;margin:0 auto;border-radius:16px;box-shadow:0 8px 26px rgba(0,0,0,.10)" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDUyMCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIGRlc2MiPgogIDx0aXRsZSBpZD0idGl0bGUiPm1hY09TIERNRyDliIblj5HmtYHnqIs8L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj7ku47mnoTlu7ogQXBwIOWIsOetvuWQjeOAgeWFrOivgeOAgemSieWFpeelqOaNruWSjOWIhuWPkeeahOa1geeoizwvZGVzYz4KICA8cmVjdCB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI1MjAiIHJ4PSIzMiIgZmlsbD0iI2Y1ZjVmNyIvPgogIDx0ZXh0IHg9IjcyIiB5PSI3OCIgZmlsbD0iIzFkMWQxZiIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sQmxpbmtNYWNTeXN0ZW1Gb250LEhlbHZldGljYSBOZXVlLEFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPuS4gOadoeWPr+WkjeeUqOeahOWPkeW4g+mTvui3rzwvdGV4dD4KICA8dGV4dCB4PSI3MiIgeT0iMTE2IiBmaWxsPSIjNmU2ZTczIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSxCbGlua01hY1N5c3RlbUZvbnQsSGVsdmV0aWNhIE5ldWUsQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCI+562+5ZCN5ZCO55qEIEFwcCDkuI3lho3mlLnlhpnvvIzlho3mj5DkuqQgQXBwbGUg5YWs6K+BPC90ZXh0PgogIDxnIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLEJsaW5rTWFjU3lzdGVtRm9udCxIZWx2ZXRpY2EgTmV1ZSxBcmlhbCxzYW5zLXNlcmlmIj4KICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDcyIDE4MikiPgogICAgICA8cmVjdCB3aWR0aD0iMTkwIiBoZWlnaHQ9IjE5MCIgcng9IjIyIiBmaWxsPSIjZmZmIi8+CiAgICAgIDxjaXJjbGUgY3g9IjM4IiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjMDZjIi8+PHRleHQgeD0iMzIiIHk9IjQ3IiBmaWxsPSIjZmZmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIj4xPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iOTQiIGZpbGw9IiMxZDFkMWYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI3MDAiPkJ1aWxkPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iMTMwIiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7mnoTlu7ogQXBwPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iMTU2IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7lh4blpIfotYTmupA8L3RleHQ+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyOTAgMTgyKSI+CiAgICAgIDxyZWN0IHdpZHRoPSIxOTAiIGhlaWdodD0iMTkwIiByeD0iMjIiIGZpbGw9IiNmZmYiLz4KICAgICAgPGNpcmNsZSBjeD0iMzgiIGN5PSI0MCIgcj0iMjAiIGZpbGw9IiMwNmMiLz48dGV4dCB4PSIzMiIgeT0iNDciIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiPjI8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSI5NCIgZmlsbD0iIzFkMWQxZiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCI+U2lnbjwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjEzMCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+562+5ZCNIEFwcDwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjE1NiIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+5byA5ZCv56Gs5YyW6L+Q6KGM5pe2PC90ZXh0PgogICAgPC9nPgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTA4IDE4MikiPgogICAgICA8cmVjdCB3aWR0aD0iMTkwIiBoZWlnaHQ9IjE5MCIgcng9IjIyIiBmaWxsPSIjZmZmIi8+CiAgICAgIDxjaXJjbGUgY3g9IjM4IiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjMDZjIi8+PHRleHQgeD0iMzIiIHk9IjQ3IiBmaWxsPSIjZmZmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIj4zPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iOTQiIGZpbGw9IiMxZDFkMWYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI3MDAiPlBhY2thZ2U8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSIxMzAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuWItuS9nCBETUc8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSIxNTYiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuWGjeetvuWQjSBETUc8L3RleHQ+CiAgICA8L2c+CiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg3MjYgMTgyKSI+CiAgICAgIDxyZWN0IHdpZHRoPSIxOTAiIGhlaWdodD0iMTkwIiByeD0iMjIiIGZpbGw9IiNmZmYiLz4KICAgICAgPGNpcmNsZSBjeD0iMzgiIGN5PSI0MCIgcj0iMjAiIGZpbGw9IiMwNmMiLz48dGV4dCB4PSIzMiIgeT0iNDciIGZpbGw9IiNmZmYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiPjQ8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSI5NCIgZmlsbD0iIzFkMWQxZiIgZm9udC1zaXplPSIyMSIgZm9udC13ZWlnaHQ9IjcwMCI+Tm90YXJpemU8L3RleHQ+CiAgICAgIDx0ZXh0IHg9IjI0IiB5PSIxMzAiIGZpbGw9IiM2ZTZlNzMiIGZvbnQtc2l6ZT0iMTYiPuaPkOS6pCBBcHBsZTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjE1NiIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+562J5b6FIEFjY2VwdGVkPC90ZXh0PgogICAgPC9nPgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTQ0IDE4MikiPgogICAgICA8cmVjdCB3aWR0aD0iMTg0IiBoZWlnaHQ9IjE5MCIgcng9IjIyIiBmaWxsPSIjZmZmIi8+CiAgICAgIDxjaXJjbGUgY3g9IjM4IiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjMDZjIi8+PHRleHQgeD0iMzIiIHk9IjQ3IiBmaWxsPSIjZmZmIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iNzAwIj41PC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iOTQiIGZpbGw9IiMxZDFkMWYiIGZvbnQtc2l6ZT0iMjEiIGZvbnQtd2VpZ2h0PSI3MDAiPlN0YXBsZTwvdGV4dD4KICAgICAgPHRleHQgeD0iMjQiIHk9IjEzMCIgZmlsbD0iIzZlNmU3MyIgZm9udC1zaXplPSIxNiI+6ZKJ5YWl56Wo5o2uPC90ZXh0PgogICAgICA8dGV4dCB4PSIyNCIgeT0iMTU2IiBmaWxsPSIjNmU2ZTczIiBmb250LXNpemU9IjE2Ij7oh6rnlLHliIblj5E8L3RleHQ+CiAgICA8L2c+CiAgPC9nPgogIDxnIHN0cm9rZT0iIzA2YyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggZD0iTTI2MiAyNzdoMjgiLz48cGF0aCBkPSJNNDgwIDI3N2gyOCIvPjxwYXRoIGQ9Ik02OTggMjc3aDI4Ii8+PHBhdGggZD0iTTkxNiAyNzdoMjgiLz4KICA8L2c+Cjwvc3ZnPgo=" alt="macOS DMG 发布链路"><figcaption class="wx-caption" style="display:block;margin-top:9px;color:#6e6e73;font-size:13px;line-height:1.45">macOS DMG 发布链路</figcaption></figure>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">第七步：使用 notarytool 提交公证</h2>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">提交时只提交一次：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">xcrun notarytool submit &quot;$DMG&quot; \
   --keychain-profile &quot;HTMLStudio-notary&quot; \
   --wait</code></pre>
-<p class="wx-paragraph">记下 Apple 返回的提交 ID：</p>
-<pre class="wx-code"><code class="language-text">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code></pre>
-<p class="wx-paragraph">如果本地等待时间太长，可以按 Control + C 结束本地等待，但不要再次提交同一个 DMG。服务器上的任务会继续处理。</p>
-<p class="wx-paragraph">查询状态：</p>
-<pre class="wx-code"><code class="language-bash">xcrun notarytool info &quot;&lt;SUBMISSION_ID&gt;&quot; \
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">记下 Apple 返回的提交 ID：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-text">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">如果本地等待时间太长，可以按 Control + C 结束本地等待，但不要再次提交同一个 DMG。服务器上的任务会继续处理。</p>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">查询状态：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">xcrun notarytool info &quot;&lt;SUBMISSION_ID&gt;&quot; \
   --keychain-profile &quot;HTMLStudio-notary&quot;</code></pre>
-<h3 class="wx-subsection">Accepted</h3>
-<p class="wx-paragraph">下载公证日志。即使 Accepted，也建议检查日志中的 warning：</p>
-<pre class="wx-code"><code class="language-bash">xcrun notarytool log &quot;&lt;SUBMISSION_ID&gt;&quot; \
+<h3 class="wx-subsection" style="margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650">Accepted</h3>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">下载公证日志。即使 Accepted，也建议检查日志中的 warning：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">xcrun notarytool log &quot;&lt;SUBMISSION_ID&gt;&quot; \
   --keychain-profile &quot;HTMLStudio-notary&quot; \
   &quot;notarization-log.json&quot;</code></pre>
-<h3 class="wx-subsection">Invalid</h3>
-<p class="wx-paragraph">打开 notarization-log.json 查看具体错误。修复后必须从“清理旧产物”开始重新构建、签名和提交，不要在原 DMG 上直接补签。</p>
-<h3 class="wx-subsection">In Progress</h3>
-<p class="wx-paragraph">继续使用 notarytool info 查询。不要重复提交第三份、第四份 DMG。</p>
-<h2 class="wx-section">第八步：Staple 公证票据</h2>
-<p class="wx-paragraph">只有状态为 Accepted 才执行：</p>
-<pre class="wx-code"><code class="language-bash">xcrun stapler staple -v &quot;$DMG&quot;
+<h3 class="wx-subsection" style="margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650">Invalid</h3>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">打开 notarization-log.json 查看具体错误。修复后必须从“清理旧产物”开始重新构建、签名和提交，不要在原 DMG 上直接补签。</p>
+<h3 class="wx-subsection" style="margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650">In Progress</h3>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">继续使用 notarytool info 查询。不要重复提交第三份、第四份 DMG。</p>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">第八步：Staple 公证票据</h2>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">只有状态为 Accepted 才执行：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">xcrun stapler staple -v &quot;$DMG&quot;
 xcrun stapler validate -v &quot;$DMG&quot;</code></pre>
-<p class="wx-paragraph">注意：staple 会修改 DMG，所以 stapling 后的哈希和提交前哈希不同是正常现象。</p>
-<h2 class="wx-section">第九步：Gatekeeper 最终验证</h2>
-<p class="wx-paragraph">执行完整验证：</p>
-<pre class="wx-code"><code class="language-bash">codesign --verify --verbose=4 &quot;$DMG&quot;
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">注意：staple 会修改 DMG，所以 stapling 后的哈希和提交前哈希不同是正常现象。</p>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">第九步：Gatekeeper 最终验证</h2>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">执行完整验证：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-bash">codesign --verify --verbose=4 &quot;$DMG&quot;
 hdiutil verify &quot;$DMG&quot;
 spctl --assess \
   --type open \
   --context context:primary-signature \
   --verbose=4 \
   &quot;$DMG&quot;</code></pre>
-<p class="wx-paragraph">成功时通常会看到：</p>
-<pre class="wx-code"><code class="language-text">accepted
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">成功时通常会看到：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-text">accepted
 source=Notarized Developer ID</code></pre>
-<p class="wx-paragraph">最终可自由分发的文件是：</p>
-<pre class="wx-code"><code class="language-text">dist/HTMLStudio-2.6.0-macos-arm64.dmg</code></pre>
-<p class="wx-paragraph">你可以把它放到 GitHub Releases、自己的网站、网盘或公司内网，不需要上传 Mac App Store。</p>
-<h2 class="wx-section">常见问题</h2>
-<h3 class="wx-subsection">“输入登录钥匙串密码”是什么？</h3>
-<p class="wx-paragraph">这是当前 Mac 用户的登录密码，不是 Apple ID 密码，也不是 App 专用密码。</p>
-<h3 class="wx-subsection">为什么签名验证失败？</h3>
-<p class="wx-paragraph">最常见原因是签名完成后，流程又改写了 Contents/Resources、日志、配置或隐藏文件。修复方式是清理 build 和 dist，重新构建，并严格按照“签名 App → 创建 DMG → 签名 DMG → 公证”的顺序执行。</p>
-<h3 class="wx-subsection">为什么长时间 In Progress？</h3>
-<p class="wx-paragraph">先用提交 ID 查询状态。不要重复提交。新账号、首次公证或 Apple 后台队列都可能增加等待时间；如果持续异常，查看 <a class="wx-link" href="https://developer.apple.com/system-status/">Apple Developer 系统状态</a> 并联系 <a class="wx-link" href="https://developer.apple.com/contact/">Apple Developer Support</a>。</p>
-<h2 class="wx-section">最终检查清单</h2>
-<ul class="wx-list"><li>[ ] Apple Developer Program 已注册并通过审核</li><li>[ ] Developer ID Application 证书与私钥已配对</li><li>[ ] App 开启 Hardened Runtime</li><li>[ ] App 签名验证通过</li><li>[ ] DMG 创建后单独签名</li><li>[ ] DMG 公证状态为 Accepted</li><li>[ ] stapler validate 通过</li><li>[ ] codesign、hdiutil、spctl 全部通过</li><li>[ ] 只分发最终的 DMG，不分发 unnotarized 文件</li></ul></main></body></html>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">最终可自由分发的文件是：</p>
+<pre class="wx-code" style="margin:20px 0;padding:17px 18px;overflow-x:auto;color:#f5f5f7;background:#1d1d1f;border-radius:14px;font:13px/1.6 SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre"><code class="language-text">dist/HTMLStudio-2.6.0-macos-arm64.dmg</code></pre>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">你可以把它放到 GitHub Releases、自己的网站、网盘或公司内网，不需要上传 Mac App Store。</p>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">常见问题</h2>
+<h3 class="wx-subsection" style="margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650">“输入登录钥匙串密码”是什么？</h3>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">这是当前 Mac 用户的登录密码，不是 Apple ID 密码，也不是 App 专用密码。</p>
+<h3 class="wx-subsection" style="margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650">为什么签名验证失败？</h3>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">最常见原因是签名完成后，流程又改写了 Contents/Resources、日志、配置或隐藏文件。修复方式是清理 build 和 dist，重新构建，并严格按照“签名 App → 创建 DMG → 签名 DMG → 公证”的顺序执行。</p>
+<h3 class="wx-subsection" style="margin:30px 0 10px;color:#111;font-size:20px;line-height:1.4;font-weight:650">为什么长时间 In Progress？</h3>
+<p class="wx-paragraph" style="margin:0 0 18px;font-size:16px">先用提交 ID 查询状态。不要重复提交。新账号、首次公证或 Apple 后台队列都可能增加等待时间；如果持续异常，查看 <a class="wx-link" style="color:#06c;text-decoration:none;border-bottom:1px solid rgba(0,102,204,.25)" href="https://developer.apple.com/system-status/">Apple Developer 系统状态</a> 并联系 <a class="wx-link" style="color:#06c;text-decoration:none;border-bottom:1px solid rgba(0,102,204,.25)" href="https://developer.apple.com/contact/">Apple Developer Support</a>。</p>
+<h2 class="wx-section" style="margin:42px 0 14px;color:#111;font-size:25px;line-height:1.3;letter-spacing:-.01em;font-weight:700">最终检查清单</h2>
+<ul class="wx-list" style="margin:8px 0 20px;padding-left:26px;font-size:16px"><li>[ ] Apple Developer Program 已注册并通过审核</li><li>[ ] Developer ID Application 证书与私钥已配对</li><li>[ ] App 开启 Hardened Runtime</li><li>[ ] App 签名验证通过</li><li>[ ] DMG 创建后单独签名</li><li>[ ] DMG 公证状态为 Accepted</li><li>[ ] stapler validate 通过</li><li>[ ] codesign、hdiutil、spctl 全部通过</li><li>[ ] 只分发最终的 DMG，不分发 unnotarized 文件</li></ul></main></body></html>

@@ -323,4 +323,3 @@ git commit -m "docs: document reusable WeChat publishing workflow"
 - Images are embedded as data URIs and survive copying from the browser into a WeChat draft.
 - No formatter path reads credentials, uploads content, modifies the app, or requires a network connection.
 - Focused and full tests pass, and real browser copy verification is recorded before claiming completion.
-

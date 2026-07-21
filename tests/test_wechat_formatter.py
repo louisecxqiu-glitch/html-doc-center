@@ -23,10 +23,32 @@ def test_render_markdown_has_safe_typography_and_escaped_text(tmp_path: Path):
         "# 标题\n\n正文 <script>alert(1)</script> **重点**\n\n> 提醒",
         tmp_path,
     )
-    assert '<h1 class="wx-title">标题</h1>' in html
+    assert 'class="wx-title" style=' in html and '>标题</h1>' in html
     assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html
-    assert '<strong class="wx-strong">重点</strong>' in html
-    assert '<blockquote class="wx-quote">提醒</blockquote>' in html
+    assert 'class="wx-strong" style=' in html and '>重点</strong>' in html
+    assert 'class="wx-quote" style=' in html and '>提醒</blockquote>' in html
+    assert 'class="wx-title" style=' in html
+    assert 'class="wx-paragraph" style=' in html
+
+
+def test_render_markdown_keeps_links_inside_code_spans(tmp_path: Path):
+    html = render_markdown('`[x](https://example.com)`', tmp_path)
+    assert '<code class="wx-inline-code" style=' in html
+    assert '>[x](https://example.com)</code>' in html
+    assert "\x00" not in html
+
+
+def test_render_markdown_recognizes_adjacent_block_boundaries(tmp_path: Path):
+    image = tmp_path / "shot.png"
+    image.write_bytes(ONE_PIXEL_PNG)
+    html = render_markdown(
+        "before\n![shot](shot.png)\n---\n| A | B |\n| --- | --- |\n| 1 | 2 |",
+        tmp_path,
+    )
+    assert '<p class="wx-paragraph"' in html
+    assert '<figure class="wx-figure"' in html
+    assert '<hr class="wx-rule"' in html
+    assert '<table class="wx-table"' in html
 
 
 def test_render_markdown_escapes_link_content_once(tmp_path: Path):
@@ -51,7 +73,8 @@ def test_render_markdown_embeds_local_image(tmp_path: Path):
 
 def test_render_markdown_styles_inline_code():
     html = render_markdown("运行 `codesign --verify`。", Path("."))
-    assert '<code class="wx-inline-code">codesign --verify</code>' in html
+    assert '<code class="wx-inline-code" style=' in html
+    assert '>codesign --verify</code>' in html
 
 
 def test_convert_image_rejects_missing_or_unsupported_file(tmp_path: Path):
