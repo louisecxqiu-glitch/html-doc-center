@@ -356,7 +356,7 @@ window.LOCALE_ZH = {
   'iframe.fallback.title': '文件加载失败或超时',
   'iframe.fallback.retry': '↻ 重试',
   'iframe.fallback.close': '关闭',
-  'iframe.fallback.reasons_html': '可能原因：<br>· 文件被删除或移动（试试 R 刷新目录）<br>· 文件 &gt; 100MB（超出 server 限制）<br>· scan_roots 配置变更（去 ⚙️ 设置检查）<br>· 服务进程异常（终端重启 python3 server.py）',
+  'iframe.fallback.reasons_html': '可能原因：<br>· 文件被删除或移动（试试 R 刷新目录）<br>· 文件过大或结构复杂（渲染超过 30 秒）<br>· JS 报错阻塞了 saver-runtime（按 F12 → 控制台查看详情）<br>· scan_roots 配置变更（去 ⚙️ 设置检查）<br>· 服务进程异常（终端重启 python3 server.py）',
 
   // ====== scan root row ======
   'scan.toggle.disable_tooltip': '点击关闭扫描',

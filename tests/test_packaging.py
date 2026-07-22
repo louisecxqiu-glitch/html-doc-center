@@ -23,7 +23,7 @@ release_macos = load_module("release_macos", ROOT / "scripts" / "release_macos.p
 
 def test_release_version_is_semantic_version():
     version = build.read_version()
-    assert version == "2.7.0"
+    assert version == "2.8.0"
     assert release_macos.validate_version(version) == version
 
 

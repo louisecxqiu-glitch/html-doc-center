@@ -9,7 +9,7 @@ def read(relative_path: str) -> str:
 
 
 def test_release_version_and_verifier_are_present():
-    assert read("VERSION").strip() == "2.7.0"
+    assert read("VERSION").strip() == "2.8.0"
     verifier = ROOT / "scripts" / "verify_release.py"
     assert verifier.is_file()
     assert "VERSION" in verifier.read_text(encoding="utf-8")

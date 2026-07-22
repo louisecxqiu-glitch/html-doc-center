@@ -1,6 +1,7 @@
 """Tests for _dropbox/ cleanup logic."""
 import os
 import time
+from pathlib import Path
 
 
 def test_dropbox_cleanup_removes_7day_old_files(tmp_workspace, monkeypatch):
@@ -64,3 +65,21 @@ def test_dropbox_cleanup_skips_subdirs(tmp_workspace, monkeypatch):
 
     server.cleanup_dropbox()
     assert subdir.exists(), "子目录不应被 cleanup 删除"
+
+
+def test_frozen_dropbox_never_writes_to_app_working_directory(tmp_path, monkeypatch):
+    """打包后的 App 必须把运行数据写到用户目录，不能写入可能位于 App 包内的 cwd。"""
+    import server
+
+    app_working_dir = tmp_path / "HTMLStudio.app" / "Contents" / "MacOS"
+    app_working_dir.mkdir(parents=True)
+    config_dir = tmp_path / "user-config"
+
+    monkeypatch.chdir(app_working_dir)
+    monkeypatch.setattr(server.sys, "frozen", True, raising=False)
+    monkeypatch.setattr(server, "CONFIG_DIR", str(config_dir))
+
+    dropbox = server.get_dropbox_dir()
+
+    assert dropbox == Path(config_dir) / "_dropbox"
+    assert not (app_working_dir / "_dropbox").exists()

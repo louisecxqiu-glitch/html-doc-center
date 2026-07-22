@@ -1495,7 +1495,8 @@
           <div class="iframe-fallback-hint" data-i18n-html="iframe.fallback.reasons_html">
             Possible reasons:<br>
             · File deleted or moved (try R to refresh)<br>
-            · File &gt; 100MB (server limit)<br>
+            · Large/complex file (&gt;30s render time)<br>
+            · JS error blocked saver-runtime (press F12 → Console for details)<br>
             · scan_roots config changed (check ⚙️ Settings)<br>
             · Server process error (restart python3 server.py)
           </div>
@@ -1672,13 +1673,20 @@
     const bep = $("#btn-export-pdf"); if (bep) bep.disabled = false;
     setStatus(window.i18n.t("status.loading"), "");
 
-    // v1.10.6: iframe 加载兜底 — 12 秒超时未拿到 ready 消息就显示重试 UI
+    // v1.10.6→v1.20.2: iframe 加载兜底 — 30 秒超时未拿到 ready 消息就显示重试 UI（大文件/复杂文件需要更多时间）
     if (state._iframeLoadTimer) clearTimeout(state._iframeLoadTimer);
     state._iframeLoadTimer = setTimeout(() => {
       if (!state.iframeReady) {
+        // v1.20.2: 超时前尝试检测 iframe 是否已加载 DOM 但脚本未 ready
+        try {
+          const fDoc = frame.contentDocument || frame.contentWindow?.document;
+          if (fDoc && fDoc.readyState === "complete") {
+            console.warn("[iframe] DOM complete but no ready message — saver-runtime may have errored");
+          }
+        } catch(e) { /* cross-origin, ignore */ }
         showIframeFallback(node);
       }
-    }, 12000);
+    }, 30000);
     // load 事件作为软指示（成功也清掉 fallback）
     frame.onerror = () => showIframeFallback(node);
 

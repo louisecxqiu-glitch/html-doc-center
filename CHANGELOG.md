@@ -8,9 +8,9 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased] — 工作区范围与发布上下文
+## v2.8.0 — 工作区范围与发布可靠性
 
-*预备功能 · 尚未打正式 tag*
+*2026-07-22 · 23:27 · 多工作区聚焦、公众号发布可靠性与桌面运行数据保护*
 
 ### 👤 用户故事
 
@@ -34,9 +34,15 @@ This project follows [Semantic Versioning](https://semver.org/).
 - **根因**：Markdown 壳页把 API 地址固定为配置中的 `localhost:9901`，没有使用实际提供编辑器的请求地址。
 - **解法**：服务端将当前请求的 scheme 与 host 注入 Markdown 壳页；自动快照、历史记录与恢复接口始终回到同一个运行中的本地服务。
 
+**🐛 Bug 修复 · 大文件加载与桌面运行目录**
+
+- 将复杂 HTML 的加载兜底时间从 12 秒调整为 30 秒，并在 DOM 已完成但运行时未就绪时输出明确诊断信息。
+- 补充中英文失败原因，区分复杂文件渲染、运行时脚本错误、扫描根变更与服务异常。
+- 增加冻结应用回归测试，确保 Windows/macOS 打包应用把 `_dropbox` 写入用户配置目录，不会写入 App/EXE 工作目录。
+
 **📐 发布状态**
 
-- 此功能处于隔离预备分支，自动化测试已通过；正式发布前仍需完成剩余真实浏览器回归。
+- 已完成自动化测试与真实浏览器回归；通过 `v2.8.0` 标签触发 GitHub Actions，生成 Windows EXE、已签名公证的 macOS arm64 DMG 和 SHA-256 校验文件。
 
 
 ## v2.7.0 — Markdown 公众号排版模式

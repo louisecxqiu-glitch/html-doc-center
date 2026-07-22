@@ -370,7 +370,7 @@ window.LOCALE_EN = {
   'iframe.fallback.title': 'File failed to load or timed out',
   'iframe.fallback.retry': '↻ Retry',
   'iframe.fallback.close': 'Close',
-  'iframe.fallback.reasons_html': 'Possible reasons:<br>· File deleted or moved (try R to refresh)<br>· File &gt; 100MB (server limit)<br>· scan_roots config changed (check ⚙️ Settings)<br>· Server process error (restart python3 server.py)',
+  'iframe.fallback.reasons_html': 'Possible reasons:<br>· File deleted or moved (try R to refresh)<br>· Large/complex file (&gt;30s render time)<br>· JS error blocked saver-runtime (press F12 → Console for details)<br>· scan_roots config changed (check ⚙️ Settings)<br>· Server process error (restart python3 server.py)',
 
   // ====== scan root row ======
   'scan.toggle.disable_tooltip': 'Click to disable scanning',
