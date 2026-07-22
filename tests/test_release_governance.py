@@ -21,6 +21,7 @@ def test_ci_runs_for_pull_requests_and_main_without_release_credentials():
     assert "pull_request:" in ci
     assert "main" in ci
     assert "pytest" in ci
+    assert "pytest-asyncio" in ci
     assert "compileall" in ci
     assert "verify_release.py --check" in ci
     assert "MACOS_CERTIFICATE" not in ci
