@@ -276,6 +276,10 @@ window.LOCALE_EN = {
   'tree.load_failed_html': '<div class="tree-empty">Load failed: {msg}</div>',
   'breadcrumb.empty_html': '<span class="breadcrumb-empty">👈 Pick an HTML document from the sidebar</span>',
   'breadcrumb.path_tooltip': 'Click to copy relative path; hold to copy absolute path',
+  'workspace.scope.label': 'Workspace',
+  'workspace.scope.all': 'All workspaces',
+  'workspace.context.prefix': '⌂ Workspace:',
+  'scan.overlap.hint': 'Nested workspaces detected. All workspaces shows the parent once; choose a workspace above to focus it.',
 
   // ====== scan list ======
   'scan.empty_html': '<div style="font-size:12px;color:var(--text-3);padding:10px 0">No scan directories yet</div>',

@@ -152,8 +152,10 @@ Or configure via the in-app Settings panel (⚙️ button).
 ## Development
 
 ```bash
-# Run in dev mode (auto-reload)
-python3 server.py --dev
+# Run the local development server without opening a browser automatically
+python3 server.py --no-open-browser
+
+# Then open http://127.0.0.1:9901 in your browser
 
 # Run tests
 python3 -m pytest tests/
