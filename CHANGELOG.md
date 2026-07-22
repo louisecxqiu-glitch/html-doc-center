@@ -28,6 +28,12 @@ This project follows [Semantic Versioning](https://semver.org/).
 - 当浏览器不支持 `ClipboardItem` 时，公众号「复制 HTML」改为复制富文本选区，不再把 HTML 源码直接粘贴给读者。
 - 修正 README 的本地启动命令，避免引导用户使用未支持的 `--dev` 参数。
 
+**🐛 Bug 修复 · Markdown 自动快照**
+
+- **问题**：当通过 `--port` 使用非默认端口，或通过 `127.0.0.1` 访问时，Markdown 编辑后的自动快照会显示“快照失败（离线？）”。
+- **根因**：Markdown 壳页把 API 地址固定为配置中的 `localhost:9901`，没有使用实际提供编辑器的请求地址。
+- **解法**：服务端将当前请求的 scheme 与 host 注入 Markdown 壳页；自动快照、历史记录与恢复接口始终回到同一个运行中的本地服务。
+
 **📐 发布状态**
 
 - 此功能处于隔离预备分支，自动化测试已通过；正式发布前仍需完成剩余真实浏览器回归。
