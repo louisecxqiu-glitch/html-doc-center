@@ -52,6 +52,8 @@
     recent: [],
     /** 当前侧栏展示的工作区；__all__ 代表所有根目录。 */
     workspaceScope: null,
+    /** 是否已从本浏览器读取到用户主动保存的工作区选择。 */
+    workspaceScopePreferenceKnown: null,
   };
 
   const WORKSPACE_SCOPE_KEY = "doccenter.workspaceScope.v1";
@@ -76,8 +78,14 @@
 
   function getWorkspaceScope(roots = state.tree) {
     if (state.workspaceScope === null) {
-      try { state.workspaceScope = localStorage.getItem(WORKSPACE_SCOPE_KEY) || WORKSPACE_SCOPE_ALL; }
-      catch (_) { state.workspaceScope = WORKSPACE_SCOPE_ALL; }
+      try {
+        const savedScope = localStorage.getItem(WORKSPACE_SCOPE_KEY);
+        state.workspaceScope = savedScope || WORKSPACE_SCOPE_ALL;
+        state.workspaceScopePreferenceKnown = Boolean(savedScope);
+      } catch (_) {
+        state.workspaceScope = WORKSPACE_SCOPE_ALL;
+        state.workspaceScopePreferenceKnown = false;
+      }
     }
     const valid = roots.length === 0 || state.workspaceScope === WORKSPACE_SCOPE_ALL || roots.some(root => rootPath(root) === state.workspaceScope);
     if (!valid) state.workspaceScope = WORKSPACE_SCOPE_ALL;
@@ -110,6 +118,18 @@
     return state.tree
       .filter(root => isPathInside(absPath, rootPath(root)))
       .sort((a, b) => rootPath(b).length - rootPath(a).length)[0] || null;
+  }
+
+  function initializeWorkspaceScopeForCurrentFile() {
+    getWorkspaceScope();
+    if (state.workspaceScopePreferenceKnown || !state.currentFile) return;
+    const root = findWorkspaceForPath(state.currentFile.absPath);
+    if (!root) return;
+    state.workspaceScope = rootPath(root);
+    try { localStorage.setItem(WORKSPACE_SCOPE_KEY, state.workspaceScope); } catch (_) {}
+    renderWorkspaceScope();
+    renderTree(getDisplayRoots());
+    refreshWorkspaceContext();
   }
 
   function refreshWorkspaceContext() {
@@ -2804,6 +2824,7 @@
     if (workspaceScope) {
       workspaceScope.addEventListener("change", () => {
         state.workspaceScope = workspaceScope.value || WORKSPACE_SCOPE_ALL;
+        state.workspaceScopePreferenceKnown = true;
         try { localStorage.setItem(WORKSPACE_SCOPE_KEY, state.workspaceScope); } catch (_) {}
         const search = $("#search-box");
         if (search) search.value = "";
@@ -3417,6 +3438,7 @@
       // F3 尝试恢复上次会话（如有则自动打开文件）
       await tryRestoreLastSession();
     }
+    initializeWorkspaceScopeForCurrentFile();
 
     // v1.13.0: 监听 URL 参数变化（同标签内链接切换、popstate）
     window.addEventListener("popstate", () => { tryOpenFromUrl(); });

@@ -22,6 +22,15 @@ def test_workspace_scope_contract_is_present():
     assert ".workspace-scope" in STYLE
 
 
+def test_first_open_prefers_the_opened_files_workspace_without_a_saved_choice():
+    assert "workspaceScopePreferenceKnown" in APP
+    assert "function initializeWorkspaceScopeForCurrentFile" in APP
+    assert "if (state.workspaceScopePreferenceKnown || !state.currentFile) return;" in APP
+    assert "state.workspaceScope = rootPath(root);" in APP
+    assert "initializeWorkspaceScopeForCurrentFile();" in APP
+    assert "state.workspaceScopePreferenceKnown = true;" in APP
+
+
 def test_workspace_root_path_keeps_directory_boundary_semantics():
     assert 'if (r === "/") return p.startsWith("/");' in APP
 
