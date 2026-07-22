@@ -83,6 +83,15 @@ code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.92em; ba
 .breadcrumb-empty { color: #6B7280; font-weight: 400; }
 .breadcrumb b { color: var(--gold); font-weight: 600; margin-right: 8px; }
 .breadcrumb small { color: #6B7280 !important; font-size: 11px; }
+.workspace-context {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--gold-soft);
+  font-size: 11px;
+  flex-shrink: 1;
+}
 
 /* 状态 */
 .editor-status {
@@ -272,6 +281,26 @@ code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.92em; ba
   transition: border-color 0.15s;
 }
 .sidebar-header input:focus { border-color: var(--gold); }
+.workspace-scope-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 2px;
+  color: var(--text-3);
+  font-size: 11px;
+}
+.workspace-scope {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text-1);
+  font: inherit;
+  padding: 4px 6px;
+}
+.workspace-scope:focus { outline: 2px solid rgba(201,169,97,.35); border-color: var(--gold); }
+.scan-overlap-hint { color: #9a6700; }
 
 /* 目录区 + 添加目录按钮（搜索框右侧） */
 /* v1.16: 侧边栏快速添加文件夹按钮 */

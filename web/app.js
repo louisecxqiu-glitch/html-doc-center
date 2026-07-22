@@ -50,7 +50,118 @@
     },
     /** v1.10.7: 最近打开文件 [{path, name, ts}]，最多 10 条，localStorage 持久化 */
     recent: [],
+    /** 当前侧栏展示的工作区；__all__ 代表所有根目录。 */
+    workspaceScope: null,
+    /** 是否已从本浏览器读取到用户主动保存的工作区选择。 */
+    workspaceScopePreferenceKnown: null,
   };
+
+  const WORKSPACE_SCOPE_KEY = "doccenter.workspaceScope.v1";
+  const WORKSPACE_SCOPE_ALL = "__all__";
+
+  function normalizeWorkspacePath(path) {
+    const raw = String(path || "");
+    const normalized = raw.replace(/[\\/]+$/, "");
+    return normalized || raw;
+  }
+
+  function rootPath(root) {
+    return normalizeWorkspacePath(root && (root.path || root.abs_path));
+  }
+
+  function isPathInside(path, root) {
+    const p = normalizeWorkspacePath(path);
+    const r = normalizeWorkspacePath(root);
+    if (r === "/") return p.startsWith("/");
+    return Boolean(p && r) && (p === r || p.startsWith(r + "/") || p.startsWith(r + "\\"));
+  }
+
+  function getWorkspaceScope(roots = state.tree) {
+    if (state.workspaceScope === null) {
+      try {
+        const savedScope = localStorage.getItem(WORKSPACE_SCOPE_KEY);
+        state.workspaceScope = savedScope || WORKSPACE_SCOPE_ALL;
+        state.workspaceScopePreferenceKnown = Boolean(savedScope);
+      } catch (_) {
+        state.workspaceScope = WORKSPACE_SCOPE_ALL;
+        state.workspaceScopePreferenceKnown = false;
+      }
+    }
+    const valid = roots.length === 0 || state.workspaceScope === WORKSPACE_SCOPE_ALL || roots.some(root => rootPath(root) === state.workspaceScope);
+    if (!valid) state.workspaceScope = WORKSPACE_SCOPE_ALL;
+    return state.workspaceScope;
+  }
+
+  function getDisplayRoots(roots = state.tree, scope = getWorkspaceScope(roots)) {
+    if (scope !== WORKSPACE_SCOPE_ALL) {
+      return roots.filter(root => rootPath(root) === scope);
+    }
+    return roots.filter(root => !roots.some(other =>
+      other !== root && rootPath(root) !== rootPath(other) && isPathInside(rootPath(root), rootPath(other))
+    ));
+  }
+
+  function workspaceLabel(root, roots = state.tree) {
+    const path = rootPath(root);
+    const name = root && root.name ? root.name : (path.split(/[/\\]/).pop() || path);
+    const sameName = roots.filter(other => {
+      const otherPath = rootPath(other);
+      const otherName = other && other.name ? other.name : (otherPath.split(/[/\\]/).pop() || otherPath);
+      return otherName === name;
+    }).length > 1;
+    if (!sameName) return name;
+    const parts = path.split(/[/\\]/).filter(Boolean);
+    return parts.length > 1 ? `${parts.slice(-2).join("/")}` : name;
+  }
+
+  function findWorkspaceForPath(absPath) {
+    return state.tree
+      .filter(root => isPathInside(absPath, rootPath(root)))
+      .sort((a, b) => rootPath(b).length - rootPath(a).length)[0] || null;
+  }
+
+  function initializeWorkspaceScopeForCurrentFile() {
+    getWorkspaceScope();
+    if (state.workspaceScopePreferenceKnown || !state.currentFile) return;
+    const root = findWorkspaceForPath(state.currentFile.absPath);
+    if (!root) return;
+    state.workspaceScope = rootPath(root);
+    try { localStorage.setItem(WORKSPACE_SCOPE_KEY, state.workspaceScope); } catch (_) {}
+    renderWorkspaceScope();
+    renderTree(getDisplayRoots());
+    refreshWorkspaceContext();
+  }
+
+  function refreshWorkspaceContext() {
+    const el = $("#workspace-context");
+    if (!el) return;
+    const scope = getWorkspaceScope();
+    const root = state.currentFile ? findWorkspaceForPath(state.currentFile.absPath) : state.tree.find(item => rootPath(item) === scope);
+    const label = root ? workspaceLabel(root) : window.i18n.t("workspace.scope.all");
+    const prefix = window.i18n.t("workspace.context.prefix");
+    el.textContent = `${prefix} ${label}`;
+    el.title = root ? rootPath(root) : "";
+    el.hidden = false;
+  }
+
+  function renderWorkspaceScope() {
+    const select = $("#workspace-scope");
+    if (!select) return;
+    const scope = getWorkspaceScope();
+    select.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = WORKSPACE_SCOPE_ALL;
+    all.textContent = window.i18n.t("workspace.scope.all");
+    select.appendChild(all);
+    state.tree.forEach(root => {
+      const option = document.createElement("option");
+      option.value = rootPath(root);
+      option.textContent = workspaceLabel(root);
+      option.title = rootPath(root);
+      select.appendChild(option);
+    });
+    select.value = scope;
+  }
 
   // ───────────── v1.10.7 最近打开 Recent Files ─────────────
   const RECENT_KEY = "doc_center_recent_v1";
@@ -178,7 +289,9 @@
           if (typeof renderFavoritesSection === "function") renderFavoritesSection();
           if (typeof renderRecentSection === "function") renderRecentSection();
           // 重渲染目录树（含 stats、空态、icon title）—— 数据已在内存
-          if (typeof renderTree === "function" && state && state.tree) renderTree(state.tree);
+          if (typeof renderWorkspaceScope === "function") renderWorkspaceScope();
+          if (typeof renderTree === "function" && state && state.tree) renderTree();
+          if (typeof refreshWorkspaceContext === "function") refreshWorkspaceContext();
           // 面包屑 meta 信息（快照数 / 时间）
           if (state && state.currentFile && typeof refreshBreadcrumbMeta === "function") {
             try { refreshBreadcrumbMeta(); } catch (_) {}
@@ -464,6 +577,14 @@
     });
   }
 
+  function markCurrentFileInTree() {
+    if (!state.currentFile) return;
+    $$(".tree-node-label[data-file]").forEach(label => {
+      label.classList.toggle("active", label.dataset.file === state.currentFile.absPath);
+    });
+    scrollToActiveFile();
+  }
+
   // ───────────── 目录树加载/渲染 ─────────────
   async function loadTree(force = false, silent = false) {
     try {
@@ -471,13 +592,20 @@
       const d = await r.json();
       if (!d.ok) throw new Error(d.error || window.i18n.t("status.load_failed"));
       const newRoots = d.roots || [];
-      if (silent && state.tree && state.tree.length > 0) {
-        // v1.10.0: 静默刷新走 diff 路径，保持展开/选中/编辑态
-        diffTreeAndPatch(newRoots);
-      } else {
-        renderTree(newRoots);
-      }
+      const oldRoots = state.tree || [];
+      const oldScope = getWorkspaceScope(oldRoots);
+      const oldDisplayRoots = getDisplayRoots(oldRoots, oldScope);
       state.tree = newRoots;
+      renderWorkspaceScope();
+      const newScope = getWorkspaceScope(newRoots);
+      const newDisplayRoots = getDisplayRoots(newRoots, newScope);
+      if (silent && oldRoots.length > 0 && oldScope === newScope) {
+        // v1.10.0: 静默刷新走 diff 路径，保持展开/选中/编辑态
+        diffTreeAndPatch(oldDisplayRoots, newDisplayRoots);
+      } else {
+        renderTree(newDisplayRoots);
+      }
+      refreshWorkspaceContext();
     } catch (e) {
       if (silent) {
         // 静默模式失败不打扰用户
@@ -639,7 +767,7 @@
    *   - 更深层级保留真实嵌套结构（不再扁平化！）
    *   - 打开文件时：只展开当前文件所在的那一条父链（由 scrollToActiveFile 处理）
    */
-  function renderTree(roots) {
+  function renderTree(roots = getDisplayRoots()) {
     const container = $("#tree");
     container.innerHTML = "";
     if (!roots.length) {
@@ -662,6 +790,7 @@
     }
     $("#tree-stats").textContent = window.i18n.t("tree.stats.summary", { roots: roots.length, files: totalFiles });
     applySearchFilter();
+    markCurrentFileInTree();
   }
 
   // ───────────── v1.10.0: 目录树自动刷新（diff + 轮询）─────────────
@@ -682,8 +811,8 @@
   }
 
   /** 静默 diff：对比新旧 tree，只增删变化的 DOM 节点，保持现有展开/选中态。 */
-  function diffTreeAndPatch(newRoots) {
-    const oldFlat = flatTree(state.tree);
+  function diffTreeAndPatch(oldRoots, newRoots) {
+    const oldFlat = flatTree(oldRoots);
     const newFlat = flatTree(newRoots);
     const added = [];
     const removed = [];
@@ -1464,6 +1593,7 @@
       name: node.name,
       relPath: node.path,
     };
+    refreshWorkspaceContext();
     state.isDirty = false;
     state.iframeReady = false;
     // v1.16.1: 正常打开文件时隐藏拖拽临时预览状态条
@@ -1480,12 +1610,7 @@
     } catch (e) { /* 静默 */ }
 
     // 高亮
-    $$(".tree-node-label.active").forEach(n => n.classList.remove("active"));
-    $$(".tree-node-label[data-file]").forEach(n => {
-      if (n.dataset.file === node.abs_path) n.classList.add("active");
-    });
-    // 展开高亮所在分支
-    scrollToActiveFile();
+    markCurrentFileInTree();
 
     // 面包屑
     const bc = $("#breadcrumb");
@@ -1789,6 +1914,7 @@
     }
     state.currentFile = null;
     state.isDirty = false;
+    refreshWorkspaceContext();
     $$(".tree-node-label.active").forEach(n => n.classList.remove("active"));
     $("#empty-state").style.display = "flex";
     $("#doc-frame").style.display = "none";
@@ -1885,6 +2011,16 @@
     }
 
     disabledList.forEach(appendRow);
+
+    const overlapHint = $("#scan-overlap-hint");
+    if (overlapHint) {
+      const enabledPaths = enabledList.map(item => normalizeWorkspacePath(item.path));
+      const hasOverlap = enabledPaths.some((path, index) => enabledPaths.some((other, otherIndex) =>
+        index !== otherIndex && path !== other && isPathInside(path, other)
+      ));
+      overlapHint.hidden = !hasOverlap;
+      overlapHint.textContent = hasOverlap ? window.i18n.t("scan.overlap.hint") : "";
+    }
   }
 
   /** 路径中间省略：保留前 N 个字符 + … + 后 M 个字符 */
@@ -2684,6 +2820,18 @@
   function bindEvents() {
     $("#btn-refresh").addEventListener("click", () => { loadTree(true); refreshCurrentFile(); });
     $("#btn-settings").addEventListener("click", openSettings);
+    const workspaceScope = $("#workspace-scope");
+    if (workspaceScope) {
+      workspaceScope.addEventListener("change", () => {
+        state.workspaceScope = workspaceScope.value || WORKSPACE_SCOPE_ALL;
+        state.workspaceScopePreferenceKnown = true;
+        try { localStorage.setItem(WORKSPACE_SCOPE_KEY, state.workspaceScope); } catch (_) {}
+        const search = $("#search-box");
+        if (search) search.value = "";
+        renderTree();
+        refreshWorkspaceContext();
+      });
+    }
 
     // v2.1: 密码保护 — 保存/清除
     const btnSavePwd = $("#btn-save-password");
@@ -3290,6 +3438,7 @@
       // F3 尝试恢复上次会话（如有则自动打开文件）
       await tryRestoreLastSession();
     }
+    initializeWorkspaceScopeForCurrentFile();
 
     // v1.13.0: 监听 URL 参数变化（同标签内链接切换、popstate）
     window.addEventListener("popstate", () => { tryOpenFromUrl(); });

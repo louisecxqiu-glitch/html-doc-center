@@ -66,3 +66,20 @@ def test_md_shell_json_escapes_special_paths(tmp_path):
     path_line = next(line for line in shell.splitlines() if "filePath:" in line)
     assert "&amp;" not in path_line
     assert "\\u0026" in path_line
+
+
+async def test_markdown_shell_uses_the_request_origin_for_snapshots(client, tmp_workspace):
+    """Markdown autosave must target the server address that served the editor."""
+    client.app["config"]["scan_roots"] = [str(tmp_workspace)]
+    article = tmp_workspace / "article.md"
+    article.write_text("# title", encoding="utf-8")
+
+    response = await client.get(
+        "/api/file",
+        params={"path": str(article)},
+        headers={"Host": "127.0.0.1:9904"},
+    )
+    shell = await response.text()
+
+    assert response.status == 200
+    assert 'serverOrigin: "http://127.0.0.1:9904"' in shell

@@ -182,6 +182,7 @@
       gap: 5px;
       margin-left: 4px;
     }
+    .md-wechat-actions[hidden] { display: none; }
     .md-wechat-action {
       border: 1px solid rgba(201,169,97,.55);
       border-radius: 4px;
@@ -371,17 +372,32 @@
         else wechatTimer = setTimeout(run, 250);
       }
 
-      function fallbackCopyText(text) {
-        var ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        var ok = false;
-        try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
-        ta.remove();
-        return ok;
+      function fallbackCopyHtml(html) {
+        var holder = document.createElement("div");
+        holder.contentEditable = "true";
+        holder.setAttribute("aria-hidden", "true");
+        holder.style.position = "fixed";
+        holder.style.left = "-9999px";
+        holder.style.top = "0";
+        holder.style.opacity = "0";
+        holder.innerHTML = html;
+        document.body.appendChild(holder);
+
+        var selection = null;
+        try {
+          selection = window.getSelection();
+          var range = document.createRange();
+          range.selectNodeContents(holder);
+          selection.removeAllRanges();
+          selection.addRange(range);
+          holder.focus();
+          return document.execCommand("copy");
+        } catch (e) {
+          return false;
+        } finally {
+          if (selection) selection.removeAllRanges();
+          holder.remove();
+        }
       }
 
       async function copyWechatHtml() {
@@ -390,15 +406,22 @@
           return false;
         }
         try {
+          var copied = false;
           if (navigator.clipboard && window.ClipboardItem) {
             var item = new ClipboardItem({
               "text/html": new Blob([wechatState.html], { type: "text/html" }),
               "text/plain": new Blob([wechatState.text], { type: "text/plain" })
             });
-            await navigator.clipboard.write([item]);
-          } else if (!fallbackCopyText(wechatState.html)) {
-            throw new Error("当前浏览器不支持富文本复制，HTML 源码复制失败");
+            try {
+              await navigator.clipboard.write([item]);
+              copied = true;
+            } catch (clipboardError) {
+              copied = fallbackCopyHtml(wechatState.html);
+            }
+          } else {
+            copied = fallbackCopyHtml(wechatState.html);
           }
+          if (!copied) throw new Error("无法复制富文本，请授予剪贴板权限，或导出 HTML 后粘贴");
           setWechatStatus("已复制，可粘贴到公众号", false);
           return true;
         } catch (error) {

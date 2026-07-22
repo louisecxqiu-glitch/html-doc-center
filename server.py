@@ -1105,14 +1105,14 @@ def inject_saver(html: str, file_path: str, cfg: dict) -> str:
 MD_EDITOR_TEMPLATE_PATH = os.path.join(WEB_DIR, "md-editor.html")
 
 
-def render_md_shell(md_path: Path, port: int) -> str:
+def render_md_shell(md_path: Path, port: int = 9901, server_origin: str | None = None) -> str:
     """
     v1.3: 把 Markdown 文件内容包装成壳子 HTML 返回。
     壳子是 web/md-editor.html，含 4 个占位符：
       {{MD_CONTENT}}   - MD 原文（HTML 转义后放进 <textarea>）
       {{FILE_NAME}}    - 文件名（展示用）
       {{FILE_PATH}}    - 绝对路径（注入 __DOC_CENTER__.filePath）
-      {{SERVER_ORIGIN}} - http://localhost:{port}
+      {{SERVER_ORIGIN}} - editor page's server origin
     saver-runtime.js 会在壳子加载后通过 __DOC_CENTER__.mode === "md" 走 md 分支。
     """
     import html as html_escape_mod
@@ -1135,13 +1135,14 @@ def render_md_shell(md_path: Path, port: int) -> str:
                 .replace("&", "\\u0026"))
 
     file_path_esc = _json_script_string(str(md_path))
-    server_origin = _json_script_string(f"http://localhost:{port}")
+    origin = server_origin or f"http://localhost:{port}"
+    server_origin_esc = _json_script_string(origin)
 
     return (tpl
             .replace("{{MD_CONTENT}}", md_escaped)
             .replace("{{FILE_NAME}}", file_name_esc)
             .replace("{{FILE_PATH}}", file_path_esc)
-            .replace("{{SERVER_ORIGIN}}", server_origin))
+            .replace("{{SERVER_ORIGIN}}", server_origin_esc))
 
 
 def _render_image_shell(img_path: Path) -> str:
@@ -1226,8 +1227,10 @@ async def handle_file(request):
                 content = f.read()
             injected = inject_saver(content, str(safe), cfg)
         elif suffix == ".md":
-            port = int(cfg.get("port", 9901))
-            injected = render_md_shell(safe, port)
+            injected = render_md_shell(
+                safe,
+                server_origin=f"{request.scheme}://{request.host}",
+            )
         else:
             # v1.15.1: 图片 → 预览壳子（不注入 saver，不可编辑）
             injected = _render_image_shell(safe)

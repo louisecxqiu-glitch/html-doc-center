@@ -20,4 +20,10 @@ def test_wechat_mode_uses_local_format_endpoint_and_rich_clipboard():
     assert "text/html" in MD_EDITOR
     assert "URL.createObjectURL" in MD_EDITOR
     assert '#wechat-preview-frame { display: block; }' in MD_EDITOR
-    assert "fallbackCopyText(wechatState.html)" in MD_EDITOR
+    assert "function fallbackCopyHtml(html)" in MD_EDITOR
+    assert 'holder.contentEditable = "true"' in MD_EDITOR
+    assert "fallbackCopyHtml(wechatState.html)" in MD_EDITOR
+    assert "catch (clipboardError)" in MD_EDITOR
+    assert "copied = fallbackCopyHtml(wechatState.html);" in MD_EDITOR
+    assert "finally" in MD_EDITOR
+    assert '.md-wechat-actions[hidden] { display: none; }' in MD_EDITOR

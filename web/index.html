@@ -38,6 +38,7 @@
     <div class="breadcrumb" id="breadcrumb">
       <span class="breadcrumb-empty" data-i18n="header.breadcrumb.empty">Pick an HTML / Markdown file from the sidebar to begin</span>
     </div>
+    <span id="workspace-context" class="workspace-context" hidden></span>
     <div class="editor-status">
       <span class="status-dot" id="status-dot"></span>
       <span id="status-text" data-i18n="header.status.unopened">Not opened</span>
@@ -79,6 +80,10 @@
             <button data-sort="name_asc" class="sort-menu-item" data-i18n="sidebar.sort.name_asc">🔤 Name</button>
           </div>
         </div>
+      </div>
+      <div class="workspace-scope-row">
+        <label for="workspace-scope" data-i18n="workspace.scope.label">Workspace</label>
+        <select id="workspace-scope" class="workspace-scope"></select>
       </div>
       <div id="search-stat" class="search-stat"></div>
       <!-- v1.11.2: 三 Tab 切换（收藏 / 最近 / 目录） -->
@@ -175,6 +180,7 @@
             </div>
           </div>
           <p class="hint" data-i18n-html="settings.scan.hint">Defaults to <code>outputs/</code>. Add any directory to scan HTML / Markdown in real time.</p>
+          <p id="scan-overlap-hint" class="settings-hint scan-overlap-hint" hidden></p>
         </div>
         <div class="settings-section">
           <h4 data-i18n="settings.refresh.title">📡 Tree auto-refresh</h4>

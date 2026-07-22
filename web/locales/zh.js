@@ -262,6 +262,10 @@ window.LOCALE_ZH = {
   'tree.load_failed_html': '<div class="tree-empty">加载失败：{msg}</div>',
   'breadcrumb.empty_html': '<span class="breadcrumb-empty">👈 左侧选择一个 HTML 文档开始</span>',
   'breadcrumb.path_tooltip': '单击复制相对路径，按住复制绝对路径',
+  'workspace.scope.label': '工作区',
+  'workspace.scope.all': '全部工作区',
+  'workspace.context.prefix': '⌂ 工作区：',
+  'scan.overlap.hint': '检测到父子工作区。为避免重复，全部工作区只展示父目录；可从上方工作区选择器聚焦子目录。',
 
   // ====== scan list ======
   'scan.empty_html': '<div style="font-size:12px;color:var(--text-3);padding:10px 0">还没有扫描目录</div>',
