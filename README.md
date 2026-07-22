@@ -28,8 +28,8 @@ AI coding tools (Claude Code, Cursor, Copilot) generate HTML artifacts constantl
 ### Option 1: Download executable (recommended, zero install)
 
 1. Go to [Releases](https://github.com/louisecxqiu-glitch/html-doc-center/releases)
-2. Download `HTMLStudio-macOS` (Mac) or `HTMLStudio.exe` (Windows)
-3. Double-click to start — browser opens automatically
+2. Download `HTMLStudio-<version>-macos-arm64.dmg` (Apple Silicon Mac) or `HTMLStudio.exe` (Windows)
+3. On Mac, open the notarized DMG and drag **HTML Studio** to Applications; on Windows, double-click the EXE
 
 ### Option 2: Double-click launch (from source)
 

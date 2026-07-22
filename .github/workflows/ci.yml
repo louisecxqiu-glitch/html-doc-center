@@ -1,0 +1,33 @@
+name: Verify HTML Studio
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Test and validate release metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install test and build dependencies
+        run: python3 -m pip install -r requirements-build.txt pytest
+
+      - name: Run tests
+        run: python3 -m pytest -q
+
+      - name: Compile Python entry points
+        run: python3 -m compileall -q server.py build.py scripts/release_macos.py scripts/verify_release.py
+
+      - name: Validate release contract
+        run: python3 scripts/verify_release.py --check

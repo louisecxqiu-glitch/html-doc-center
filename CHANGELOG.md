@@ -30,6 +30,10 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 - 格式化接口沿用 `_resolve_safe()` 路径白名单，只接受 Markdown 文件，不写入源文件、不联网。
 
+**📐 发布**
+
+- 开源桌面版新增 PR/main 自动检查与仅 Tag 触发的 GitHub Release 流程；正式附件包含已公证 macOS arm64 DMG、Windows EXE 与 SHA-256 校验清单。
+
 ## v2.6.0 — 公众号教程排版工具
 
 *2026-07-21 · Markdown 原稿一键生成苹果式公众号 HTML*

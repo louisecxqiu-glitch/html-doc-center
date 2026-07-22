@@ -1,127 +1,177 @@
 #!/usr/bin/env python3
+"""Build HTML Studio for the current platform with PyInstaller.
+
+This command only creates the application bundle/executable. On macOS, use
+``python3 scripts/release_macos.py`` for the signed, notarized DMG.
 """
-build.py — 跨平台 HTML Studio 打包脚本（Mac / Windows / Linux）
-用法: python3 build.py
-依赖: pip install pyinstaller aiohttp
-产出: dist/HTMLStudio (Mac/Linux) 或 dist/HTMLStudio.exe (Windows)
-"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import plistlib
+import shutil
 import subprocess
 import sys
-import os
-import shutil
 from pathlib import Path
 
-# Windows 控制台默认 cp1252 编码无法输出 emoji，强制设为 utf-8
-if sys.stdout.encoding and sys.stdout.encoding.lower() not in ('utf-8', 'utf8'):
-    try:
-        sys.stdout.reconfigure(encoding='utf-8')
-        sys.stderr.reconfigure(encoding='utf-8')
-    except Exception:
-        pass
 
-SCRIPT_DIR = Path(__file__).parent.resolve()
+ROOT = Path(__file__).resolve().parent
 APP_NAME = "HTMLStudio"
+DISPLAY_NAME = "HTML Studio"
+BUNDLE_ID = "com.louisqiu.htmlstudio"
+MINIMUM_MACOS = "12.0"
+VERSION_FILE = ROOT / "VERSION"
+ICON_FILE = ROOT / "assets" / "HTMLStudio.icns"
 IS_WINDOWS = sys.platform == "win32"
-# PyInstaller --add-data 分隔符：Windows 用 ; Mac/Linux 用 :
-SEP = ";" if IS_WINDOWS else ":"
+IS_MACOS = sys.platform == "darwin"
+DATA_SEPARATOR = ";" if IS_WINDOWS else ":"
 
-def main():
-    os.chdir(SCRIPT_DIR)
-    print(f"🔨 Building {APP_NAME} with PyInstaller...")
-    print(f"   Platform: {sys.platform}")
-    print(f"   Source: {SCRIPT_DIR}")
 
-    # 检查依赖
-    try:
-        import PyInstaller
-    except ImportError:
-        print("📦 Installing PyInstaller...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller", "--quiet"])
-    try:
-        import aiohttp
-    except ImportError:
-        print("📦 Installing aiohttp...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "aiohttp", "--quiet"])
+def read_version() -> str:
+    version = VERSION_FILE.read_text(encoding="utf-8").strip()
+    if not version:
+        raise RuntimeError(f"Version file is empty: {VERSION_FILE}")
+    return version
 
-    # 清理旧构建
-    for d in ["build", "dist"]:
-        p = SCRIPT_DIR / d
-        if p.exists():
-            shutil.rmtree(p)
 
-    # PyInstaller 打包
-    cmd = [
-        sys.executable, "-m", "PyInstaller",
-        "--onefile",
-        "--name", APP_NAME,
-        "--add-data", f"web{SEP}web",
-        "--add-data", f"saver-runtime.js{SEP}.",
+def require_build_dependencies() -> None:
+    missing = []
+    for module_name in ("PyInstaller", "aiohttp"):
+        try:
+            __import__(module_name)
+        except ImportError:
+            missing.append(module_name)
+    if missing:
+        raise SystemExit(
+            "Missing build dependencies: "
+            + ", ".join(missing)
+            + ". Run: python3 -m pip install -r requirements-build.txt"
+        )
+
+
+def update_macos_metadata(app_path: Path, version: str) -> None:
+    plist_path = app_path / "Contents" / "Info.plist"
+    with plist_path.open("rb") as handle:
+        info = plistlib.load(handle)
+    info.update(
+        {
+            "CFBundleIdentifier": BUNDLE_ID,
+            "CFBundleName": DISPLAY_NAME,
+            "CFBundleDisplayName": DISPLAY_NAME,
+            "CFBundleShortVersionString": version,
+            "CFBundleVersion": version,
+            "LSMinimumSystemVersion": MINIMUM_MACOS,
+            "NSHighResolutionCapable": True,
+        }
+    )
+    with plist_path.open("wb") as handle:
+        plistlib.dump(info, handle, sort_keys=False)
+
+
+def sign_macos_bundle(app_path: Path, identity: str | None) -> None:
+    command = ["codesign", "--force"]
+    if identity and identity != "-":
+        command.extend(
+            [
+                "--timestamp",
+                "--options",
+                "runtime",
+                "--entitlements",
+                str(ROOT / "packaging" / "macos" / "entitlements.plist"),
+            ]
+        )
+    command.extend(["--sign", identity or "-", str(app_path)])
+    subprocess.run(command, check=True)
+
+
+def build(version: str, codesign_identity: str | None = None) -> Path:
+    require_build_dependencies()
+    os.chdir(ROOT)
+
+    for directory_name in ("build", "dist"):
+        directory = ROOT / directory_name
+        if directory.exists():
+            shutil.rmtree(directory)
+
+    command = [
+        sys.executable,
+        "-m",
+        "PyInstaller",
+        "--name",
+        APP_NAME,
+        "--add-data",
+        f"web{DATA_SEPARATOR}web",
+        "--add-data",
+        f"saver-runtime.js{DATA_SEPARATOR}.",
         "--clean",
         "--noconfirm",
-        "server.py",
     ]
-    # Mac: --windowed 生成 .app bundle
-    if not IS_WINDOWS:
-        cmd.append("--windowed")
-    print(f"   Command: {' '.join(cmd)}")
-    subprocess.check_call(cmd)
 
-    # 验证产物 + Mac 上创建 .dmg
     if IS_WINDOWS:
-        output = SCRIPT_DIR / "dist" / f"{APP_NAME}.exe"
+        command.append("--onefile")
+    elif IS_MACOS:
+        if not ICON_FILE.exists():
+            raise SystemExit(f"Missing macOS icon: {ICON_FILE}")
+        command.extend(
+            [
+                "--onedir",
+                "--windowed",
+                "--icon",
+                str(ICON_FILE),
+                "--osx-bundle-identifier",
+                BUNDLE_ID,
+                "--target-architecture",
+                "arm64",
+            ]
+        )
+        if codesign_identity and codesign_identity != "-":
+            command.extend(
+                [
+                    "--codesign-identity",
+                    codesign_identity,
+                    "--osx-entitlements-file",
+                    str(ROOT / "packaging" / "macos" / "entitlements.plist"),
+                ]
+            )
     else:
-        # --windowed 在 Mac 上生成 .app
-        app_path = SCRIPT_DIR / "dist" / f"{APP_NAME}.app"
-        # 创建 .dmg
-        dmg_path = SCRIPT_DIR / "dist" / f"{APP_NAME}.dmg"
-        if app_path.exists():
-            print("📦 Creating .dmg...")
-            # 先删旧 dmg
-            if dmg_path.exists():
-                dmg_path.unlink()
-            subprocess.check_call([
-                "hdiutil", "create",
-                "-volname", "HTML Studio",
-                "-srcfolder", str(app_path),
-                "-ov",
-                "-format", "UDZO",
-                str(dmg_path)
-            ])
-            output = dmg_path
-        else:
-            # 降级：无 --windowed 时可能是裸可执行文件
-            output = SCRIPT_DIR / "dist" / APP_NAME
+        command.extend(["--onefile", "--windowed"])
 
-    if output.exists():
-        size_mb = output.stat().st_size / (1024 * 1024)
+    command.append("server.py")
+    print(f"Building {DISPLAY_NAME} {version} on {sys.platform}...")
+    build_environment = os.environ.copy()
+    build_environment["PYINSTALLER_CONFIG_DIR"] = str(ROOT / "build" / "pyinstaller-config")
+    subprocess.run(command, check=True, env=build_environment)
 
-        # macOS: 对 .app 做 ad-hoc 签名（避免 Gatekeeper 拦截）
-        if not IS_WINDOWS:
-            app_for_sign = SCRIPT_DIR / "dist" / f"{APP_NAME}.app"
-            if app_for_sign.exists():
-                try:
-                    subprocess.check_call([
-                        "codesign", "--force", "--deep", "--sign", "-", str(app_for_sign)
-                    ])
-                    print(f"🔐 Ad-hoc signed: {app_for_sign}")
-                except (subprocess.CalledProcessError, FileNotFoundError):
-                    print(f"⚠️ codesign failed (non-fatal) — user may need to right-click → Open on first launch")
-
-        print()
-        print(f"✅ Build complete!")
-        print(f"   📦 {output} ({size_mb:.1f} MB)")
-        if IS_WINDOWS:
-            print(f"   💡 Double-click HTMLStudio.exe to start")
-        else:
-            print(f"   💡 Mount .dmg → drag HTMLStudio.app to Applications → double-click to start")
-            print(f"   🔐 If Gatekeeper blocks: right-click → Open → Open")
-        print(f"   🌐 Browser opens automatically")
-        print()
-        print(f"   To test without opening browser:")
-        print(f"   ./dist/{APP_NAME}.app/Contents/MacOS/{APP_NAME} --no-open-browser --port 9902")
+    if IS_WINDOWS:
+        output = ROOT / "dist" / f"{APP_NAME}.exe"
+    elif IS_MACOS:
+        output = ROOT / "dist" / f"{APP_NAME}.app"
+        update_macos_metadata(output, version)
+        sign_macos_bundle(output, codesign_identity)
     else:
-        print("❌ Build failed! Output not found.")
-        sys.exit(1)
+        output = ROOT / "dist" / APP_NAME
+
+    if not output.exists():
+        raise SystemExit(f"Build output was not created: {output}")
+
+    print(f"Build complete: {output}")
+    if IS_MACOS:
+        print("For a signed release, run: python3 scripts/release_macos.py")
+    return output
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--version", default=read_version(), help="Bundle version")
+    parser.add_argument(
+        "--codesign-identity",
+        default=None,
+        help="Developer ID identity passed to PyInstaller for nested macOS code",
+    )
+    args = parser.parse_args()
+    build(args.version, args.codesign_identity)
+
 
 if __name__ == "__main__":
     main()
