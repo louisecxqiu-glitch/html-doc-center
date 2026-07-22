@@ -102,6 +102,7 @@ async def test_native_pick_dir_accepts_start_dir(client, monkeypatch):
     monkeypatch.setattr(server, "_native_pick_dir_macos", fake_pick)
     monkeypatch.setattr(server, "_native_pick_dir_windows", lambda start_dir=None: None)
     monkeypatch.setattr(server, "_native_pick_linux", lambda start_dir=None, file_mode=False: None)
+    monkeypatch.setattr(server.platform, "system", lambda: "Darwin")
 
     resp = await client.post("/api/native-pick-dir", json={"start_dir": "/Users/louiscxqiu/CodeBuddy"})
     assert resp.status == 200
@@ -118,6 +119,7 @@ async def test_native_pick_file_accepts_types(client, monkeypatch):
     monkeypatch.setattr(server, "_native_pick_file_macos", fake_pick_file)
     monkeypatch.setattr(server, "_native_pick_file_windows", lambda start_dir=None, file_types=None: None)
     monkeypatch.setattr(server, "_native_pick_linux", lambda start_dir=None, file_mode=True, file_types=None: None)
+    monkeypatch.setattr(server.platform, "system", lambda: "Darwin")
 
     resp = await client.post("/api/native-pick-file", json={"file_types": ["html", "md"]})
     assert resp.status == 200
